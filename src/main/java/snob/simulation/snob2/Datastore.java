@@ -1,4 +1,4 @@
-package snob.simulation.snob;
+package snob.simulation.snob2;
 
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
@@ -75,6 +75,7 @@ public class Datastore {
 
             //qe.close();
         } catch(Exception e) {
+            e.printStackTrace();
             throw e;
         } finally {
             this.dataset.end();

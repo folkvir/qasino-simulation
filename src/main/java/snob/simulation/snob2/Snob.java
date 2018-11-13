@@ -1,4 +1,4 @@
-package snob.simulation.snob;
+package snob.simulation.snob2;
 
 import org.apache.jena.graph.Triple;
 import peersim.config.Configuration;
@@ -8,10 +8,7 @@ import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * The Snob protocol
@@ -44,7 +41,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 
 	/**
 	 * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
-	 * 
+	 *
 	 * @param prefix
 	 *            the peersim configuration
 	 */
@@ -79,6 +76,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 	}
 
 	public void periodicCall() {
+		System.err.println("Periodic execution...");
 		this.messages = 0; // reset the number of messages
 
 	    // do the periodic shuffling of the rps
@@ -120,46 +118,43 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
 
         // -------- QUERY EXECUTION MODEL -------
-
         // 1 - send tpqs to neighbours and receive responses
         List<Node> rps_neigh = this.getPeers(1000000);
         for (Node node1 : rps_neigh) {
-        	if(this.profile.tpqs.size() > 0) {
+        	if(this.profile.patterns.size() > 0) {
 				Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-				IMessage received = snob.onTpqs(this.node, new SnobTpqsMessage(this.profile.tpqs));
+				IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.patterns));
 				// 2 - insert responses into our datastore
-				this.profile.datastore.insertTriples((List<Triple>) received.getPayload());
+				this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 				this.messages++;
 			}
         }
 		if(Snob.son && this.isUp() && this.sonPartialView.size() > 0){
             List<Node> son_neigh = this.getSonPeers(1000000);
 			for (Node node1 : son_neigh) {
-				if(this.profile.tpqs.size() > 0) {
+				if(this.profile.patterns.size() > 0) {
 					Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-					IMessage received = snob.onTpqs(this.node, new SnobTpqsMessage(this.profile.tpqs));
+					IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.patterns));
 					// 2 - insert responses into our datastore
-					this.profile.datastore.insertTriples((List<Triple>) received.getPayload());
+					this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 					this.messages++;
 				}
 			}
 		}
 
 		// 3 - perform the execution of all queries
-        profile.executeAll();
+        profile.execute();
 	}
 
     public IMessage onTpqs(Node origin, IMessage message) {
         Object receivedTriples = (List<Triple>) message.getPayload();
-        List<Triple> result = new ArrayList<>();
+        Map <Triple, Iterator<Triple>> result = new HashMap<>();
         Iterator<Triple> it = ((List) receivedTriples).iterator();
         while(it.hasNext()) {
-            Iterator<Triple> matchingTriples = this.profile.datastore.getTriplesMatchingTriplePattern(it.next());
-            while(matchingTriples.hasNext()) {
-                result.add(matchingTriples.next());
-            }
+        	Triple t = it.next();
+            result.put(t, this.profile.datastore.getTriplesMatchingTriplePattern(t));
         }
-        return new SnobTpqsMessage(result);
+        return new SnobTpqsResponse(result);
     }
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
@@ -234,7 +229,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 
 	/**
 	 * Perform a random walk in the network at a depth set by ttl (time-to-live)
-	 * 
+	 *
 	 * @param origin
 	 *            the subscribing peer
 	 * @param current

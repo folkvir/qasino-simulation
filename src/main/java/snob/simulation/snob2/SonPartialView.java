@@ -1,4 +1,4 @@
-package snob.simulation.snob;
+package snob.simulation.snob2;
 
 import peersim.core.Node;
 import snob.simulation.rps.AAgingPartialView;
@@ -84,7 +84,7 @@ public class SonPartialView extends AAgingPartialView {
     }
 
 	public void mergeSample(Snob caller, Node other, List<Node> newSample,
-			List<Node> oldSample, boolean isInitiator) {
+                            List<Node> oldSample, boolean isInitiator) {
 		ArrayList<Node> removedPeer = new ArrayList<Node>();
 		ArrayList<Integer> removedAge = new ArrayList<Integer>();
 

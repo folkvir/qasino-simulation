@@ -1,12 +1,9 @@
-package snob.simulation.snob;
+package snob.simulation.snob2;
 
 import org.apache.jena.query.ResultSet;
 import peersim.core.Network;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
-
-import java.util.Iterator;
-import java.util.UUID;
 
 public class SnobObserver implements ObserverProgram {
     public SnobObserver(String p) {}
@@ -23,11 +20,8 @@ public class SnobObserver implements ObserverProgram {
                 for(int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
-                    Iterator<UUID> keys = snob.profile.queries.keySet().iterator();
-                    // System.err.println("Number of queries for peer-"+Network.get(i).getID() + ": " +snob.profile.results.size());
-                    if(keys.hasNext()) {
-                        UUID key = keys.next();
-                        QuerySnob query = snob.profile.queries.get(key);
+                    QuerySnob query = snob.profile.query;
+                    if (query != null) {
                         ResultSet res = query.results;
                         if(res != null) {
                             long cpt = 0;
@@ -36,11 +30,11 @@ public class SnobObserver implements ObserverProgram {
                                 cpt++;
                             }
                             if (cpt != 0 && query.cardinality != 0) {
-                              completeness += (cpt) / (query.cardinality) * 100;
+                                completeness += (cpt) / (query.cardinality) * 100;
                             } else if (cpt == 0 && query.cardinality == 0) {
-                              completeness += 100;
+                                completeness += 100;
                             } else {
-                              completeness += 0;
+                                completeness += 0;
                             }
                         }
                     }

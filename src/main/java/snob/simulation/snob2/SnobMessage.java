@@ -1,4 +1,4 @@
-package snob.simulation.snob;
+package snob.simulation.snob2;
 
 import peersim.core.Node;
 import snob.simulation.rps.IMessage;

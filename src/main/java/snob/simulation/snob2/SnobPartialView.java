@@ -1,4 +1,4 @@
-package snob.simulation.snob;
+package snob.simulation.snob2;
 
 import peersim.core.CommonState;
 import peersim.core.Node;

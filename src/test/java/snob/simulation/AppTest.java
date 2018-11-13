@@ -16,9 +16,9 @@ import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import snob.simulation.snob.Datastore;
-import snob.simulation.snob.Profile;
-import snob.simulation.snob.QuerySnob;
+import snob.simulation.snob2.Datastore;
+import snob.simulation.snob2.Profile;
+import snob.simulation.snob2.QuerySnob;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -46,7 +46,7 @@ public class AppTest
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}");
-        Assert.assertEquals(3, p.tpqs.size());
+        Assert.assertEquals(3, p.patterns.size());
     }
 
     /**
