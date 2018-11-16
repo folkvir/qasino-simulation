@@ -21,8 +21,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 	// #A the names of the parameters in the configuration file of peersim
 	private static final String PAR_C = "c"; // max partial view size
     private static final String PAR_L = "l"; // shuffle size
-    private static final String PAR_SON_C = "sonc"; // max partial view size
-    private static final String PAR_SON_L = "sonl"; // shuffle size
+    private static final String PAR_SON_C = "sonc"; // shuffle size on the rps
+    private static final String PAR_SON_L = "sonl"; // shuffle size on the son
     private static final String PAR_SON = "son"; // enable son or not
 	private static final String PAR_CELL_COUNT = "cellcount"; // invertible bloom filter cell count
 	private static final String PAR_HASH_COUNT = "hashcount"; // invertible bloom filter hash count

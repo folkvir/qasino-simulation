@@ -22,20 +22,19 @@ public class SnobObserver implements ObserverProgram {
                     messages += snob.messages;
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
+                        System.err.printf("Query: %s waits %d results %n", query.query.toString(), query.cardinality);
                         ResultSet res = query.results;
-                        if(res != null) {
-                            long cpt = 0;
-                            while(res.hasNext()) {
-                                res.next();
-                                cpt++;
-                            }
-                            if (cpt != 0 && query.cardinality != 0) {
-                                completeness += (cpt) / (query.cardinality) * 100;
-                            } else if (cpt == 0 && query.cardinality == 0) {
-                                completeness += 100;
-                            } else {
-                                completeness += 0;
-                            }
+                        long cpt = 0;
+                        while(res != null && res.hasNext()) {
+                            res.next();
+                            cpt++;
+                        }
+                        if (cpt != 0 && query.cardinality != 0) {
+                            completeness += (cpt) / (query.cardinality) * 100;
+                        } else if (cpt == 0 && query.cardinality == 0) {
+                            completeness += 100;
+                        } else {
+                            completeness += 0;
                         }
                     }
                 }
