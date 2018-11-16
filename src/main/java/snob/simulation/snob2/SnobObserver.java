@@ -17,27 +17,36 @@ public class SnobObserver implements ObserverProgram {
 
                 long completeness = 0;
                 long messages = 0;
+                int totalreceivedresults = 0;
+                int totalcardinality = 0;
                 for(int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
-                        System.err.printf("Query: %s waits %d results %n", query.query.toString(), query.cardinality);
+                        // System.err.printf("Query: %s waits %d results %n", query.query.toString(), query.cardinality);
                         ResultSet res = query.results;
                         long cpt = 0;
                         while(res != null && res.hasNext()) {
                             res.next();
                             cpt++;
                         }
-                        if (cpt != 0 && query.cardinality != 0) {
-                            completeness += (cpt) / (query.cardinality) * 100;
-                        } else if (cpt == 0 && query.cardinality == 0) {
+                        totalreceivedresults += cpt;
+                        totalcardinality += query.cardinality;
+                        if (cpt > query.cardinality) {
+                            throw new Exception("query " + query.query + " gives more results than expected...");
+                        } else if (cpt == 0 && query.cardinality == 0){
                             completeness += 100;
-                        } else {
+                        } else if (cpt == 0 && query.cardinality > 0){
                             completeness += 0;
+                        } else if (cpt > 0 && query.cardinality > 0) {
+                            completeness += (cpt / query.cardinality) * 100;
+                        } else {
+                            throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
                         }
                     }
                 }
+                int completenessinresults = (1 + totalreceivedresults) / (1+ totalcardinality) * 100;
                 completeness = completeness / snob_default.profile.qlimit;
                 System.err.println("Global Completeness in the network: " + completeness + "% ("+ snob_default.profile.qlimit + "," + networksize + ")");
                 System.err.println("Number of messages in the network: " + messages);
@@ -49,7 +58,10 @@ public class SnobObserver implements ObserverProgram {
                             + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
                             + ", " + snob_default.getSonPeers(Integer.MAX_VALUE).size()
                             + ", " + completeness
-                            + ", " + messages);
+                            + ", " + messages
+                            + ", " + totalreceivedresults
+                            + ", " + totalreceivedresults
+                            + ", " + completenessinresults);
                 } else {
                     System.out.println(currentTick
                             + ", " + observer.size()
@@ -58,7 +70,10 @@ public class SnobObserver implements ObserverProgram {
                             + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
                             + ", " + 0
                             + ", " + completeness
-                            + ", " + messages);
+                            + ", " + messages
+                            + ", " + totalreceivedresults
+                            + ", " + totalreceivedresults
+                            + ", " + completenessinresults);
                 }
             } catch(Exception e) {
                 System.err.println("ERROR:" + e);

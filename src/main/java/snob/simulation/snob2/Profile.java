@@ -37,8 +37,8 @@ public class Profile {
             List<Triple> list = new ArrayList<>();
             int count = 0;
             // consume the iterator and fill the query
-            System.err.println(" ");
-            System.err.println("Consuming the iterator for the pattern: " + pattern.toString());
+//            System.err.println(" ");
+//            System.err.println("Consuming the iterator for the pattern: " + pattern.toString());
             while(iterator.hasNext()) {
                 Triple t = iterator.next();
                 // populate the query plan
@@ -47,9 +47,9 @@ public class Profile {
                 invertibles.get(pattern).insert(t);
                 list.add(t);
                 count++;
-                System.err.print(".");
+                // System.err.print(".");
             }
-            System.err.print("!end! count=" + count);
+            // System.err.print("!end! count=" + count);
             // insert triples in datastore
             datastore.insertTriples(list);
         });
@@ -57,9 +57,9 @@ public class Profile {
 
     public void update(String query) {
         has_query = true;
-        System.err.println("Updating the profile with: " + query);
         UUID id = UUID.randomUUID();
         this.query = new QuerySnob(query);
+        System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
         patterns = this.query.plan.patterns;
         createInvertiblesFromPatterns(patterns);
         initPipeline(patterns);
@@ -75,10 +75,10 @@ public class Profile {
 
     public void update(String query, long card) {
         has_query = true;
-        System.err.println("Updating the profile with: " + query);
         UUID id = UUID.randomUUID();
         QuerySnob q = new QuerySnob(query, card);
         this.query = new QuerySnob(query);
+        System.err.printf("[update-string-card] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
         patterns = this.query.plan.patterns;
         createInvertiblesFromPatterns(patterns);
         initPipeline(patterns);

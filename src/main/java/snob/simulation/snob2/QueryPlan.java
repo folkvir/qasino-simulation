@@ -31,9 +31,9 @@ public class QueryPlan {
 
         sources = builder.getSources();
         patterns = builder.getTriples();
-        patterns.forEach(pattern -> {
-            System.err.println("Pattern: " + pattern.toString());
-        });
+//        patterns.forEach(pattern -> {
+//            System.err.println("Pattern: " + pattern.toString());
+//        });
 
         vars = iterator.getVars().parallelStream().map(var -> var.toString()).collect(Collectors.toList());
     }
