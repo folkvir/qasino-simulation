@@ -7,6 +7,10 @@ import peersim.core.Node;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
+import snob.simulation.snob2.data.InvertibleBloomFilter;
+import snob.simulation.snob2.messages.SnobMessage;
+import snob.simulation.snob2.messages.SnobTpqsRequest;
+import snob.simulation.snob2.messages.SnobTpqsResponse;
 
 import java.util.*;
 
@@ -127,7 +131,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         for (Node node1 : rps_neigh) {
         	if(this.profile.patterns.size() > 0) {
 				Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-				IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.patterns));
+				IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.invertibles));
 				// 2 - insert responses into our datastore
 				this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 				this.messages++;
@@ -138,7 +142,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 			for (Node node1 : son_neigh) {
 				if(this.profile.patterns.size() > 0) {
 					Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-					IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.patterns));
+					IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.invertibles));
 					// 2 - insert responses into our datastore
 					this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 					this.messages++;
@@ -150,14 +154,38 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         profile.execute();
 	}
 
+	/**
+	 * When we receive a TPQs request, we do a set reconcialition over Invertible bloom filters
+	 * Get missing triples, then send back them
+	 * @param origin
+	 * @param message
+	 * @return
+	 */
     public IMessage onTpqs(Node origin, IMessage message) {
-        Object receivedTriples = (List<Triple>) message.getPayload();
+		Map<Triple, InvertibleBloomFilter> messageReceived = (Map<Triple, InvertibleBloomFilter>) message.getPayload();
         Map <Triple, Iterator<Triple>> result = new HashMap<>();
-        Iterator<Triple> it = ((List) receivedTriples).iterator();
-        while(it.hasNext()) {
-        	Triple t = it.next();
-            result.put(t, this.profile.datastore.getTriplesMatchingTriplePattern(t));
-        }
+
+        // if we have a query, use the normal behavior, getTriplesMatchingTriples -> populate a new ibf and return the missing values
+		if(!this.profile.has_query) {
+			messageReceived.forEach((pattern, ibf) -> {
+				Iterator<Triple> listTriples = this.profile.datastore.getTriplesMatchingTriplePattern(pattern);
+				InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, cellcount, hashcount);
+				List<Triple> absent = local.absentTriple(ibf);
+				result.put(pattern, absent.iterator());
+			});
+		} else {
+			messageReceived.forEach((pattern, ibf) -> {
+			    if(this.profile.invertibles.containsKey(pattern)) {
+                    List<Triple> absent = this.profile.invertibles.get(pattern).absentTriple(ibf);
+                    result.put(pattern, absent.iterator());
+                } else {
+                    Iterator<Triple> listTriples = this.profile.datastore.getTriplesMatchingTriplePattern(pattern);
+                    InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, cellcount, hashcount);
+                    List<Triple> absent = local.absentTriple(ibf);
+                    result.put(pattern, absent.iterator());
+                }
+			});
+		}
         return new SnobTpqsResponse(result);
     }
 

@@ -4,6 +4,7 @@
 # Log file
 *.log
 
+
 # BlueJ files
 *.ctxt
 
@@ -23,3 +24,5 @@
 hs_err_pid*
 .idea
 target/
+results/
+!results/README.md

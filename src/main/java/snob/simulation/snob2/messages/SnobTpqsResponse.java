@@ -1,4 +1,4 @@
-package snob.simulation.snob2;
+package snob.simulation.snob2.messages;
 
 import org.apache.jena.graph.Triple;
 import snob.simulation.rps.IMessage;

@@ -2,17 +2,14 @@ package snob.simulation.snob2.data;
 
 import org.apache.jena.graph.Triple;
 import se.rosenbaum.iblt.Cell;
-import se.rosenbaum.iblt.data.IntegerData;
 import se.rosenbaum.iblt.IBLT;
+import se.rosenbaum.iblt.data.IntegerData;
 import se.rosenbaum.iblt.hash.HashFunction;
 import se.rosenbaum.iblt.hash.IntegerDataHashFunction;
 import se.rosenbaum.iblt.hash.IntegerDataSubtablesHashFunctions;
 import se.rosenbaum.iblt.util.ResidualData;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class InvertibleBloomFilter {
     private IBLT<IntegerData, IntegerData> iblt;
@@ -40,6 +37,12 @@ public class InvertibleBloomFilter {
             res.put(k, data(v.getValue().asInt()));
         });
         return res;
+    }
+
+    public static  InvertibleBloomFilter createIBFFromTriples(Iterator<Triple> list, int cellCount, int hashFunctionCount) {
+        InvertibleBloomFilter output = new InvertibleBloomFilter(cellCount, hashFunctionCount);
+        list.forEachRemaining(triple -> output.insert(triple));
+        return output;
     }
 
     public Triple get (Triple t) throws Exception {
@@ -84,13 +87,9 @@ public class InvertibleBloomFilter {
         ResidualData<IntegerData, IntegerData> res = _reconcile(new IBLT<IntegerData, IntegerData>(incomingIBLT.getCells().clone(), new IntegerDataSubtablesHashFunctions(incomingIBLT.getCells().length, hashFunctionCount)), mydata());
         List<Triple> output = new ArrayList<>();
         res.getAbsentEntries().forEach((k, v) -> {
-            System.out.printf("Absent (key= %d, value=%d) %n", k.getValue(), v.getValue());
-            mapping.forEach((kk, vv) -> {
-                System.out.printf("key=%d value=%s%n", kk.getValue(), vv.getTriple().toString());
-            });
-            System.out.printf("k (%d) is in mapping: %b%n", k.getValue(), this.mapping.containsKey(k));
             output.add(this.mapping.get(k).getTriple());
         });
+        System.err.printf("Remaining triples:  %d%n", output.size());
         return output;
     }
 

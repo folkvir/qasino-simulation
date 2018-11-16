@@ -3,12 +3,7 @@ package snob.simulation.snob2;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.query.ResultSetFactory;
-import org.apache.jena.sparql.resultset.ResultSetMem;
-import org.apache.jena.sparql.util.ResultSetUtils;
 import org.json.simple.JSONObject;
-
-import javax.xml.transform.Result;
 
 public class QuerySnob {
     public String query;

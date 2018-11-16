@@ -3,15 +3,9 @@ package snob.simulation.snob2;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Selector;
-import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.sparql.util.ResultSetUtils;
 import snob.simulation.snob2.data.InvertibleBloomFilter;
-
 
 import java.util.*;
 
@@ -25,6 +19,7 @@ public class Profile {
     public int cellCount;
     public int hashCount;
     public QuerySnob query;
+    public boolean has_query = false;
     public long qlimit = 1; // number of queries in the network
     // Datastore
     public Datastore datastore;
@@ -61,6 +56,7 @@ public class Profile {
     }
 
     public void update(String query) {
+        has_query = true;
         System.err.println("Updating the profile with: " + query);
         UUID id = UUID.randomUUID();
         this.query = new QuerySnob(query);
@@ -78,6 +74,7 @@ public class Profile {
     }
 
     public void update(String query, long card) {
+        has_query = true;
         System.err.println("Updating the profile with: " + query);
         UUID id = UUID.randomUUID();
         QuerySnob q = new QuerySnob(query, card);
