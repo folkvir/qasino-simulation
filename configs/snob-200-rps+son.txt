@@ -25,6 +25,8 @@ protocol.snob.sonl 4
 protocol.snob.sondelta 1
 protocol.snob.linkable link
 protocol.snob.fail 0.000
+protocol.snob.cellcount 100000
+protocol.snob.hashcount 2
 
 control.o1 snob.simulation.controllers.DynamicNetwork
 control.o1.protocol snob
