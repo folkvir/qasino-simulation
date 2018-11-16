@@ -12,7 +12,7 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.snob snob.simulation.snob.Snob
+protocol.snob snob.simulation.snob2.Snob2
 protocol.snob.rps snob
 protocol.snob.c 10
 protocol.snob.l 4
@@ -48,13 +48,13 @@ init.sch.randstart
 
 
 control.0 snob.simulation.observers.Observer
-control.0.program snob.simulation.snob.SnobObserver
+control.0.program snob.simulation.snob2.SnobObserver
 control.0.protocol snob
 control.0.FINAL
 control.0.step 1
 
 control.1 snob.simulation.observers.Observer
-control.1.program snob.simulation.snob.SnobInit
+control.1.program snob.simulation.snob2.SnobInit
 control.1.protocol snob
 control.1.qlimit -1
 control.1.dlimit -1
