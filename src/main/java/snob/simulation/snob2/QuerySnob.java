@@ -26,6 +26,7 @@ public class QuerySnob {
         this.query = (String) json.get("query");
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        // populate the bloom filter
     }
 
     public QuerySnob(String query) {

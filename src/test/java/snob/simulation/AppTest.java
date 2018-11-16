@@ -1,10 +1,7 @@
 package snob.simulation;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.apache.commons.io.FileUtils;
+import com.google.common.hash.HashCode;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
@@ -19,27 +16,150 @@ import org.junit.Test;
 import snob.simulation.snob2.Datastore;
 import snob.simulation.snob2.Profile;
 import snob.simulation.snob2.QuerySnob;
+import snob.simulation.snob2.data.InvertibleBloomFilter;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import java.util.stream.Stream;
+
+import static com.google.common.hash.Hashing.crc32;
+import static com.google.common.hash.Hashing.murmur3_128;
+
+//import org.apache.commons.io.FileUtils;
+//import org.apache.jena.graph.Triple;
+//import org.apache.jena.query.ResultSet;
+//import org.apache.jena.query.ResultSetFormatter;
+//import org.apache.jena.sparql.core.Var;
+//import org.json.simple.JSONArray;
+//import org.json.simple.JSONObject;
+//import org.json.simple.parser.JSONParser;
+//import org.json.simple.parser.ParseException;
+//import org.junit.Assert;
+//import org.junit.Ignore;
+//import snob.simulation.snob2.Datastore;
+//import snob.simulation.snob2.Profile;
+//import snob.simulation.snob2.QuerySnob;
+//
+//import java.io.*;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
+//import java.util.Iterator;
+//import java.util.Vector;
+//import java.util.stream.Stream;
 
 /**
  * Unit test for simple App.
  */
 public class AppTest 
 {
+    @Test
+    @Ignore
+    public void testHashMurmur () {
+        String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
+        String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
+        HashCode xse = murmur3_128().hashBytes(xs.getBytes());
+        HashCode xse2 = murmur3_128().hashBytes(xs.getBytes());
+        System.out.printf("Hash Murmur Length: %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
+        Assert.assertEquals(xse, xse2);
+    }
+
+    @Test
+    @Ignore
+    public void testChecksum () {
+        String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
+        String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
+        HashCode xse = crc32().hashBytes(xs.getBytes());
+        HashCode xse2 = crc32().hashBytes(xs.getBytes());
+        System.out.printf("Checksum Length : %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
+        Assert.assertEquals(xse, xse2);
+    }
+    @Test
+    @Ignore
+    public void testReconciliation () {
+        Triple t = new Triple(NodeFactory.createURI("a"),
+                NodeFactory.createURI("a"),
+                NodeFactory.createURI("a"));
+        Triple t2 = new Triple(NodeFactory.createURI("b"),
+                NodeFactory.createURI("b"),
+                NodeFactory.createURI("b"));
+        Triple t3 = new Triple(NodeFactory.createURI("d"),
+                NodeFactory.createURI("d"),
+                NodeFactory.createURI("d"));
+        InvertibleBloomFilter b1 = new InvertibleBloomFilter(10, 2);
+        try {
+            b1.insert(t);
+            b1.insert(t2);
+            b1.insert(t3);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+
+        InvertibleBloomFilter b2 = new InvertibleBloomFilter(100, 2);
+        Triple t4 = new Triple(NodeFactory.createURI("a"),
+                NodeFactory.createURI("a"),
+                NodeFactory.createURI("a"));
+        Triple t5 = new Triple(NodeFactory.createURI("c"),
+                NodeFactory.createURI("c"),
+                NodeFactory.createURI("c"));
+        b2.insert(t4);
+        b2.insert(t5);
+
+        // get absent triple, triples that are in A but not in B
+        List<Triple> absentTriples = b2.absentTriple(b1);
+        absentTriples.forEach(triple -> {
+            System.out.println("Absent triple: " + triple.toString());
+            Assert.assertEquals(triple.toString(), "c @c c");
+        });
+    }
+
+    /*@Test
+    @Ignore
+    public void otherIBFLTest() throws Exception {
+        com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter b1 = new com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter(10);
+        String x = "a b c.";
+        int xi = murmur3_128().hashBytes(x.getBytes()).asInt();
+        System.out.printf("Inserting %s as %d%n", x, xi);
+        b1.add(xi);
+        System.out.println(b1.contains(xi));
+
+
+        com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter b2 = new com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter(10);
+        String y = "a b d";
+        int yi = murmur3_128().hashBytes(y.getBytes()).asInt();
+        System.out.printf("Inserting %s as %d%n", y, yi);
+        b2.add(yi);
+        System.out.println(b2.contains(xi));
+        System.out.println(b2.contains(yi));
+
+        // decode the result of the subtract operation
+        List<Integer>[] decodeResult = b1.decode(b1.subtract(b2.getCells()));
+        for (int i = 0; i < decodeResult.length; i++) {
+            if (i == 0) {
+                decodeResult[i].iterator().forEachRemaining(v -> {
+                    System.out.println("In b1: " + v.toString());
+                });
+            } else {
+                decodeResult[i].iterator().forEachRemaining(v -> {
+                    System.out.println("Missing value in b1: " + v.toString());
+                });
+            }
+        }
+    }*/
     /**
      * Update fonction of profile should extract tpq
      */
     @Test
+    @Ignore
     public void profileShouldUpdateWithQuery()
     {
-        Profile p = new Profile();
+        Profile p = new Profile(100, 2);
         p.update("PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
                 "SELECT DISTINCT ?name ?nick {" +
                 "   ?x foaf:mbox <mailt:person@server> ."+
@@ -53,6 +173,7 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
+    @Ignore
     public void profileScoringShouldReturnMaxValue()
     {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
@@ -61,11 +182,11 @@ public class AppTest
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}";
-        Profile p = new Profile();
+        Profile p = new Profile(100, 2);
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        Profile p2 = new Profile();
+        Profile p2 = new Profile(100, 2);
         p2.update(query);
         // System.out.println(p2.tpqs.toString());
 
@@ -76,6 +197,7 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
+    @Ignore
     public void profileScoringShouldReturn2()
     {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
@@ -88,11 +210,11 @@ public class AppTest
                 "SELECT DISTINCT ?name ?nick {" +
                 "  ?x ?p <mailt:person@server>"+
                 "}";
-        Profile p = new Profile();
+        Profile p = new Profile(100, 2);
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        Profile p2 = new Profile();
+        Profile p2 = new Profile(100, 2);
         p2.update(query2);
         // System.out.println(p2.tpqs.toString());
 
@@ -103,6 +225,7 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
+    @Ignore
     public void profileScoringShouldReturn3()
     {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
@@ -116,11 +239,11 @@ public class AppTest
                 "  ?x ?p <mailt:person@server> ."+
                 "  ?x foaf:name \"toto\" "+
                 "}";
-        Profile p = new Profile();
+        Profile p = new Profile(100, 2);
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        Profile p2 = new Profile();
+        Profile p2 = new Profile(100, 2);
         p2.update(query2);
         // System.out.println(p2.tpqs.toString());
 
@@ -131,6 +254,7 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
+    @Ignore
     public void DatastoreShouldBeQueryiable()
     {
         Datastore d = new Datastore();
@@ -149,6 +273,32 @@ public class AppTest
         Assert.assertEquals(3, count);
     }
 
+    /**
+     * Update fonction of profile should extract tpq
+     */
+    @Test
+    public void PipelineIteratorShouldWork()
+    {
+        Profile p = new Profile(100, 2);
+        p.datastore.update("./datasets/test.ttl");
+        String query = "SELECT * WHERE { ?s ?p ?o . }";
+        p.update(query);
+        p.execute();
+        ResultSet res = p.query.results;
+        int count = 0;
+        while(res.hasNext()) {
+            count++;
+            res.next();
+        }
+        Assert.assertEquals(3, count); // 3 triples
+        Assert.assertEquals(p.invertibles.size(), 1); // one spo
+        Triple spo = new Triple(Var.alloc("s"),
+                Var.alloc("p"),
+                Var.alloc("o"));
+        Assert.assertEquals(p.invertibles.get(spo).mydata().size(), 3);
+    }
+
+    @Ignore
     @Test
     public void GenerateDiseasomeDataset() {
         Datastore d = new Datastore();
@@ -200,6 +350,7 @@ public class AppTest
         }
     }
 
+    @Ignore
     @Test
     public void GenerateLinkedmdbDataset() {
         Datastore d = new Datastore();

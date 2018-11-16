@@ -20,7 +20,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     private static final String PAR_SON_C = "sonc"; // max partial view size
     private static final String PAR_SON_L = "sonl"; // shuffle size
     private static final String PAR_SON = "son"; // enable son or not
-
+	private static final String PAR_CELL_COUNT = "cellcount"; // invertible bloom filter cell count
+	private static final String PAR_HASH_COUNT = "hashcount"; // invertible bloom filter hash count
 
     // #B the values from the configuration file of peersim
 	public static int c;
@@ -28,6 +29,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static boolean son;
     public static int sonc;
     public static int sonl;
+    public static int cellcount;
+    public static int hashcount;
 
 	// Profile of the peer
 	public Profile profile;
@@ -53,12 +56,14 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         Snob.sonc = Configuration.getInt(prefix + "." + PAR_SON_C);
         Snob.sonl = Configuration.getInt(prefix + "." + PAR_SON_L);
         Snob.son = Configuration.getBoolean(prefix + "." + PAR_SON);
+		Snob.cellcount = Configuration.getInt(prefix + "." + PAR_CELL_COUNT);
+		Snob.hashcount = Configuration.getInt(prefix + "." + PAR_HASH_COUNT);
 		this.partialView = new SnobPartialView(Snob.c, Snob.l);
         if(Snob.son) {
             this.sonPartialView = new SonPartialView(Snob.sonc, Snob.sonl);
         }
         try {
-            this.profile = new Profile();
+            this.profile = new Profile(cellcount, hashcount);
             System.err.println("Creating the profile...");
         } catch (Exception e) {
             System.err.println(e);
@@ -76,7 +81,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 	}
 
 	public void periodicCall() {
-		System.err.println("Periodic execution...");
 		this.messages = 0; // reset the number of messages
 
 	    // do the periodic shuffling of the rps

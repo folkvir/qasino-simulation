@@ -3,8 +3,15 @@ package snob.simulation.snob2;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.ReadWrite;
 import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Selector;
+import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.sparql.util.ResultSetUtils;
+import snob.simulation.snob2.data.InvertibleBloomFilter;
+
 
 import java.util.*;
 
@@ -14,25 +21,40 @@ public class Profile {
     public int WEIGH_SUBSET = 1;
 
     public List<Triple> patterns;
+    public Map<Triple, InvertibleBloomFilter> invertibles;
+    public int cellCount;
+    public int hashCount;
     public QuerySnob query;
     public long qlimit = 1; // number of queries in the network
     // Datastore
     public Datastore datastore;
 
-    public Profile() {
+    public Profile(int ibflCounCell, int ibflHashCount) {
+        cellCount = ibflCounCell;
+        hashCount = ibflHashCount;
         this.patterns = new ArrayList<>();
+        this.invertibles = new HashMap<>();
         this.datastore = new Datastore();
     }
 
     public void insertTriples(Map<Triple, Iterator<Triple>> its) {
         its.forEach((pattern, iterator) -> {
             List<Triple> list = new ArrayList<>();
+            int count = 0;
             // consume the iterator and fill the query
+            System.err.println(" ");
+            System.err.println("Consuming the iterator for the pattern: " + pattern.toString());
             while(iterator.hasNext()) {
                 Triple t = iterator.next();
+                // populate the query plan
                 query.plan.insertTriple(pattern, t);
+                // populate the bloom filter associated to the pattern
+                invertibles.get(pattern).insert(t);
                 list.add(t);
+                count++;
+                System.err.print(".");
             }
+            System.err.print("!end! count=" + count);
             // insert triples in datastore
             datastore.insertTriples(list);
         });
@@ -43,6 +65,16 @@ public class Profile {
         UUID id = UUID.randomUUID();
         this.query = new QuerySnob(query);
         patterns = this.query.plan.patterns;
+        createInvertiblesFromPatterns(patterns);
+        initPipeline(patterns);
+    }
+
+    private void createInvertiblesFromPatterns(List<Triple> patterns) {
+        for (Triple pattern : patterns) {
+            if(!this.invertibles.containsKey(pattern)){
+                invertibles.put(pattern, new InvertibleBloomFilter(cellCount, hashCount));
+            }
+        }
     }
 
     public void update(String query, long card) {
@@ -51,12 +83,35 @@ public class Profile {
         QuerySnob q = new QuerySnob(query, card);
         this.query = new QuerySnob(query);
         patterns = this.query.plan.patterns;
+        createInvertiblesFromPatterns(patterns);
+        initPipeline(patterns);
     }
+
+    private void initPipeline(List<Triple> patterns) {
+        for (Triple pattern : patterns) {
+            this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
+                // populate the query plan
+                this.query.plan.insertTriple(pattern, triple);
+                // populate the bloom filter associated to the pattern
+                invertibles.get(pattern).insert(triple);
+            });
+        }
+    }
+
+//    public void updateDatastoreWithFile (String filename) {
+//        this.datastore.update(filename);
+//        System.err.println("Populating the pipeline ...");
+//        Model model = ModelFactory.createDefaultModel() ;
+//        model.read(filename);
+//        Selector s = new SimpleSelector();
+//        model.listStatements(s).forEachRemaining(statement -> {
+//            statement.asTriple()
+//        });
+//    }
 
     public void execute () {
         try {
             if(this.query != null) {
-                System.err.println("Executing the query: " + this.query.query);
                 ResultSet set = this.query.plan.execute();
                 if(this.query.results == null) {
                     this.query.results = set;
