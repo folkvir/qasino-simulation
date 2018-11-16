@@ -114,9 +114,11 @@ public class SnobInit implements ObserverProgram {
             }
             System.err.println("Number of queries to load: [" + this.qlimit + "/" + queriesDiseasome.size() + "]...");
             while(pickedQuery < this.qlimit && pickedQuery < queriesDiseasome.size()) {
-                System.err.println("Loading query into peer:" + peersPicked);
-                peers.get(peersPicked).profile.update(queriesDiseasome.get(pickedQuery).get("query").toString(), (long) queriesDiseasome.get(pickedQuery).get("card"));
-                System.err.println("Number of queries for peer-" + peersPicked + ": " + 1);
+                long card = (long) queriesDiseasome.get(pickedQuery).get("card");
+                String query = queriesDiseasome.get(pickedQuery).get("query").toString();
+                System.err.printf("Loading query with %d expected result(s) into peer: %d%n", card, peersPicked);
+                peers.get(peersPicked).profile.update(query, card);
+                // System.err.println("Number of queries for peer-" + peersPicked + ": " + 1);
                 peersPicked++;
                 if(peersPicked > peers.size() - 1) peersPicked = 0;
                 pickedQuery++;

@@ -76,9 +76,8 @@ public class Profile {
     public void update(String query, long card) {
         has_query = true;
         UUID id = UUID.randomUUID();
-        QuerySnob q = new QuerySnob(query, card);
-        this.query = new QuerySnob(query);
-        System.err.printf("[update-string-card] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
+        this.query = new QuerySnob(query, card);
+        System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
         patterns = this.query.plan.patterns;
         createInvertiblesFromPatterns(patterns);
         initPipeline(patterns);
@@ -94,17 +93,6 @@ public class Profile {
             });
         }
     }
-
-//    public void updateDatastoreWithFile (String filename) {
-//        this.datastore.update(filename);
-//        System.err.println("Populating the pipeline ...");
-//        Model model = ModelFactory.createDefaultModel() ;
-//        model.read(filename);
-//        Selector s = new SimpleSelector();
-//        model.listStatements(s).forEachRemaining(statement -> {
-//            statement.asTriple()
-//        });
-//    }
 
     public void execute () {
         try {
