@@ -3,6 +3,7 @@ package snob.simulation.snob2;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFParser;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.sparql.syntax.Template;
@@ -23,7 +24,9 @@ public class Datastore {
         System.err.println("Updating the datastore with the following filename: "+filename);
         this.dataset.begin(ReadWrite.WRITE);
         try {
-            Model tdb = loadModel(filename, this.dataset);
+            RDFParser.create()
+                    .source(filename)
+                    .parse(this.dataset);
             this.dataset.commit();
         } catch(Exception e) {
             e.printStackTrace();
@@ -62,8 +65,8 @@ public class Datastore {
             bgp.add(p);
             //ElementGroup where = new ElementGroup();
             ElementTriplesBlock where = new ElementTriplesBlock();
-            //block.addTriple(p);
             where.addTriple(p);
+            // System.err.printf("Triple: %b %b %b %n", p.getSubject().isVariable(), p.getPredicate().isVariable(), p.getObject().isVariable());
 
             Query query = QueryFactory.make();
             query.setQueryConstructType();

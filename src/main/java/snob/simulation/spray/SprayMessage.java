@@ -1,9 +1,9 @@
 package snob.simulation.spray;
 
-import java.util.List;
-
 import peersim.core.Node;
 import snob.simulation.rps.IMessage;
+
+import java.util.List;
 
 public class SprayMessage implements IMessage {
 

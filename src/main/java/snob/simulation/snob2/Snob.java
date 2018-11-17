@@ -44,7 +44,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public SonPartialView sonPartialView;
     public static int RND_WALK = 5;
     public String prefix;
+    // instrumentations
     public int messages = 0;
+    public long messagesSize = 0;
+    public long requestsSize = 0;
+    public long responsesSize = 0;
 
 	/**
 	 * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
@@ -85,8 +89,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 	}
 
 	public void periodicCall() {
-		this.messages = 0; // reset the number of messages
-
 	    // do the periodic shuffling of the rps
 		if (this.isUp() && this.partialView.size() > 0) {
 		    // do the periodic shuffling for Cyclon
@@ -131,7 +133,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         for (Node node1 : rps_neigh) {
         	if(this.profile.patterns.size() > 0) {
 				Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-				IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.invertibles));
+				SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
+				// instrument the size of the message sent
+                messagesSize = Agent.getObjectSize(msg);
+                requestsSize = Agent.getObjectSize(msg);
+				IMessage received = snob.onTpqs(this.node, msg);
 				// 2 - insert responses into our datastore
 				this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 				this.messages++;
@@ -142,7 +148,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 			for (Node node1 : son_neigh) {
 				if(this.profile.patterns.size() > 0) {
 					Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-					IMessage received = snob.onTpqs(this.node, new SnobTpqsRequest(this.profile.invertibles));
+                    SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
+                    // instrument the size of the message sent
+                    messagesSize = Agent.getObjectSize(msg);
+                    requestsSize = Agent.getObjectSize(msg);
+					IMessage received = snob.onTpqs(this.node, msg);
 					// 2 - insert responses into our datastore
 					this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 					this.messages++;
@@ -165,7 +175,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 		Map<Triple, InvertibleBloomFilter> messageReceived = (Map<Triple, InvertibleBloomFilter>) message.getPayload();
         Map <Triple, Iterator<Triple>> result = new HashMap<>();
 
-        // if we have a query, use the normal behavior, getTriplesMatchingTriples -> populate a new ibf and return the missing values
+        // if we have a pipeline, use the normal behavior, getTriplesMatchingTriples -> populate a new ibf and return the missing values
 		if(!this.profile.has_query) {
 			messageReceived.forEach((pattern, ibf) -> {
 				Iterator<Triple> listTriples = this.profile.datastore.getTriplesMatchingTriplePattern(pattern);
@@ -186,6 +196,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
 			});
 		}
+		SnobTpqsResponse msg = new SnobTpqsResponse(result);
+        // instrument the size of the response
+        messagesSize = Agent.getObjectSize(msg);
+        responsesSize = Agent.getObjectSize(msg);
         return new SnobTpqsResponse(result);
     }
 

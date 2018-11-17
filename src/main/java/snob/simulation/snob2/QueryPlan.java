@@ -6,9 +6,9 @@ import org.apache.jena.query.ResultSetFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingHashMap;
-import snob.simulation.snob2.query.AppendableSource;
-import snob.simulation.snob2.query.PipelineBuilder;
-import snob.simulation.snob2.query.QueryIteratorPlus;
+import snob.simulation.snob2.pipeline.AppendableSource;
+import snob.simulation.snob2.pipeline.PipelineBuilder;
+import snob.simulation.snob2.pipeline.QueryIteratorPlus;
 
 import java.util.List;
 import java.util.Map;
@@ -26,14 +26,11 @@ public class QueryPlan {
         this.query = query;
         // build the pipeline
         PipelineBuilder builder = new PipelineBuilder();
-        // create the query iterator from the query
+        // create the pipeline iterator from the pipeline
         iterator = builder.create(this.query);
 
         sources = builder.getSources();
         patterns = builder.getTriples();
-//        patterns.forEach(pattern -> {
-//            System.err.println("Pattern: " + pattern.toString());
-//        });
 
         vars = iterator.getVars().parallelStream().map(var -> var.toString()).collect(Collectors.toList());
     }
@@ -53,6 +50,7 @@ public class QueryPlan {
     }
 
     public void insertTriple (Triple pattern, Triple triple) {
+        //System.err.printf("Inserting a triple into the pipleline for the pattern %s...%n", pattern.toString());
         Binding b = projection(pattern, triple);
         sources.get(pattern).append(b);
     }

@@ -13,16 +13,16 @@ public class Profile {
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
     public int WEIGH_CONTAINMENT = 2;
     public int WEIGH_SUBSET = 1;
+    public int cellCount;
+    public int hashCount;
+    public boolean has_query = false;
+    public long qlimit = 1; // number of queries in the network
 
     public List<Triple> patterns;
     public Map<Triple, InvertibleBloomFilter> invertibles;
-    public int cellCount;
-    public int hashCount;
     public QuerySnob query;
-    public boolean has_query = false;
-    public long qlimit = 1; // number of queries in the network
-    // Datastore
     public Datastore datastore;
+
 
     public Profile(int ibflCounCell, int ibflHashCount) {
         cellCount = ibflCounCell;
@@ -36,12 +36,12 @@ public class Profile {
         its.forEach((pattern, iterator) -> {
             List<Triple> list = new ArrayList<>();
             int count = 0;
-            // consume the iterator and fill the query
+            // consume the iterator and fill the pipeline
 //            System.err.println(" ");
 //            System.err.println("Consuming the iterator for the pattern: " + pattern.toString());
             while(iterator.hasNext()) {
                 Triple t = iterator.next();
-                // populate the query plan
+                // populate the pipeline plan
                 query.plan.insertTriple(pattern, t);
                 // populate the bloom filter associated to the pattern
                 invertibles.get(pattern).insert(t);
@@ -56,13 +56,17 @@ public class Profile {
     }
 
     public void update(String query) {
-        has_query = true;
-        UUID id = UUID.randomUUID();
-        this.query = new QuerySnob(query);
-        System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
-        patterns = this.query.plan.patterns;
-        createInvertiblesFromPatterns(patterns);
-        initPipeline(patterns);
+        try {
+            has_query = true;
+            this.query = new QuerySnob(query);
+            System.err.printf("[update-string] Updating the profile a pipeline expecting %d result(s) %n", this.query.cardinality);
+            patterns = this.query.plan.patterns;
+            createInvertiblesFromPatterns(patterns);
+            initPipeline(patterns);
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     private void createInvertiblesFromPatterns(List<Triple> patterns) {
@@ -74,19 +78,24 @@ public class Profile {
     }
 
     public void update(String query, long card) {
-        has_query = true;
-        UUID id = UUID.randomUUID();
-        this.query = new QuerySnob(query, card);
-        System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
-        patterns = this.query.plan.patterns;
-        createInvertiblesFromPatterns(patterns);
-        initPipeline(patterns);
+        try {
+            this.has_query = true;
+            this.query = new QuerySnob(query, card);
+            System.err.printf("[update-string-card] Updating the profile with a pipeline expecting %d result(s) %n", this.query.cardinality);
+            this.patterns = this.query.plan.patterns;
+            this.createInvertiblesFromPatterns(this.patterns);
+            this.initPipeline(this.patterns);
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     private void initPipeline(List<Triple> patterns) {
         for (Triple pattern : patterns) {
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
-                // populate the query plan
+                // System.err.println(triple.toString());
+                // populate the pipeline plan
                 this.query.plan.insertTriple(pattern, triple);
                 // populate the bloom filter associated to the pattern
                 invertibles.get(pattern).insert(triple);

@@ -1,4 +1,4 @@
-package snob.simulation.snob2.query;
+package snob.simulation.snob2.pipeline;
 
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.shared.PrefixMapping;

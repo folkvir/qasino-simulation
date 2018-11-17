@@ -28,36 +28,12 @@ import java.util.stream.Stream;
 import static com.google.common.hash.Hashing.crc32;
 import static com.google.common.hash.Hashing.murmur3_128;
 
-//import org.apache.commons.io.FileUtils;
-//import org.apache.jena.graph.Triple;
-//import org.apache.jena.query.ResultSet;
-//import org.apache.jena.query.ResultSetFormatter;
-//import org.apache.jena.sparql.core.Var;
-//import org.json.simple.JSONArray;
-//import org.json.simple.JSONObject;
-//import org.json.simple.parser.JSONParser;
-//import org.json.simple.parser.ParseException;
-//import org.junit.Assert;
-//import org.junit.Ignore;
-//import snob.simulation.snob2.Datastore;
-//import snob.simulation.snob2.Profile;
-//import snob.simulation.snob2.QuerySnob;
-//
-//import java.io.*;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
-//import java.nio.file.Paths;
-//import java.util.Iterator;
-//import java.util.Vector;
-//import java.util.stream.Stream;
-
 /**
  * Unit test for simple App.
  */
 public class AppTest 
 {
     @Test
-    @Ignore
     public void testHashMurmur () {
         String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
@@ -68,7 +44,6 @@ public class AppTest
     }
 
     @Test
-    @Ignore
     public void testChecksum () {
         String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
@@ -78,7 +53,6 @@ public class AppTest
         Assert.assertEquals(xse, xse2);
     }
     @Test
-    @Ignore
     public void testReconciliation () {
         Triple t = new Triple(NodeFactory.createURI("a"),
                 NodeFactory.createURI("a"),
@@ -116,45 +90,10 @@ public class AppTest
             Assert.assertEquals(triple.toString(), "c @c c");
         });
     }
-
-    /*@Test
-    @Ignore
-    public void otherIBFLTest() throws Exception {
-        com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter b1 = new com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter(10);
-        String x = "a b c.";
-        int xi = murmur3_128().hashBytes(x.getBytes()).asInt();
-        System.out.printf("Inserting %s as %d%n", x, xi);
-        b1.add(xi);
-        System.out.println(b1.contains(xi));
-
-
-        com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter b2 = new com.zsbreak.InvertibleBloomFilter.InvertibleBloomFilter(10);
-        String y = "a b d";
-        int yi = murmur3_128().hashBytes(y.getBytes()).asInt();
-        System.out.printf("Inserting %s as %d%n", y, yi);
-        b2.add(yi);
-        System.out.println(b2.contains(xi));
-        System.out.println(b2.contains(yi));
-
-        // decode the result of the subtract operation
-        List<Integer>[] decodeResult = b1.decode(b1.subtract(b2.getCells()));
-        for (int i = 0; i < decodeResult.length; i++) {
-            if (i == 0) {
-                decodeResult[i].iterator().forEachRemaining(v -> {
-                    System.out.println("In b1: " + v.toString());
-                });
-            } else {
-                decodeResult[i].iterator().forEachRemaining(v -> {
-                    System.out.println("Missing value in b1: " + v.toString());
-                });
-            }
-        }
-    }*/
     /**
      * Update fonction of profile should extract tpq
      */
     @Test
-    @Ignore
     public void profileShouldUpdateWithQuery()
     {
         Profile p = new Profile(100, 2);
@@ -171,7 +110,6 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
-    @Ignore
     public void profileScoringShouldReturnMaxValue()
     {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
@@ -195,7 +133,6 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
-    @Ignore
     public void profileScoringShouldReturn2()
     {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
@@ -223,7 +160,6 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
-    @Ignore
     public void profileScoringShouldReturn3()
     {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
@@ -252,7 +188,6 @@ public class AppTest
      * Update fonction of profile should extract tpq
      */
     @Test
-    @Ignore
     public void DatastoreShouldBeQueryiable()
     {
         Datastore d = new Datastore();
@@ -370,7 +305,61 @@ public class AppTest
         // now p1 should have all results from p2
     }
 
-    @Ignore
+    @Test
+    public void testTwitterObjectSize () {
+        String query = "PREFIX ns: <http://example.org/ns#>" +
+                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?x . }";
+        Profile p = new Profile(100, 2);
+        p.datastore.update("./datasets/test-peer1.ttl");
+        p.update(query);
+    }
+
+    @Test
+    public void testPipelineAgainstJenaOverDiseasomeDataset () {
+        Profile p = new Profile(100, 2);
+        String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
+        Vector filenames = new Vector();
+        try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
+            paths.filter(Files::isRegularFile).forEach((fileName)->filenames.add(fileName));
+        } catch(IOException e) {
+            System.err.println(e.toString());
+        }
+        filenames.forEach(f -> p.datastore.update(f.toString()));
+        // once all fragments loaded
+        String diseasomeQuery = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries.json";
+        String diseasomeQueryGenerated = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries_jena_generated.json";
+        JSONParser parser = new JSONParser();
+        try (Reader is = new FileReader(diseasomeQuery)) {
+            JSONArray jsonArray = (JSONArray) parser.parse(is);
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject j = (JSONObject) jsonArray.get(i);
+                String query = (String) j.get("query");
+                System.out.println(query);
+                p.update(query);
+                // execute the pipeline over JENA
+                ResultSet resJena = p.datastore.select(p.query.realQuery);
+                int countJena = 0;
+                while(resJena.hasNext()){
+                    resJena.next();
+                    countJena++;
+                }
+                System.out.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
+                // execute the pipeline over the pipeline
+                p.execute();
+                ResultSet resPipeline = p.query.results;
+                int countPipeline = 0;
+                while(resPipeline.hasNext()){
+                    resPipeline.next();
+                    countPipeline++;
+                }
+                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, countPipeline);
+                Assert.assertEquals(countPipeline, countJena);
+            }
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Test
     public void GenerateDiseasomeDataset() {
         Datastore d = new Datastore();
@@ -422,7 +411,6 @@ public class AppTest
         }
     }
 
-    @Ignore
     @Test
     public void GenerateLinkedmdbDataset() {
         Datastore d = new Datastore();

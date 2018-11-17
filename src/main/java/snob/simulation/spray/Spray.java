@@ -1,13 +1,13 @@
 package snob.simulation.spray;
 
-import java.util.List;
-
 import peersim.core.CommonState;
 import peersim.core.Node;
 import snob.simulation.cyclon.Cyclon;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
+
+import java.util.List;
 
 /**
  * The Spray protocol

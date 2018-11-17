@@ -1,4 +1,4 @@
-package snob.simulation.snob2.query;
+package snob.simulation.snob2.pipeline;
 
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -8,9 +8,10 @@ import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.algebra.TransformBase;
 import org.apache.jena.sparql.algebra.Transformer;
 import org.apache.jena.sparql.algebra.op.OpBGP;
+import org.apache.jena.sparql.algebra.op.OpDistinct;
+import org.apache.jena.sparql.algebra.op.OpProject;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
-import org.apache.jena.sparql.engine.QueryIterator;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PipelineBuilder {
-
-    private QueryIterator pipeline;
     private Map<Triple, AppendableSource> sources;
     private List<Triple> triples;
 
@@ -69,6 +68,18 @@ public class PipelineBuilder {
                 }
             }
             return null;
+        }
+
+        @Override
+        public Op transform(OpProject opProject, Op subOp) {
+            pipeline = new ProjectionIterator(pipeline, opProject.getVars());
+            return super.transform(opProject, subOp);
+        }
+
+        @Override
+        public Op transform(OpDistinct opDistinct, Op subOp) {
+            pipeline = new DistinctIterator(pipeline);
+            return super.transform(opDistinct, subOp);
         }
 
         @Override

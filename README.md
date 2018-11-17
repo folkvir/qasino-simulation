@@ -2,7 +2,8 @@
 Snob v2, Traffic reduced (IBFL), Incremental evaluation (Iterators), Termination criterion (CMS estimation)
 
 ```
-mvn install
-export MAVEN_OPTS="-Xmx4096m"
-mvn exec:java@snob
+mvn clean package shade:shade
+java -javaagent:target/snob.jar -jar target/snob.jar snob.txt
 ```
+
+Instrumentation of Object size is made with the primitive Agent available in java.

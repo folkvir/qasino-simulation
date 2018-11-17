@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 
 public class SnobInit implements ObserverProgram {
-    private int qlimit; // limit of query loaded in the network
+    private int qlimit; // limit of queries loaded in the network
     private int dlimit; // limit of fragments loaded in the network
 
 
@@ -44,6 +44,7 @@ public class SnobInit implements ObserverProgram {
             int networksize = Network.size();
             System.err.println("[INIT:SNOB] Initialized data for: " + networksize + " peers..." + observer.nodes.size());
             String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
+            System.err.println(System.getProperty("user.dir"));
             String diseasomeQuery = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries_jena_generated.json";
 //            String linkedmdb = System.getProperty("user.dir") + "/datasets/data/linkedmdb/fragments/";
 //            String linkedmdbQuery = System.getProperty("user.dir") + "/datasets/data/linkedmdb/queries/queries_jena_generated.json";
@@ -71,6 +72,7 @@ public class SnobInit implements ObserverProgram {
             this.dlimit = (this.dlimit == -1)?filenames.size():this.dlimit;
             while(pickedElement < this.dlimit && pickedElement < filenames.size()) {
                 System.err.println("Loading data into peer:" + peersPicked);
+                System.err.println(filenames.get(pickedElement).toString());
                 peers.get(peersPicked).profile.datastore.update(filenames.get(pickedElement).toString());
                 peersPicked++;
                 if(peersPicked > peers.size() - 1) peersPicked = 0;

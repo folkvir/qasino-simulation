@@ -1,8 +1,8 @@
 package snob.simulation.rps;
 
-import java.util.List;
-
 import peersim.core.Node;
+
+import java.util.List;
 
 /**
  * Interface exposing the functions available with a partial view. A partial

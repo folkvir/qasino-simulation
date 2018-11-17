@@ -1,7 +1,5 @@
 package snob.simulation.controllers;
 
-import java.util.LinkedList;
-
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
@@ -9,6 +7,8 @@ import peersim.core.Network;
 import peersim.core.Node;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IRandomPeerSampling;
+
+import java.util.LinkedList;
 
 /**
  * Controller that add and/or remove peers from the network over time

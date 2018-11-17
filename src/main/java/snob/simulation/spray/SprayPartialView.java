@@ -1,11 +1,11 @@
 package snob.simulation.spray;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import peersim.core.CommonState;
 import peersim.core.Node;
 import snob.simulation.rps.AAgingPartialView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Aging partial view of the Spray random peer sampling protocol. It can contain

@@ -1,9 +1,8 @@
 package snob.simulation.observers.program;
 
+import peersim.core.CommonState;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
-import peersim.core.CommonState;
-import peersim.core.Network;
 
 /**
  * This Program will print the network as Python-graph

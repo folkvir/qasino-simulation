@@ -1,7 +1,5 @@
 package snob.simulation.observers.program;
 
-import peersim.core.Network;
-import snob.simulation.cyclon.Cyclon;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
 

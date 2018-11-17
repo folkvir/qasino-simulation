@@ -1,8 +1,8 @@
 package snob.simulation.rps;
 
-import java.util.List;
-
 import peersim.core.Node;
+
+import java.util.List;
 
 /**
  * Functions related to the aging partial views used within Snob or Spray.

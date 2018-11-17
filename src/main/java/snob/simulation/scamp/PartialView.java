@@ -1,11 +1,11 @@
 package snob.simulation.scamp;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import peersim.core.CommonState;
 import peersim.core.Node;
 import snob.simulation.rps.IPartialView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of a basic partial view.

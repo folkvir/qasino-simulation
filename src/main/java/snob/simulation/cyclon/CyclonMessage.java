@@ -1,9 +1,9 @@
 package snob.simulation.cyclon;
 
-import java.util.List;
-
 import peersim.core.Node;
 import snob.simulation.rps.IMessage;
+
+import java.util.List;
 
 /**
  * Message containing the sample to exchange in Snob

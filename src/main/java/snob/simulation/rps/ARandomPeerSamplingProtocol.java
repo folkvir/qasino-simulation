@@ -1,14 +1,14 @@
 package snob.simulation.rps;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public abstract class ARandomPeerSamplingProtocol implements IDynamic,
 		Linkable, CDProtocol, IRandomPeerSampling {

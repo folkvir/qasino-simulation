@@ -1,10 +1,10 @@
 package snob.simulation.rps;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import peersim.core.Node;
 import snob.simulation.scamp.PartialView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AAgingPartialView extends PartialView implements
 		IAgingPartialView {

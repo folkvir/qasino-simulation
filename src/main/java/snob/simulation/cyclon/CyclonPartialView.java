@@ -1,11 +1,11 @@
 package snob.simulation.cyclon;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import peersim.core.CommonState;
 import peersim.core.Node;
 import snob.simulation.rps.AAgingPartialView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Aging partial view class used within Snob random peer sampling protocol

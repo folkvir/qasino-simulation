@@ -17,14 +17,20 @@ public class SnobObserver implements ObserverProgram {
 
                 long completeness = 0;
                 long messages = 0;
+                long messagesSize = 0;
+                long requestsSize = 0;
+                long responsesSize = 0;
                 int totalreceivedresults = 0;
                 int totalcardinality = 0;
                 for(int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
+                    messagesSize += snob.messagesSize;
+                    requestsSize += snob.requestsSize;
+                    responsesSize += snob.responsesSize;
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
-                        // System.err.printf("Query: %s waits %d results %n", query.query.toString(), query.cardinality);
+                        // System.err.printf("Query: %s waits %d results %n", pipeline.pipeline.toString(), pipeline.cardinality);
                         ResultSet res = query.results;
                         long cpt = 0;
                         while(res != null && res.hasNext()) {
@@ -34,7 +40,7 @@ public class SnobObserver implements ObserverProgram {
                         totalreceivedresults += cpt;
                         totalcardinality += query.cardinality;
                         if (cpt > query.cardinality) {
-                            throw new Exception("query " + query.query + " gives more results than expected...");
+                            // throw new Exception("pipeline " + query.query + " gives more results than expected...");
                         } else if (cpt == 0 && query.cardinality == 0){
                             completeness += 100;
                         } else if (cpt == 0 && query.cardinality > 0){
@@ -61,7 +67,10 @@ public class SnobObserver implements ObserverProgram {
                             + ", " + messages
                             + ", " + totalreceivedresults
                             + ", " + totalreceivedresults
-                            + ", " + completenessinresults);
+                            + ", " + completenessinresults
+                            + ", " + messagesSize
+                            + ", " + requestsSize
+                            + ", " + responsesSize);
                 } else {
                     System.out.println(currentTick
                             + ", " + observer.size()
@@ -73,7 +82,10 @@ public class SnobObserver implements ObserverProgram {
                             + ", " + messages
                             + ", " + totalreceivedresults
                             + ", " + totalreceivedresults
-                            + ", " + completenessinresults);
+                            + ", " + completenessinresults
+                            + ", " + messagesSize
+                            + ", " + requestsSize
+                            + ", " + responsesSize);
                 }
             } catch(Exception e) {
                 System.err.println("ERROR:" + e);

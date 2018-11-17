@@ -1,8 +1,8 @@
 package snob.simulation.rps;
 
-import java.util.List;
-
 import peersim.core.Node;
+
+import java.util.List;
 
 /**
  * Basic functions composing the random peer sampling protocol.

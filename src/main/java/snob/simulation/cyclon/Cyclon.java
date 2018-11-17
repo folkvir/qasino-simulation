@@ -1,15 +1,15 @@
 package snob.simulation.cyclon;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The Snob protocol

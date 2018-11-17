@@ -2,7 +2,6 @@ package snob.simulation.observers.program;
 
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
-import peersim.core.CommonState;
 
 /**
  *

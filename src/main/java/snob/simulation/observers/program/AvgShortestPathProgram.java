@@ -1,11 +1,11 @@
 package snob.simulation.observers.program;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import peersim.core.CommonState;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by julian on 11/05/15.

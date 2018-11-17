@@ -7,7 +7,8 @@
   <groupId>snobsimulation</groupId>
   <artifactId>snobsimulation</artifactId>
   <version>1.0-SNAPSHOT</version>
-
+    <!-- Output to jar format -->
+    <packaging>jar</packaging>
   <name>snob-simulation</name>
 
   <properties>
@@ -24,11 +25,6 @@
     </repositories>
 
   <dependencies>
-      <dependency>
-          <groupId>com.github.zsbreak</groupId>
-          <artifactId>InvertibleBloomFilter</artifactId>
-          <version>master</version>
-      </dependency>
       <dependency>
           <groupId>com.github.kallerosenbaum</groupId>
           <artifactId>ibltj</artifactId>
@@ -55,18 +51,17 @@
         <artifactId>peersim</artifactId>
         <version>1.0.5</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>apache-jena-libs</artifactId>
-      <type>pom</type>
-      <version>3.7.0</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+      <!-- https://mvnrepository.com/artifact/org.apache.jena/apache-jena-libs -->
+      <dependency>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>apache-jena-libs</artifactId>
+          <version>3.9.0</version>
+          <type>pom</type>
+      </dependency>
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
         <version>1.7.25</version>
-        <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>com.googlecode.json-simple</groupId>
@@ -79,6 +74,50 @@
       <defaultGoal>install</defaultGoal>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-shade-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <phase>package</phase>
+                      <!--<phase /><!- - Switch off -->
+                      <goals>
+                          <goal>shade</goal>
+                      </goals>
+                  </execution>
+              </executions>
+              <configuration>
+                  <finalName>snob</finalName>
+                  <shadedArtifactAttached>true</shadedArtifactAttached>
+                  <transformers>
+                      <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                          <manifestEntries>
+                              <Main-Class>snob.simulation.App</Main-Class>
+                              <addClasspath>true</addClasspath>
+                              <Premain-Class>snob.simulation.snob2.Agent</Premain-Class>
+                          </manifestEntries>
+                      </transformer>
+                      <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                      <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
+                      <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+                          <addHeader>false</addHeader>
+                      </transformer>
+                  </transformers>
+                  <filters>
+                      <filter>
+                          <artifact>*</artifact>
+                          <excludes>
+                              <!-- Some jars are signed but shading breaks that.
+                                   Don't include signing files.
+                              -->
+                              <exclude>META-INF/*.SF</exclude>
+                              <exclude>META-INF/*.DSA</exclude>
+                              <exclude>META-INF/*.RSA</exclude>
+                          </excludes>
+                      </filter>
+                  </filters>
+              </configuration>
+          </plugin>
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.0.0</version>
@@ -92,22 +131,38 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.7.0</version>
         </plugin>
-        <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.20.1</version>
-        </plugin>
-        <plugin>
+        <!--< plugin>
             <artifactId>maven-jar-plugin</artifactId>
-            <version>3.0.2</version>
+            <version>3.1.0</version>
             <configuration>
                 <archive>
                     <manifest>
                         <addClasspath>true</addClasspath>
                         <mainClass>snob.simulation.App</mainClass>
                     </manifest>
+                    <manifestEntries>
+                        <Premain-Class>snob.simulation.snob2.Agent</Premain-Class>
+                    </manifestEntries>
                 </archive>
             </configuration>
         </plugin>
+          <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <configuration>
+                  <archive>
+                      <manifest>
+                          <addClasspath>true</addClasspath>
+                          <mainClass>snob.simulation.App</mainClass>
+                      </manifest>
+                      <manifestEntries>
+                          <Premain-Class>snob.simulation.snob2.Agent</Premain-Class>
+                      </manifestEntries>
+                  </archive>
+                  <descriptorRefs>
+                      <descriptorRef>jar-with-dependencies</descriptorRef>
+                  </descriptorRefs>
+              </configuration>
+          </plugin>-->
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.5.2</version>
@@ -182,7 +237,7 @@
                     <configuration>
                         <mainClass>snob.simulation.App</mainClass>
                         <arguments>
-                          <argument>snob.txt</argument>
+                            <argument>snob.txt</argument>
                         </arguments>
                     </configuration>
                 </execution>

@@ -2,15 +2,10 @@ package snob.simulation;
 
 import peersim.Simulator;
 
-import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-/**
- * Hello world!
- *
- */
 public class App
 {
     public static void main( String[] args )

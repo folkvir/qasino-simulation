@@ -1,14 +1,5 @@
 package snob.simulation.scamp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;
@@ -16,6 +7,8 @@ import snob.simulation.controllers.DynamicNetwork;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
+
+import java.util.*;
 
 /**
  * The Scamp protocol. ATTENTION: The periodic protocol (or "lease") suggested

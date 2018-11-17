@@ -1,4 +1,4 @@
-package snob.simulation.snob2.query;
+package snob.simulation.snob2.pipeline;
 
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;

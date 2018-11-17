@@ -1,4 +1,4 @@
-package snob.simulation.snob2.query;
+package snob.simulation.snob2.pipeline;
 
 import org.apache.jena.atlas.io.IndentedWriter;
 import org.apache.jena.shared.PrefixMapping;
@@ -10,8 +10,6 @@ import org.apache.jena.sparql.engine.iterator.QueryIterNullIterator;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.serializer.SerializationContext;
 
-import java.util.List;
-
 public class HalfHashJoin implements QueryIterator {
     private QueryIterator source;
     private QueryIterator currentIter;
@@ -19,6 +17,7 @@ public class HalfHashJoin implements QueryIterator {
     private HashJoinTable innerTable;
     private HashJoinTable outerTable;
     private ExecutionContext context;
+    private final String CARTESIAN_PRODUCT_JOIN_KEY = "_:snob:cartesian_product_key";
 
     public HalfHashJoin(Var joinKey, QueryIterator source, HashJoinTable innerTable, HashJoinTable outerTable, ExecutionContext cxt) {
         this.source = source;
@@ -31,8 +30,12 @@ public class HalfHashJoin implements QueryIterator {
 
 
     protected QueryIterator nextStage(Binding binding) {
+        if (joinKey == null) {
+            innerTable.put(CARTESIAN_PRODUCT_JOIN_KEY, binding);
+        }
+        // Cartesian product detected
         if (!binding.contains(joinKey)) {
-            return new QueryIterNullIterator(context);
+            return new QueryIterPlainWrapper(outerTable.probe(CARTESIAN_PRODUCT_JOIN_KEY, binding));
         }
         String key = binding.get(joinKey).toString();
 
@@ -40,11 +43,7 @@ public class HalfHashJoin implements QueryIterator {
         innerTable.put(key, binding);
 
         // probe outer table
-        List<Binding> joinSolutions = outerTable.probe(key, binding);
-        if (joinSolutions.isEmpty()) {
-            return new QueryIterNullIterator(context);
-        }
-        return new QueryIterPlainWrapper(joinSolutions.iterator());
+        return new QueryIterPlainWrapper(outerTable.probe(key, binding));
     }
 
     @Override
