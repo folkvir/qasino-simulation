@@ -12,7 +12,7 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.snob snob.simulation.snob2.Snob2
+protocol.snob snob.simulation.snob2.Snob
 protocol.snob.rps snob
 protocol.snob.c 10
 protocol.snob.l 4
@@ -25,7 +25,7 @@ protocol.snob.sonl 4
 protocol.snob.sondelta 1
 protocol.snob.linkable link
 protocol.snob.fail 0.000
-protocol.snob.cellcount 100000
+protocol.snob.cellcount 1000000
 protocol.snob.hashcount 2
 
 control.o1 snob.simulation.controllers.DynamicNetwork
