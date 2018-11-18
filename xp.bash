@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-# sh install.sh
+#!/usr/bin/env bash
+bash install.sh
 LOG="xp.log"
 HEAP="-Xms500000m"
 JAR="-jar target/snob.jar"

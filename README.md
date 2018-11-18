@@ -10,6 +10,6 @@ Instrumentation of Object size is made with the primitive Agent available in jav
 
 ## Run the experiment.
 ```bash
-sh install.sh
-sh xp.sh # or nohup sh xp.sh > xp.log &
+bash install.bash
+bash xp.bash # or nohup bash xp.bash > xp.log &
 ```
