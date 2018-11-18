@@ -30,6 +30,7 @@ public class Profile {
         hashCount = ibflHashCount;
         this.patterns = new ArrayList<>();
         this.invertibles = new HashMap<>();
+        this.others = new HashMap<>();
         this.datastore = new Datastore();
     }
 
