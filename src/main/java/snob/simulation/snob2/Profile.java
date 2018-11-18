@@ -93,9 +93,9 @@ public class Profile {
     }
 
     private void initPipeline(List<Triple> patterns) {
-        System.err.printf("Initializing the pipeline: ");
+        System.err.println("Initializing the pipeline...");
         for (Triple pattern : patterns) {
-            System.err.printf("Inserting triples from %s into the pipeline: " + pattern.toString());
+            System.err.printf("Inserting triples from %s into the pipeline: ", pattern.toString());
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
                 // System.err.printf(".");
                 // populate the pipeline plan
