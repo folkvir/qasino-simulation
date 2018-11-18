@@ -72,7 +72,7 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + completeness
                         + ", " + messages
                         + ", " + totalreceivedresults
-                        + ", " + totalreceivedresults
+                        + ", " + totalcardinality
                         + ", " + completenessinresults
                         + ", " + messagesSize
                         + ", " + requestsSize

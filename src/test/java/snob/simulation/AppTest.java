@@ -1,6 +1,7 @@
 package snob.simulation;
 
 import com.google.common.hash.HashCode;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
@@ -306,12 +307,13 @@ public class AppTest
     }
 
     @Test
-    public void testTwitterObjectSize () {
+    public void testObjectSizeWithStream () throws IOException {
         String query = "PREFIX ns: <http://example.org/ns#>" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?x . }";
         Profile p = new Profile(100, 2);
         p.datastore.update("./datasets/test-peer1.ttl");
         p.update(query);
+        System.out.println(ObjectSizeCalculator.getObjectSize(p));
     }
 
     @Test
