@@ -17,9 +17,9 @@ public class SnobObserver implements ObserverProgram {
 
                 long completeness = 0;
                 long messages = 0;
-                long messagesSize = 0;
-                long requestsSize = 0;
-                long responsesSize = 0;
+//                long messagesSize = 0;
+//                long requestsSize = 0;
+//                long responsesSize = 0;
                 int totalreceivedresults = 0;
                 int totalcardinality = 0;
                 int triplessend = 0;
@@ -28,9 +28,9 @@ public class SnobObserver implements ObserverProgram {
                 for(int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
-                    messagesSize += snob.messagesSize;
-                    requestsSize += snob.requestsSize;
-                    responsesSize += snob.responsesSize;
+//                    messagesSize += snob.messagesSize;
+//                    requestsSize += snob.requestsSize;
+//                    responsesSize += snob.responsesSize;
                     triplessend += snob.tripleRequests;
                     triplesback += snob.tripleResponses;
                     errorsListentries += snob.errorsListentries;
@@ -74,9 +74,9 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + totalreceivedresults
                         + ", " + totalcardinality
                         + ", " + completenessinresults
-                        + ", " + messagesSize
-                        + ", " + requestsSize
-                        + ", " + responsesSize
+//                        + ", " + messagesSize
+//                        + ", " + requestsSize
+//                        + ", " + responsesSize
                         + ", " + triplessend
                         + ", " + triplesback
                         + ", " + errorsListentries;

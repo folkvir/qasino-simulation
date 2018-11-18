@@ -46,9 +46,9 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public String prefix;
     // instrumentations
     public int messages = 0;
-    public long messagesSize = 0;
-    public long requestsSize = 0;
-    public long responsesSize = 0;
+//    public long messagesSize = 0;
+//    public long requestsSize = 0;
+//    public long responsesSize = 0;
     public long tripleRequests = 0;
     public long tripleResponses = 0;
     public int errorsListentries = 0;
@@ -142,10 +142,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 });
 				SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
 
-                // instrument the size of the message sent
-                long s = Utils.getObjectSize(msg);
-                messagesSize = s;
-                requestsSize = s;
+//                // instrument the size of the message sent
+//                long s = Utils.getObjectSize(msg);
+//                messagesSize = s;
+//                requestsSize = s;
 				IMessage received = snob.onTpqs(this.node, msg);
 				// 2 - insert responses into our datastore
 				this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
@@ -162,10 +162,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                         this.tripleRequests++; // the pattern
                         this.tripleRequests += invertibleBloomFilter.mydata().size(); // triples inside the ibfl
                     });
-                    // instrument the size of the message sent
-                    long s = Utils.getObjectSize(msg);
-                    messagesSize = s;
-                    requestsSize = s;
+//                    // instrument the size of the message sent
+//                    long s = Utils.getObjectSize(msg);
+//                    messagesSize = s;
+//                    requestsSize = s;
 					IMessage received = snob.onTpqs(this.node, msg);
 					this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
 					this.messages++;
@@ -231,10 +231,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 		}
 		this.tripleResponses += result.size();
 		SnobTpqsResponse msg = new SnobTpqsResponse(result);
-        // instrument the size of the response
-        long s = Utils.getObjectSize(msg);
-        messagesSize = s;
-        responsesSize = s;
+//        // instrument the size of the response
+//        long s = Utils.getObjectSize(msg);
+//        messagesSize = s;
+//        responsesSize = s;
         return new SnobTpqsResponse(result);
     }
 
