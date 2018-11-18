@@ -7,3 +7,9 @@ java -javaagent:target/snob.jar -jar target/snob.jar snob.txt
 ```
 
 Instrumentation of Object size is made with the primitive Agent available in java.
+
+## Run the experiment.
+```bash
+sh install.sh
+sh xp.sh # or nohup sh xp.sh > xp.log &
+```
