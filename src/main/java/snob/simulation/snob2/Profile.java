@@ -72,6 +72,7 @@ public class Profile {
     private void createInvertiblesFromPatterns(List<Triple> patterns) {
         for (Triple pattern : patterns) {
             if(!this.invertibles.containsKey(pattern)){
+                System.err.printf("Create IBF for the pattern: %s with %d cells and %d hashfunctions %n", pattern.toString(), cellCount, hashCount);
                 invertibles.put(pattern, new InvertibleBloomFilter(cellCount, hashCount));
             }
         }
@@ -95,13 +96,13 @@ public class Profile {
         for (Triple pattern : patterns) {
             System.err.printf("Inserting triples into pipeline: ");
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
-                System.err.printf(".");
+                // System.err.printf(".");
                 // populate the pipeline plan
                 this.query.plan.insertTriple(pattern, triple);
                 // populate the bloom filter associated to the pattern
                 invertibles.get(pattern).insert(triple);
             });
-            System.err.println();
+            System.err.println(":end.");
         }
     }
 
