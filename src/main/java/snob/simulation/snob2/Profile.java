@@ -93,13 +93,15 @@ public class Profile {
 
     private void initPipeline(List<Triple> patterns) {
         for (Triple pattern : patterns) {
+            System.err.printf("Inserting triples into pipeline: ");
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
-                // System.err.println(triple.toString());
+                System.err.printf(".");
                 // populate the pipeline plan
                 this.query.plan.insertTriple(pattern, triple);
                 // populate the bloom filter associated to the pattern
                 invertibles.get(pattern).insert(triple);
             });
+            System.err.println();
         }
     }
 
