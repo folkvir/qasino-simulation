@@ -35,7 +35,7 @@ public class Profile {
     public void insertTriples(Map<Triple, Iterator<Triple>> its) {
         its.forEach((pattern, iterator) -> {
             List<Triple> list = new ArrayList<>();
-            int count = 0;
+            // int count = 0;
             // consume the iterator and fill the pipeline
 //            System.err.println(" ");
 //            System.err.println("Consuming the iterator for the pattern: " + pattern.toString());
@@ -46,7 +46,7 @@ public class Profile {
                 // populate the bloom filter associated to the pattern
                 invertibles.get(pattern).insert(t);
                 list.add(t);
-                count++;
+                // count++;
                 // System.err.print(".");
             }
             // System.err.print("!end! count=" + count);
@@ -72,8 +72,8 @@ public class Profile {
     private void createInvertiblesFromPatterns(List<Triple> patterns) {
         for (Triple pattern : patterns) {
             if(!this.invertibles.containsKey(pattern)){
-                System.err.printf("Create IBF for the pattern: %s with %d cells and %d hashfunctions %n", pattern.toString(), cellCount, hashCount);
                 invertibles.put(pattern, new InvertibleBloomFilter(cellCount, hashCount));
+                System.err.printf("IBF for the pattern created: %s with %d cells and %d hashfunctions %n", pattern.toString(), cellCount, hashCount);
             }
         }
     }
@@ -93,8 +93,9 @@ public class Profile {
     }
 
     private void initPipeline(List<Triple> patterns) {
+        System.err.printf("Initializing the pipeline: ");
         for (Triple pattern : patterns) {
-            System.err.printf("Inserting triples into pipeline: ");
+            System.err.printf("Inserting triples from %s into the pipeline: " + pattern.toString());
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
                 // System.err.printf(".");
                 // populate the pipeline plan
