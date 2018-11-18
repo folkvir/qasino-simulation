@@ -12,9 +12,8 @@ public class ArcCountProgram implements ObserverProgram {
     boolean isFirst = true;
 
     /**
-     *
      * @param currentTick {}
-     * @param observer {}
+     * @param observer    {}
      */
     public void tick(long currentTick, DictGraph observer) {
         /*if (CommonState.getTime() > 100 && CommonState.getTime() % step == 0) {
@@ -28,7 +27,6 @@ public class ArcCountProgram implements ObserverProgram {
     }
 
     /**
-     *
      * @param observer {}
      */
     public void onLastTick(DictGraph observer) {

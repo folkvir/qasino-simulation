@@ -27,6 +27,22 @@ public class PipelineBuilder {
         triples = new LinkedList<>();
     }
 
+    public QueryIteratorPlus create(String query) {
+        Query q = QueryFactory.create(query);
+        Op queryTree = Algebra.compile(q);
+        PipelineTransformer transformer = new PipelineTransformer(sources, triples);
+        Transformer.transform(transformer, queryTree);
+        return transformer.getPipeline();
+    }
+
+    public Map<Triple, AppendableSource> getSources() {
+        return sources;
+    }
+
+    public List<Triple> getTriples() {
+        return triples;
+    }
+
     private static class PipelineTransformer extends TransformBase {
         private QueryIteratorPlus pipeline;
         private ExecutionContext context;
@@ -45,7 +61,7 @@ public class PipelineBuilder {
             return pipeline;
         }
 
-        private List<Var> getVariables (Triple t) {
+        private List<Var> getVariables(Triple t) {
             List<Var> vars = new LinkedList<>();
             if (t.getSubject().isVariable()) {
                 vars.add((Var) t.getSubject());
@@ -59,9 +75,9 @@ public class PipelineBuilder {
             return vars;
         }
 
-        private Var computeJoinKey (List<Var> left, List<Var> right) {
-            for(Var vl: left) {
-                for(Var vr: right) {
+        private Var computeJoinKey(List<Var> left, List<Var> right) {
+            for (Var vl : left) {
+                for (Var vr : right) {
                     if (vl.equals(vr)) {
                         return vl;
                     }
@@ -99,21 +115,5 @@ public class PipelineBuilder {
             });
             return super.transform(opBGP);
         }
-    }
-
-    public QueryIteratorPlus create(String query) {
-        Query q = QueryFactory.create(query);
-        Op queryTree = Algebra.compile(q);
-        PipelineTransformer transformer = new PipelineTransformer(sources, triples);
-        Transformer.transform(transformer, queryTree);
-        return transformer.getPipeline();
-    }
-
-    public Map<Triple, AppendableSource> getSources() {
-        return sources;
-    }
-
-    public List<Triple> getTriples() {
-        return triples;
     }
 }

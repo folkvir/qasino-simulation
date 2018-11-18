@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * A QueryIterator that yields bindings. Can be augmented with new Binding during query execution by calling the "append" method.
+ *
  * @author Thomas Minier
  */
 public class AppendableSource implements QueryIteratorPlus {

@@ -6,10 +6,12 @@ import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
 
 public class SnobObserver implements ObserverProgram {
-    public SnobObserver(String p) {}
+    public SnobObserver(String p) {
+    }
+
     @Override
     public void tick(long currentTick, DictGraph observer) {
-        if(currentTick > 0) {
+        if (currentTick > 0) {
             // hack to get the proper pid.... fix it for a proper version
             int networksize = Network.size();
             try {
@@ -25,7 +27,7 @@ public class SnobObserver implements ObserverProgram {
                 int triplessend = 0;
                 int triplesback = 0;
                 int errorsListentries = 0;
-                for(int i = 0; i < networksize; ++i) {
+                for (int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
 //                    messagesSize += snob.messagesSize;
@@ -40,7 +42,7 @@ public class SnobObserver implements ObserverProgram {
                         // System.err.printf("Query: %s waits %d results %n", pipeline.pipeline.toString(), pipeline.cardinality);
                         ResultSet res = query.results;
                         long cpt = 0;
-                        while(res != null && res.hasNext()) {
+                        while (res != null && res.hasNext()) {
                             res.next();
                             cpt++;
                         }
@@ -48,9 +50,9 @@ public class SnobObserver implements ObserverProgram {
                         totalcardinality += query.cardinality;
                         if (cpt > query.cardinality) {
                             // throw new Exception("pipeline " + query.query + " gives more results than expected...");
-                        } else if (cpt == 0 && query.cardinality == 0){
+                        } else if (cpt == 0 && query.cardinality == 0) {
                             completeness += 100;
-                        } else if (cpt == 0 && query.cardinality > 0){
+                        } else if (cpt == 0 && query.cardinality > 0) {
                             completeness += 0;
                         } else if (cpt > 0 && query.cardinality > 0) {
                             completeness += (cpt / query.cardinality) * 100;
@@ -59,16 +61,16 @@ public class SnobObserver implements ObserverProgram {
                         }
                     }
                 }
-                int completenessinresults = (1 + totalreceivedresults) / (1+ totalcardinality) * 100;
+                int completenessinresults = (1 + totalreceivedresults) / (1 + totalcardinality) * 100;
                 completeness = completeness / snob_default.profile.qlimit;
-                System.err.println("Global Completeness in the network: " + completeness + "% ("+ snob_default.profile.qlimit + "," + networksize + ")");
+                System.err.println("Global Completeness in the network: " + completeness + "% (" + snob_default.profile.qlimit + "," + networksize + ")");
                 System.err.println("Number of messages in the network: " + messages);
 
                 String res = currentTick
                         + ", " + observer.size()
                         + ", " + observer.meanPartialViewSize()
                         + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
-                        + ", " + ((snob_default.son)?snob_default.getSonPeers(Integer.MAX_VALUE).size():0)
+                        + ", " + ((snob_default.son) ? snob_default.getSonPeers(Integer.MAX_VALUE).size() : 0)
                         + ", " + completeness
                         + ", " + messages
                         + ", " + totalreceivedresults
@@ -81,7 +83,7 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + triplesback
                         + ", " + errorsListentries;
                 System.out.println(res);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.err.println("ERROR:" + e);
             }
         }

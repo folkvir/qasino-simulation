@@ -12,42 +12,42 @@ import java.util.List;
  */
 public class AvgShortestPathProgram implements ObserverProgram {
 
-	int lastSize = 0;
-	int tick = 0;
+    int lastSize = 0;
+    int tick = 0;
 
-	public void tick(long currentTick, DictGraph observer) {
+    public void tick(long currentTick, DictGraph observer) {
 
-		if (this.lastSize < observer.size()) {
-			this.tick += 1;
-			if (this.tick >= 20) {
-				this.tick = 0;
-				this.lastSize = observer.size();
-				if (observer.size() % ((Math.pow(10,
-						Math.ceil(Math.log10(observer.size()))))/2) == 0) {
+        if (this.lastSize < observer.size()) {
+            this.tick += 1;
+            if (this.tick >= 20) {
+                this.tick = 0;
+                this.lastSize = observer.size();
+                if (observer.size() % ((Math.pow(10,
+                        Math.ceil(Math.log10(observer.size())))) / 2) == 0) {
 
-					final List<Long> ids = new ArrayList<Long>(
-							observer.nodes.keySet());
+                    final List<Long> ids = new ArrayList<Long>(
+                            observer.nodes.keySet());
 
-					double total = 0.0;
-					total += observer.avgReachablePaths(ids.get(CommonState.r
-							.nextInt(ids.size()))).avg;
+                    double total = 0.0;
+                    total += observer.avgReachablePaths(ids.get(CommonState.r
+                            .nextInt(ids.size()))).avg;
 
-					total += observer.avgReachablePaths(ids.get(CommonState.r
-							.nextInt(ids.size()))).avg;
+                    total += observer.avgReachablePaths(ids.get(CommonState.r
+                            .nextInt(ids.size()))).avg;
 
-					total += observer.avgReachablePaths(ids.get(CommonState.r
-							.nextInt(ids.size()))).avg;
+                    total += observer.avgReachablePaths(ids.get(CommonState.r
+                            .nextInt(ids.size()))).avg;
 
-					System.out.println(observer.size() + " " + total / 3.0);
-				}
+                    System.out.println(observer.size() + " " + total / 3.0);
+                }
 
-			}
-		}
+            }
+        }
 
-	}
+    }
 
-	public void onLastTick(DictGraph observer) {
+    public void onLastTick(DictGraph observer) {
 
-	}
+    }
 
 }

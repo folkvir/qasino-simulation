@@ -12,10 +12,6 @@ public class QuerySnob {
     public QueryPlan plan;
     public ResultSet results;
 
-    public Query getQuery() {
-        return realQuery;
-    }
-
     public QuerySnob(JSONObject json) {
         this.cardinality = (long) json.get("card");
         this.query = (String) json.get("query");
@@ -36,6 +32,10 @@ public class QuerySnob {
         this.query = query;
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+    }
+
+    public Query getQuery() {
+        return realQuery;
     }
 
     @Override

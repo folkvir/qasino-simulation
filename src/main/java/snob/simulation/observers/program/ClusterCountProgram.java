@@ -8,12 +8,11 @@ import snob.simulation.observers.ObserverProgram;
  */
 public class ClusterCountProgram implements ObserverProgram {
 
-    int prevSize = -1;
     final int COUNTDOWN = 30;
+    int prevSize = -1;
     int countDown = COUNTDOWN;
 
     /**
-     *
      * @param currentTick
      * @param observer
      */
@@ -39,7 +38,6 @@ public class ClusterCountProgram implements ObserverProgram {
     }
 
     /**
-     *
      * @param observer
      */
     public void onLastTick(DictGraph observer) {

@@ -5,18 +5,18 @@ package snob.simulation.rps;
  */
 public interface IDynamic {
 
-	/**
-	 * Checks if the peer is alive
-	 * 
-	 * @return true if the peer is alive, false otherwise
-	 */
-	public boolean isUp();
+    /**
+     * Checks if the peer is alive
+     *
+     * @return true if the peer is alive, false otherwise
+     */
+    public boolean isUp();
 
-	/**
-	 * Checks if the peer crashed/left
-	 * 
-	 * @return true if the peer crashed/left, false otherwise
-	 */
-	public boolean isDown();
+    /**
+     * Checks if the peer crashed/left
+     *
+     * @return true if the peer crashed/left, false otherwise
+     */
+    public boolean isDown();
 
 }

@@ -39,7 +39,7 @@ public class SnobInit implements ObserverProgram {
 
     @Override
     public void tick(long currentTick, DictGraph observer) {
-        if(currentTick == 1) {
+        if (currentTick == 1) {
             // hack to get the proper pid.... fix it for a proper version
             int networksize = Network.size();
             System.err.println("[INIT:SNOB] Initialized data for: " + networksize + " peers..." + observer.nodes.size());
@@ -51,31 +51,31 @@ public class SnobInit implements ObserverProgram {
 
             Vector filenames = new Vector();
             try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
-                paths.filter(Files::isRegularFile).forEach((fileName)->filenames.add(fileName));
-            } catch(IOException e) {
+                paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
+            } catch (IOException e) {
                 System.err.println(e.toString());
             }
             try (Stream<Path> paths = Files.walk(Paths.get(linkedmdb))) {
-                paths.filter(Files::isRegularFile).forEach((fileName)->filenames.add(fileName));
-            } catch(IOException e) {
+                paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
+            } catch (IOException e) {
                 System.err.println(e.toString());
             }
             System.err.println("[INIT:SNOB] Number of fragments to load: " + filenames.size());
 
             Vector<Snob> peers = new Vector();
-            for(int i = 0; i < networksize; ++i) {
+            for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 peers.add(snob);
             }
             int pickedElement = 0;
             int peersPicked = 0;
-            this.dlimit = (this.dlimit == -1)?filenames.size():this.dlimit;
-            while(pickedElement < this.dlimit && pickedElement < filenames.size()) {
+            this.dlimit = (this.dlimit == -1) ? filenames.size() : this.dlimit;
+            while (pickedElement < this.dlimit && pickedElement < filenames.size()) {
                 System.err.println("Loading data into peer:" + peersPicked);
                 System.err.println(filenames.get(pickedElement).toString());
                 peers.get(peersPicked).profile.datastore.update(filenames.get(pickedElement).toString());
                 peersPicked++;
-                if(peersPicked > peers.size() - 1) peersPicked = 0;
+                if (peersPicked > peers.size() - 1) peersPicked = 0;
                 pickedElement++;
             }
 
@@ -109,13 +109,13 @@ public class SnobInit implements ObserverProgram {
 
             int pickedQuery = 0;
             peersPicked = 0;
-            this.qlimit = (this.qlimit == -1)?queriesDiseasome.size():this.qlimit;
-            for(int i = 0; i < networksize; ++i) {
+            this.qlimit = (this.qlimit == -1) ? queriesDiseasome.size() : this.qlimit;
+            for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 snob.profile.qlimit = this.qlimit;
             }
             System.err.println("Number of queries to load: [" + this.qlimit + "/" + queriesDiseasome.size() + "]...");
-            while(pickedQuery < this.qlimit && pickedQuery < queriesDiseasome.size()) {
+            while (pickedQuery < this.qlimit && pickedQuery < queriesDiseasome.size()) {
                 long card = (long) queriesDiseasome.get(pickedQuery).get("card");
                 String query = queriesDiseasome.get(pickedQuery).get("query").toString();
                 System.err.printf("Loading query with %d expected result(s) into peer: %d%n", card, peersPicked);
@@ -123,7 +123,7 @@ public class SnobInit implements ObserverProgram {
                 peers.get(peersPicked).profile.update(query, card);
                 // System.err.println("Number of queries for peer-" + peersPicked + ": " + 1);
                 peersPicked++;
-                if(peersPicked > peers.size() - 1) peersPicked = 0;
+                if (peersPicked > peers.size() - 1) peersPicked = 0;
                 pickedQuery++;
             }
         }

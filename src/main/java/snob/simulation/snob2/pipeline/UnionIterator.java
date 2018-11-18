@@ -17,7 +17,7 @@ public class UnionIterator implements QueryIterator {
 
     @Override
     public Binding nextBinding() {
-        if(left.hasNext()) {
+        if (left.hasNext()) {
             return left.next();
         }
         return right.next();

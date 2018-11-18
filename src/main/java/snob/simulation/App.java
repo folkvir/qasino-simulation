@@ -6,11 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-public class App
-{
-    public static void main( String[] args )
-    {
-        String[] config = {"./configs/"+args[0], "./results/"+args[0]+"-output.txt"};
+public class App {
+    public static void main(String[] args) {
+        String[] config = {"./configs/" + args[0], "./results/" + args[0] + "-output.txt"};
         executeConfig(config[0], config[1]);
     }
 

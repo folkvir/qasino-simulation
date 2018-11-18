@@ -10,13 +10,13 @@ import java.util.List;
  */
 public class CyclonMessage implements IMessage {
 
-	private List<Node> sample;
+    private List<Node> sample;
 
-	public CyclonMessage(List<Node> sample) {
-		this.sample = sample;
-	}
+    public CyclonMessage(List<Node> sample) {
+        this.sample = sample;
+    }
 
-	public Object getPayload() {
-		return this.sample;
-	}
+    public Object getPayload() {
+        return this.sample;
+    }
 }

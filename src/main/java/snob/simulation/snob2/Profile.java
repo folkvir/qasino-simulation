@@ -20,6 +20,7 @@ public class Profile {
 
     public List<Triple> patterns;
     public Map<Triple, InvertibleBloomFilter> invertibles;
+    public Map<Triple, InvertibleBloomFilter> others;
     public QuerySnob query;
     public Datastore datastore;
 
@@ -35,19 +36,17 @@ public class Profile {
     public void insertTriples(Map<Triple, Iterator<Triple>> its) {
         its.forEach((pattern, iterator) -> {
             List<Triple> list = new ArrayList<>();
-            // int count = 0;
-            // consume the iterator and fill the pipeline
-//            System.err.println(" ");
-//            System.err.println("Consuming the iterator for the pattern: " + pattern.toString());
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 Triple t = iterator.next();
-                // populate the pipeline plan
-                query.plan.insertTriple(pattern, t);
-                // populate the bloom filter associated to the pattern
-                invertibles.get(pattern).insert(t);
-                list.add(t);
-                // count++;
-                // System.err.print(".");
+
+                this.invertibles.get(pattern).insert(t);
+                if (!this.datastore.contains(t)) {
+                    // System.err.printf("Adding triple: %s to the datastore and the pipeline and the IBF... %n", t.toString());
+                    // populate the pipeline plan
+                    query.plan.insertTriple(pattern, t);
+                    // populate the bloom filter associated to the pattern
+                    list.add(t);
+                }
             }
             // System.err.print("!end! count=" + count);
             // insert triples in datastore
@@ -63,7 +62,7 @@ public class Profile {
             patterns = this.query.plan.patterns;
             createInvertiblesFromPatterns(patterns);
             initPipeline(patterns);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
@@ -71,7 +70,7 @@ public class Profile {
 
     private void createInvertiblesFromPatterns(List<Triple> patterns) {
         for (Triple pattern : patterns) {
-            if(!this.invertibles.containsKey(pattern)){
+            if (!this.invertibles.containsKey(pattern)) {
                 invertibles.put(pattern, new InvertibleBloomFilter(cellCount, hashCount));
                 System.err.printf("IBF for the pattern created: %s with %d cells and %d hashfunctions %n", pattern.toString(), cellCount, hashCount);
             }
@@ -86,7 +85,7 @@ public class Profile {
             this.patterns = this.query.plan.patterns;
             this.createInvertiblesFromPatterns(this.patterns);
             this.initPipeline(this.patterns);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
@@ -107,17 +106,17 @@ public class Profile {
         }
     }
 
-    public void execute () {
+    public void execute() {
         try {
-            if(this.query != null) {
+            if (this.query != null) {
                 ResultSet set = this.query.plan.execute();
-                if(this.query.results == null) {
+                if (this.query.results == null) {
                     this.query.results = set;
                 } else {
                     this.query.results = ResultSetUtils.union(this.query.results, set);
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
@@ -126,6 +125,7 @@ public class Profile {
     /**
      * Score the provided profile among us
      * high value means that the profile is very interesting
+     *
      * @param p the profile to compare with.
      * @return a score based triple pattern containment
      */
@@ -133,10 +133,10 @@ public class Profile {
         int score = 0;
         boolean stop = false;
         Iterator<Triple> it = p.patterns.iterator();
-        while(!stop && it.hasNext()) {
+        while (!stop && it.hasNext()) {
             Triple pt = it.next();
             Iterator<Triple> ittpqs = this.patterns.iterator();
-            while(!stop && ittpqs.hasNext()) {
+            while (!stop && ittpqs.hasNext()) {
                 Triple us = ittpqs.next();
                 if (this.equivalence(us, pt)) {
                     stop = true; // we have the highest score, stop or it will cause an overflow
@@ -155,7 +155,7 @@ public class Profile {
                 }
             }
         }
-        if(stop) {
+        if (stop) {
             return WEIGH_EQUIVALENCE;
         }
         return score;
@@ -164,22 +164,27 @@ public class Profile {
     public boolean equivalence(Triple tpa, Triple tpb) {
         return tpa.equals(tpb);
     }
+
     public boolean containment(Triple tpa, Triple tpb) {
         return this.contain(tpa.getSubject(), tpb.getSubject()) &&
                 contain(tpa.getPredicate(), tpb.getPredicate()) &&
                 contain(tpa.getObject(), tpb.getObject());
     }
+
     public boolean subset(Triple tpa, Triple tpb) {
         return this.sub(tpa.getSubject(), tpb.getSubject()) &&
                 sub(tpa.getPredicate(), tpb.getPredicate()) &&
                 sub(tpa.getObject(), tpb.getObject());
     }
+
     public boolean contain(Node v1, Node v2) {
-       return this.eq(v1, v2) || ( !v1.isVariable() && v2.isVariable());
+        return this.eq(v1, v2) || (!v1.isVariable() && v2.isVariable());
     }
+
     public boolean sub(Node v1, Node v2) {
-        return this.eq(v1, v2) || ( v1.isVariable() && !v2.isVariable());
+        return this.eq(v1, v2) || (v1.isVariable() && !v2.isVariable());
     }
+
     public boolean eq(Node v1, Node v2) {
         return v1.equals(v2);
     }

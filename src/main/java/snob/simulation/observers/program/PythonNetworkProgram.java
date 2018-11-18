@@ -6,16 +6,15 @@ import snob.simulation.observers.ObserverProgram;
 
 /**
  * This Program will print the network as Python-graph
- *
+ * <p>
  * Created by julian on 02/05/15.
  */
-public class PythonNetworkProgram implements ObserverProgram{
+public class PythonNetworkProgram implements ObserverProgram {
 
     final int step = 100;
     boolean isFirst = true;
 
     /**
-     *
      * @param currentTick
      * @param observer
      */
@@ -23,7 +22,7 @@ public class PythonNetworkProgram implements ObserverProgram{
 
         if (CommonState.getTime() > 100 && CommonState.getTime() % step == 0) {
             boolean imp = this.isFirst;
-            this.isFirst =false;
+            this.isFirst = false;
             System.out.println("#=================START=================== step:" + CommonState.getTime());
             System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()), imp));
             System.out.println("#=================END===================");
@@ -32,7 +31,6 @@ public class PythonNetworkProgram implements ObserverProgram{
     }
 
     /**
-     *
      * @param observer
      */
     public void onLastTick(DictGraph observer) {

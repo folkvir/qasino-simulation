@@ -22,10 +22,12 @@ public class DictNode {
         this.pid = pid;
     }
 
-    public void reset() {this.neighbors.clear();}
+    public void reset() {
+        this.neighbors.clear();
+    }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "(" + id + ") -> " + this.neighbors.toString();
     }
 }

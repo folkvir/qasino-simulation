@@ -57,10 +57,10 @@ public class TestClassicJoin {
         System.out.println("1st execution");
 
         try {
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 System.out.println(iterator.next());
             }
-        } catch(NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
 
         }
 
@@ -70,10 +70,10 @@ public class TestClassicJoin {
         sources.get(triples.get(0)).append(b6);
 
         try {
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 System.out.println(iterator.next());
             }
-        } catch(NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
 
         }
     }

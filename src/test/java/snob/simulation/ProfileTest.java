@@ -6,6 +6,7 @@ import org.apache.jena.sparql.core.Var;
 import org.junit.Assert;
 import org.junit.Test;
 import snob.simulation.snob2.Datastore;
+import snob.simulation.snob2.Profile;
 
 import java.util.Iterator;
 
@@ -14,12 +15,11 @@ public class ProfileTest {
      * Update fonction of profile should extract tpq
      */
     @Test
-    public void profileShouldUpdateWithQuery()
-    {
-        snob.simulation.snob2.Profile p = new snob.simulation.snob2.Profile(100, 2);
-        p.update("PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
+    public void profileShouldUpdateWithQuery() {
+        Profile p = new Profile(100, 2);
+        p.update("PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
-                "   ?x foaf:mbox <mailt:person@server> ."+
+                "   ?x foaf:mbox <mailt:person@server> ." +
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}");
@@ -30,19 +30,18 @@ public class ProfileTest {
      * Update fonction of profile should extract tpq
      */
     @Test
-    public void profileScoringShouldReturnMaxValue()
-    {
-        String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
+    public void profileScoringShouldReturnMaxValue() {
+        String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
-                "   ?x foaf:mbox <mailt:person@server> ."+
+                "   ?x foaf:mbox <mailt:person@server> ." +
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}";
-        snob.simulation.snob2.Profile p = new snob.simulation.snob2.Profile(100, 2);
+        Profile p = new Profile(100, 2);
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        snob.simulation.snob2.Profile p2 = new snob.simulation.snob2.Profile(100, 2);
+        Profile p2 = new Profile(100, 2);
         p2.update(query);
         // System.out.println(p2.tpqs.toString());
 
@@ -53,23 +52,22 @@ public class ProfileTest {
      * Update fonction of profile should extract tpq
      */
     @Test
-    public void profileScoringShouldReturn2()
-    {
-        String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
+    public void profileScoringShouldReturn2() {
+        String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
-                "   ?x foaf:mbox <mailt:person@server> ."+
+                "   ?x foaf:mbox <mailt:person@server> ." +
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}";
-        String query2 = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
+        String query2 = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
-                "  ?x ?p <mailt:person@server>"+
+                "  ?x ?p <mailt:person@server>" +
                 "}";
-        snob.simulation.snob2.Profile p = new snob.simulation.snob2.Profile(100, 2);
+        Profile p = new Profile(100, 2);
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        snob.simulation.snob2.Profile p2 = new snob.simulation.snob2.Profile(100, 2);
+        Profile p2 = new Profile(100, 2);
         p2.update(query2);
         // System.out.println(p2.tpqs.toString());
 
@@ -80,24 +78,23 @@ public class ProfileTest {
      * Update fonction of profile should extract tpq
      */
     @Test
-    public void profileScoringShouldReturn3()
-    {
-        String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
+    public void profileScoringShouldReturn3() {
+        String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
-                "   ?x foaf:mbox <mailt:person@server> ."+
+                "   ?x foaf:mbox <mailt:person@server> ." +
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}";
-        String query2 = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>"+
+        String query2 = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
-                "  ?x ?p <mailt:person@server> ."+
-                "  ?x foaf:name \"toto\" "+
+                "  ?x ?p <mailt:person@server> ." +
+                "  ?x foaf:name \"toto\" " +
                 "}";
-        snob.simulation.snob2.Profile p = new snob.simulation.snob2.Profile(100, 2);
+        Profile p = new Profile(100, 2);
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        snob.simulation.snob2.Profile p2 = new snob.simulation.snob2.Profile(100, 2);
+        Profile p2 = new Profile(100, 2);
         p2.update(query2);
         // System.out.println(p2.tpqs.toString());
 
@@ -108,9 +105,8 @@ public class ProfileTest {
      * Update fonction of profile should extract tpq
      */
     @Test
-    public void DatastoreShouldBeQueryiable()
-    {
-        snob.simulation.snob2.Datastore d = new Datastore();
+    public void DatastoreShouldBeQueryiable() {
+        Datastore d = new Datastore();
         d.update("./datasets/test.ttl");
         Triple t = new Triple(Var.alloc("s"),
                 Var.alloc("p"),
@@ -119,7 +115,7 @@ public class ProfileTest {
 
         Iterator<Triple> it = d.getTriplesMatchingTriplePattern(t);
         int count = 0;
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             it.next();
             count++;
         }
@@ -130,16 +126,15 @@ public class ProfileTest {
      * Update fonction of profile should extract tpq
      */
     @Test
-    public void PipelineIteratorShouldWork()
-    {
-        snob.simulation.snob2.Profile p = new snob.simulation.snob2.Profile(100, 2);
+    public void PipelineIteratorShouldWork() {
+        Profile p = new Profile(100, 2);
         p.datastore.update("./datasets/test.ttl");
         String query = "SELECT * WHERE { ?s ?p ?o . }";
         p.update(query);
         p.execute();
         ResultSet res = p.query.results;
         int count = 0;
-        while(res.hasNext()) {
+        while (res.hasNext()) {
             count++;
             res.next();
         }

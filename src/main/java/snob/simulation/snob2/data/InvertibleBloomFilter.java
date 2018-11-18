@@ -12,17 +12,11 @@ import se.rosenbaum.iblt.util.ResidualData;
 import java.util.*;
 
 public class InvertibleBloomFilter {
+    public static long count = 0;
     private IBLT<IntegerData, IntegerData> iblt;
     private Map<IntegerData, HashedTriple> mapping;
     private int cellCount;
     private int hashFunctionCount;
-
-    public Map<IntegerData, HashedTriple> getMapping() {
-        return mapping;
-    }
-    public IBLT<IntegerData, IntegerData> getIblt() {
-        return iblt;
-    }
 
     public InvertibleBloomFilter(int cellCount, int hashFunctionCount) {
         this.cellCount = cellCount;
@@ -31,7 +25,21 @@ public class InvertibleBloomFilter {
         mapping = new HashMap<>();
     }
 
-    public Map<IntegerData, IntegerData> mydata () {
+    public static InvertibleBloomFilter createIBFFromTriples(Iterator<Triple> list, int cellCount, int hashFunctionCount) {
+        InvertibleBloomFilter output = new InvertibleBloomFilter(cellCount, hashFunctionCount);
+        list.forEachRemaining(triple -> output.insert(triple));
+        return output;
+    }
+
+    public Map<IntegerData, HashedTriple> getMapping() {
+        return mapping;
+    }
+
+    public IBLT<IntegerData, IntegerData> getIblt() {
+        return iblt;
+    }
+
+    public Map<IntegerData, IntegerData> mydata() {
         Map<IntegerData, IntegerData> res = new HashMap<>();
         mapping.forEach((k, v) -> {
             res.put(k, data(v.getValue().asInt()));
@@ -39,17 +47,11 @@ public class InvertibleBloomFilter {
         return res;
     }
 
-    public static  InvertibleBloomFilter createIBFFromTriples(Iterator<Triple> list, int cellCount, int hashFunctionCount) {
-        InvertibleBloomFilter output = new InvertibleBloomFilter(cellCount, hashFunctionCount);
-        list.forEachRemaining(triple -> output.insert(triple));
-        return output;
-    }
-
-    public Triple get (Triple t) throws Exception {
-        if(mapping.containsKey(t)) {
+    public Triple get(Triple t) throws Exception {
+        if (mapping.containsKey(t)) {
             HashedTriple h = mapping.get(t);
             IntegerData res = this.iblt.get(data(h.getKey().asInt()));
-            if(res == null) {
+            if (res == null) {
                 return null;
             } else {
                 // chech if checksum is the same
@@ -68,6 +70,7 @@ public class InvertibleBloomFilter {
         IntegerData key = data(HashedTriple.hashKey(t).asInt());
         if (!mapping.containsKey(key)) {
             HashedTriple h = new HashedTriple(t);
+            count++;
             mapping.put(key, h);
             this.iblt.insert(key, data(h.getValue().asInt()));
         } else {
@@ -77,16 +80,18 @@ public class InvertibleBloomFilter {
 
     /**
      * Return the list of triple that are not in the other Invertible Bloom Filter
+     *
      * @param b
      * @return List of triples
      */
     public List<Triple> absentTriple(InvertibleBloomFilter b) {
         return this._absentTriple(b.getIblt());
     }
+
     public List<Triple> _absentTriple(IBLT<IntegerData, IntegerData> incomingIBLT) {
-        ResidualData<IntegerData, IntegerData> res = _reconcile(new IBLT<IntegerData, IntegerData>(incomingIBLT.getCells().clone(), new IntegerDataSubtablesHashFunctions(incomingIBLT.getCells().length, hashFunctionCount)), mydata());
+        ResidualData<IntegerData, IntegerData> res = _reconcile(new IBLT<>(incomingIBLT.getCells().clone(), new IntegerDataSubtablesHashFunctions(incomingIBLT.getCells().length, hashFunctionCount)), mydata());
         List<Triple> output = new ArrayList<>();
-        if(res == null) {
+        if (res == null) {
             return null;
         } else {
             res.getAbsentEntries().forEach((k, v) -> {
@@ -95,7 +100,6 @@ public class InvertibleBloomFilter {
             return output;
         }
     }
-
 
 
     public ResidualData<IntegerData, IntegerData> _reconcile(IBLT<IntegerData, IntegerData> clone, Map<IntegerData, IntegerData> incomingData) {

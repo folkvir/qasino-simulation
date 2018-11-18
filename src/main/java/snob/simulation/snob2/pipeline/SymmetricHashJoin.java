@@ -42,7 +42,7 @@ public class SymmetricHashJoin implements QueryIteratorPlus {
 
     @Override
     public String toString(PrefixMapping pmap) {
-        return "SymmetricHashJoin(" + source.toString(pmap) +")";
+        return "SymmetricHashJoin(" + source.toString(pmap) + ")";
     }
 
     @Override

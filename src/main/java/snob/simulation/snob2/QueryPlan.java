@@ -49,18 +49,18 @@ public class QueryPlan {
         return b;
     }
 
-    public void insertTriple (Triple pattern, Triple triple) {
+    public void insertTriple(Triple pattern, Triple triple) {
         //System.err.printf("Inserting a triple into the pipleline for the pattern %s...%n", pattern.toString());
         Binding b = projection(pattern, triple);
         sources.get(pattern).append(b);
     }
 
-    public ResultSet execute () {
+    public ResultSet execute() {
         try {
             ResultSet set = null;
             set = ResultSetFactory.create(iterator, vars);
             return set;
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }

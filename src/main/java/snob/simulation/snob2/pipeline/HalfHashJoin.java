@@ -11,13 +11,13 @@ import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.serializer.SerializationContext;
 
 public class HalfHashJoin implements QueryIterator {
+    private final String CARTESIAN_PRODUCT_JOIN_KEY = "_:snob:cartesian_product_key";
     private QueryIterator source;
     private QueryIterator currentIter;
     private Var joinKey;
     private HashJoinTable innerTable;
     private HashJoinTable outerTable;
     private ExecutionContext context;
-    private final String CARTESIAN_PRODUCT_JOIN_KEY = "_:snob:cartesian_product_key";
 
     public HalfHashJoin(Var joinKey, QueryIterator source, HashJoinTable innerTable, HashJoinTable outerTable, ExecutionContext cxt) {
         this.source = source;

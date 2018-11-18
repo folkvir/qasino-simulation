@@ -3,5 +3,5 @@
 @prefix :     <http://example.org/ns#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 
-<http://1>   ns:p   :b.
-:b   ns:p     <http://1> .
+:e   ns:p   :f.
+:f   ns:p     :g.

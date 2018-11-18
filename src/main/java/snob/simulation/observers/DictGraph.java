@@ -11,36 +11,25 @@ import java.util.*;
  */
 public class DictGraph {
 
-	/*
+    /*
      * =================================================================== *
-	 * SINGLETON
-	 * ===================================================================
-	 */
+     * SINGLETON
+     * ===================================================================
+     */
 
     private static DictGraph singleton;
-
-    public static DictGraph getSingleton(int size) {
-        if (singleton == null) {
-            singleton = new DictGraph(size);
-        }
-        return singleton;
-    }
-
-	/*
-     * =================================================================== *
-	 * PROPERTIES
-	 * ===================================================================
-	 */
-
     // public final GraphNode[] nodes;
     public final Map<Long, DictNode> nodes;
 
-    private List<DictNode> neighbourhood;
-
+    /*
+     * =================================================================== *
+     * PROPERTIES
+     * ===================================================================
+     */
     private final List<IRandomPeerSampling> pssList;
     private final Map<Long, Integer> dist;
     private final LinkedList<DictNode> Q;
-
+    private List<DictNode> neighbourhood;
     private DictGraph(int size) {
         this.pssList = new ArrayList<IRandomPeerSampling>();
         this.neighbourhood = new ArrayList<DictNode>();
@@ -50,11 +39,18 @@ public class DictGraph {
         this.nodes = new HashMap<Long, DictNode>(size);
     }
 
-	/*
+    public static DictGraph getSingleton(int size) {
+        if (singleton == null) {
+            singleton = new DictGraph(size);
+        }
+        return singleton;
+    }
+
+    /*
      * =================================================================== *
-	 * PUBLIC
-	 * ===================================================================
-	 */
+     * PUBLIC
+     * ===================================================================
+     */
 
     public int size() {
         return this.nodes.size();
@@ -121,19 +117,6 @@ public class DictGraph {
         return result;
     }
 
-    public class AvgReachablePaths {
-        public double avg;
-        public int count;
-        public int total;
-        public double reachQuota;
-
-        @Override
-        public String toString() {
-            return "avg:" + avg + "| %:" + reachQuota + " |count:" + this.count
-                    + " |total:" + total;
-        }
-    }
-
     /**
      * how often is the pss called this time frame
      *
@@ -162,9 +145,9 @@ public class DictGraph {
     }
 
     public int[] totalOutboundCostPerTick() {
-        final int[] costs = new int[(int) CommonState.getEndTime()-1];
+        final int[] costs = new int[(int) CommonState.getEndTime() - 1];
         for (IRandomPeerSampling rps : this.pssList) {
-            for (int i = 0; i < rps.generatedPeerSamplingCost().length-1;i++) {
+            for (int i = 0; i < rps.generatedPeerSamplingCost().length - 1; i++) {
                 costs[i] += rps.generatedPeerSamplingCost()[i];
             }
         }
@@ -192,19 +175,6 @@ public class DictGraph {
         result.reachQuota /= this.nodes.size();
 
         return result;
-    }
-
-    public class MeanPathLength {
-        public double avg;
-        public double reachQuota;
-        public double minReachQuota;
-        public double maxReachQuota;
-
-        @Override
-        public String toString() {
-            return "avg:" + avg + "| %:" + reachQuota + "| min%:"
-                    + minReachQuota + "| max%:" + maxReachQuota;
-        }
     }
 
     public double averagePathLength() {
@@ -302,8 +272,6 @@ public class DictGraph {
         return sum / this.nodes.size();
     }
 
-    // =========
-
     public int countArcs() {
         int count = 0;
         for (DictNode node : this.nodes.values()) {
@@ -335,6 +303,8 @@ public class DictGraph {
             result[i] = degs.get(i);
         return result;
     }
+
+    // =========
 
     public int[] outDegreeAsHistogram() {
         // ====== #1 Count the in-degree of all peers ======
@@ -392,27 +362,6 @@ public class DictGraph {
             }
         }
         return duplicateCount;
-    }
-
-    public class MaxPercResult {
-        public final double Max;
-        public final double MeanPartialViewSize;
-        public final int MaxCount;
-        public final int MaxSize;
-        public final int NodeCount;
-
-        public MaxPercResult(double m, double me, int mc, int ms, int nc) {
-            this.Max = m;
-            this.MeanPartialViewSize = me;
-            this.MaxCount = mc;
-            this.MaxSize = ms;
-            this.NodeCount = nc;
-        }
-
-        @Override
-        public String toString() {
-            return Max + " ~" + MeanPartialViewSize + " " + MaxCount + "/" + MaxSize + " +" + NodeCount;
-        }
     }
 
     /**
@@ -614,28 +563,6 @@ public class DictGraph {
         }
     }
 
-    public class ClusterResult {
-        public final int count;
-        public final int maxClusterSize;
-        public final int deadLinks;
-
-        private ClusterResult(int c, int mCs, int dl) {
-            this.count = c;
-            this.maxClusterSize = mCs;
-            this.deadLinks = dl;
-        }
-
-        @Override
-        public String toString() {
-            return "Cluster result:" + this.count + ", max cluster size:"
-                    + maxClusterSize;
-        }
-    }
-
-    public enum NetworkX {
-        Connectedness, Graph
-    }
-
     public String networkxDigraph(NetworkX type) {
         return this.networkxDigraph(type, "graph", true);
     }
@@ -709,12 +636,6 @@ public class DictGraph {
         return sb.toString();
     }
 
-	/*
-	 * =================================================================== *
-	 * PRIVATE
-	 * ===================================================================
-	 */
-
     public double localClusterCoefficient(long id) {
         return localClusterCoefficient(nodes.get(id));
     }
@@ -764,6 +685,12 @@ public class DictGraph {
         DictNode bNode = nodes.get(b);
         return in(a, bNode.neighbors) && in(b, aNode.neighbors);
     }
+
+    /*
+     * =================================================================== *
+     * PRIVATE
+     * ===================================================================
+     */
 
     /**
      * get the immediately connected neighbours:
@@ -908,6 +835,75 @@ public class DictGraph {
         // return Q.get(0);
         // }
         return min;
+    }
+
+    public enum NetworkX {
+        Connectedness, Graph
+    }
+
+    public class AvgReachablePaths {
+        public double avg;
+        public int count;
+        public int total;
+        public double reachQuota;
+
+        @Override
+        public String toString() {
+            return "avg:" + avg + "| %:" + reachQuota + " |count:" + this.count
+                    + " |total:" + total;
+        }
+    }
+
+    public class MeanPathLength {
+        public double avg;
+        public double reachQuota;
+        public double minReachQuota;
+        public double maxReachQuota;
+
+        @Override
+        public String toString() {
+            return "avg:" + avg + "| %:" + reachQuota + "| min%:"
+                    + minReachQuota + "| max%:" + maxReachQuota;
+        }
+    }
+
+    public class MaxPercResult {
+        public final double Max;
+        public final double MeanPartialViewSize;
+        public final int MaxCount;
+        public final int MaxSize;
+        public final int NodeCount;
+
+        public MaxPercResult(double m, double me, int mc, int ms, int nc) {
+            this.Max = m;
+            this.MeanPartialViewSize = me;
+            this.MaxCount = mc;
+            this.MaxSize = ms;
+            this.NodeCount = nc;
+        }
+
+        @Override
+        public String toString() {
+            return Max + " ~" + MeanPartialViewSize + " " + MaxCount + "/" + MaxSize + " +" + NodeCount;
+        }
+    }
+
+    public class ClusterResult {
+        public final int count;
+        public final int maxClusterSize;
+        public final int deadLinks;
+
+        private ClusterResult(int c, int mCs, int dl) {
+            this.count = c;
+            this.maxClusterSize = mCs;
+            this.deadLinks = dl;
+        }
+
+        @Override
+        public String toString() {
+            return "Cluster result:" + this.count + ", max cluster size:"
+                    + maxClusterSize;
+        }
     }
 
 }

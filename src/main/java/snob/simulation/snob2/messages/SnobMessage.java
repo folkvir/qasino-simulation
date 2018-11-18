@@ -10,13 +10,13 @@ import java.util.List;
  */
 public class SnobMessage implements IMessage {
 
-	private List<Node> sample;
+    private List<Node> sample;
 
-	public SnobMessage(List<Node> sample) {
-		this.sample = sample;
-	}
+    public SnobMessage(List<Node> sample) {
+        this.sample = sample;
+    }
 
-	public Object getPayload() {
-		return this.sample;
-	}
+    public Object getPayload() {
+        return this.sample;
+    }
 }

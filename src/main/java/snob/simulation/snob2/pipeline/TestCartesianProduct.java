@@ -40,10 +40,10 @@ public class TestCartesianProduct {
         System.out.println("1st execution");
 
         try {
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 System.out.println(iterator.next());
             }
-        } catch(NoSuchElementException e) {
+        } catch (NoSuchElementException e) {
 
         }
     }

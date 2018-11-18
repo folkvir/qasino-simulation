@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 public class GenerateTest {
 
 
-
     @Ignore
     @Test
     public void GenerateDiseasomeDataset() {
@@ -29,11 +28,13 @@ public class GenerateTest {
         String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
-            paths.filter(Files::isRegularFile).forEach((fileName)->filenames.add(fileName));
-        } catch(IOException e) {
+            paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
+        } catch (IOException e) {
             System.err.println(e.toString());
         }
-        filenames.forEach(f -> {d.update(f.toString());});
+        filenames.forEach(f -> {
+            d.update(f.toString());
+        });
 
         // once all fragments loaded
         String diseasomeQuery = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries.json";
@@ -62,7 +63,7 @@ public class GenerateTest {
                 j.remove("results");
                 j.put("results", resultJson.get("results"));
             });
-            File file =  new File(diseasomeQueryGenerated);
+            File file = new File(diseasomeQueryGenerated);
             file.createNewFile();
             // creates a FileWriter Object
             FileWriter writer = new FileWriter(file);
@@ -73,6 +74,7 @@ public class GenerateTest {
             e.printStackTrace();
         }
     }
+
     @Ignore
     @Test
     public void GenerateLinkedmdbDataset() {
@@ -80,11 +82,13 @@ public class GenerateTest {
         String diseasome = System.getProperty("user.dir") + "/datasets/data/linkedmdb/fragments/";
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
-            paths.filter(Files::isRegularFile).forEach((fileName)->filenames.add(fileName));
-        } catch(IOException e) {
+            paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
+        } catch (IOException e) {
             System.err.println(e.toString());
         }
-        filenames.forEach(f -> {d.update(f.toString());});
+        filenames.forEach(f -> {
+            d.update(f.toString());
+        });
 
         // once all fragments loaded
         String linkedmdbQuery = System.getProperty("user.dir") + "/datasets/data/linkedmdb/queries/queries.json";
@@ -113,7 +117,7 @@ public class GenerateTest {
                 j.remove("results");
                 j.put("results", resultJson.get("results"));
             });
-            File file =  new File(linkedmdbQueryGenerated);
+            File file = new File(linkedmdbQueryGenerated);
             file.createNewFile();
             // creates a FileWriter Object
             FileWriter writer = new FileWriter(file);

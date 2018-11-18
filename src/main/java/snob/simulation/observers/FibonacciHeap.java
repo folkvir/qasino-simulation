@@ -58,26 +58,35 @@ import java.util.NoSuchElementException;
  */
 public final class FibonacciHeap {
 
-    public static final class Entry {
-        public int mDegree = 0;
-        public boolean mIsMarked = false;
-        public Entry mNext;
-        public Entry mPrev;
-        public Entry mParent;
-        public Entry mChild;
-        public DictNode mElem;
-        public double mPriority;
+    private Entry mMin = null;
+    private int mSize = 0;
 
-        private Entry(DictNode elem, double priority) {
-            mNext = mPrev = this;
-            mElem = elem;
-            mPriority = priority;
-        }
+    public static FibonacciHeap merge(FibonacciHeap one, FibonacciHeap two) {
+        FibonacciHeap result = new FibonacciHeap();
+        result.mMin = mergeLists(one.mMin, two.mMin);
+        result.mSize = one.mSize + two.mSize;
+        one.mSize = two.mSize = 0;
+        one.mMin = null;
+        two.mMin = null;
+        return result;
     }
 
-    private Entry mMin = null;
-
-    private int mSize = 0;
+    private static Entry mergeLists(Entry one, Entry two) {
+        if (one == null && two == null) {
+            return null;
+        } else if (one != null && two == null) {
+            return one;
+        } else if (one == null && two != null) {
+            return two;
+        } else {
+            Entry oneNext = one.mNext;
+            one.mNext = two.mNext;
+            one.mNext.mPrev = one;
+            two.mNext = oneNext;
+            two.mNext.mPrev = two;
+            return one.mPriority < two.mPriority ? one : two;
+        }
+    }
 
     public Entry enqueue(DictNode value, double priority) {
         checkPriority(priority);
@@ -111,16 +120,6 @@ public final class FibonacciHeap {
     public void delete(Entry entry) {
         decreaseKeyUnchecked(entry, Double.NEGATIVE_INFINITY);
         dequeueMin();
-    }
-
-    public static FibonacciHeap merge(FibonacciHeap one, FibonacciHeap two) {
-        FibonacciHeap result = new FibonacciHeap();
-        result.mMin = mergeLists(one.mMin, two.mMin);
-        result.mSize = one.mSize + two.mSize;
-        one.mSize = two.mSize = 0;
-        one.mMin = null;
-        two.mMin = null;
-        return result;
     }
 
     public Entry dequeueMin() {
@@ -247,20 +246,20 @@ public final class FibonacciHeap {
         }
     }
 
-    private static Entry mergeLists(Entry one, Entry two) {
-        if (one == null && two == null) {
-            return null;
-        } else if (one != null && two == null) {
-            return one;
-        } else if (one == null && two != null) {
-            return two;
-        } else {
-            Entry oneNext = one.mNext;
-            one.mNext = two.mNext;
-            one.mNext.mPrev = one;
-            two.mNext = oneNext;
-            two.mNext.mPrev = two;
-            return one.mPriority < two.mPriority ? one : two;
+    public static final class Entry {
+        public int mDegree = 0;
+        public boolean mIsMarked = false;
+        public Entry mNext;
+        public Entry mPrev;
+        public Entry mParent;
+        public Entry mChild;
+        public DictNode mElem;
+        public double mPriority;
+
+        private Entry(DictNode elem, double priority) {
+            mNext = mPrev = this;
+            mElem = elem;
+            mPriority = priority;
         }
     }
 

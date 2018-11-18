@@ -1,6 +1,7 @@
 package snob.simulation;
 
 import com.google.common.hash.HashCode;
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.junit.Assert;
@@ -13,12 +14,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.hash.Hashing.murmur3_128;
 import static com.google.common.hash.Hashing.crc32;
+import static com.google.common.hash.Hashing.murmur3_128;
 
 public class IbflTest {
     @Test
-    public void testHashMurmur () {
+    public void testHashMurmur() {
         String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         HashCode xse = murmur3_128().hashBytes(xs.getBytes());
@@ -28,7 +29,7 @@ public class IbflTest {
     }
 
     @Test
-    public void testChecksum () {
+    public void testChecksum() {
         String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         HashCode xse = crc32().hashBytes(xs.getBytes());
@@ -36,8 +37,9 @@ public class IbflTest {
         System.out.printf("Checksum Length : %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
+
     @Test
-    public void testReconciliation () {
+    public void testReconciliation() {
         Triple t = new Triple(NodeFactory.createURI("a"),
                 NodeFactory.createURI("a"),
                 NodeFactory.createURI("a"));
@@ -52,7 +54,7 @@ public class IbflTest {
             b1.insert(t);
             b1.insert(t2);
             b1.insert(t3);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -76,14 +78,15 @@ public class IbflTest {
     }
 
     /**
-     //     * Update fonction of profile should extract tpq
-     //     */
+     * //     * Update fonction of profile should extract tpq
+     * //
+     */
     @Test
-    public void test2peers()
-    {
+    public void test2peers() {
 
-        String query = "PREFIX ns: <http://example.org/ns#>" +
-                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?x . }";
+        String query = "PREFIX ns: <http://example.org/ns#> \n" +
+                "PREFIX : <http://example.org/ns#> \n" +
+                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
         // init peer 1
         Profile p1 = new Profile(100, 2);
         p1.datastore.update("./datasets/test-peer1.ttl");
@@ -96,20 +99,30 @@ public class IbflTest {
         p2.execute();
 
         // simulate an exchange from 1 to 2
-        System.out.println("Simulate an exchange from P1 to P2");
+        System.err.println("[1] Simulate the 1st exchange from P1 to P2");
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         p1.invertibles.forEach((pattern, ibf) -> {
+            ibf.getMapping().forEach((k, v) -> System.err.println("[1] IBF triple:" + v.getTriple().toString()));
+            System.err.println("[1] Pattern: " + pattern.toString());
+            int count = 0;
+            Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(pattern);
+            while(it.hasNext()) {
+                Triple t = it.next();
+                System.err.println("[1] Reading triple: " + t.toString());
+                count++;
+            }
+            Assert.assertEquals(2, count);
             // for each ibf ask for missing triples to profile 2
-            if(p2.invertibles.containsKey(pattern)) {
+            if (p2.invertibles.containsKey(pattern)) {
                 List<Triple> absent = p2.invertibles.get(pattern).absentTriple(ibf);
-                System.out.println("Missing triples size: " + absent.size());
+                System.err.println("[1] Missing triples size: " + absent.size());
                 Assert.assertEquals(2, absent.size());
                 result.put(pattern, absent.iterator());
             } else {
                 Iterator<Triple> listTriples = p2.datastore.getTriplesMatchingTriplePattern(pattern);
                 InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, 100, 2);
                 List<Triple> absent = local.absentTriple(ibf);
-                System.out.println("Missing triples size: " + absent.size());
+                System.err.println("[1] Missing triples size: " + absent.size());
                 Assert.assertEquals(2, absent.size());
                 result.put(pattern, absent.iterator());
             }
@@ -118,24 +131,39 @@ public class IbflTest {
         p1.insertTriples(result);
         p1.execute();
         p1.query.results.forEachRemaining(binding -> {
-            System.out.println("first exec: " + binding.toString());
+            System.err.println("[1] first exec: " + binding.toString());
         });
 
         // simulate an exchange from 1 to 2
-        System.out.println("Simulate an exchange from P1 to P2");
+        System.err.println("[2] Simulate the 2nd exchange from P1 to P2");
         Map<Triple, Iterator<Triple>> result2 = new HashMap<>();
         p1.invertibles.forEach((pattern, ibf) -> {
+            ibf.getMapping().forEach((k, v) -> System.err.println("[2] IBF triple:" + v.getTriple().toString()));
+            System.err.println("[2] Triple pattern " + pattern.toString());
+            int count = 0;
+            Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(pattern);
+            while(it.hasNext()) {
+                Triple t = it.next();
+                System.err.println("[2] Reading triple: " + t.toString());
+                count++;
+            }
+            Assert.assertEquals(4, count);
             // for each ibf ask for missing triples to profile 2
-            if(p2.invertibles.containsKey(pattern)) {
+            if (p2.invertibles.containsKey(pattern)) {
                 List<Triple> absent = p2.invertibles.get(pattern).absentTriple(ibf);
-                System.out.println("Missing triples size: " + absent.size());
+                System.err.println("[2] Missing triples size: " + absent.size());
+                Object[] clone = absent.toArray().clone();
+                for (int i = 0; i < clone.length; i++) {
+                    System.err.println("Missing triple: " + clone[i].toString());
+                }
                 Assert.assertEquals(0, absent.size());
+
                 result2.put(pattern, absent.iterator());
             } else {
                 Iterator<Triple> listTriples = p2.datastore.getTriplesMatchingTriplePattern(pattern);
                 InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, 100, 2);
                 List<Triple> absent = local.absentTriple(ibf);
-                System.out.println("Missing triples size: " + absent.size());
+                System.err.println("[2] Missing triples size: " + absent.size());
                 Assert.assertEquals(0, absent.size());
                 result2.put(pattern, absent.iterator());
             }
@@ -144,7 +172,7 @@ public class IbflTest {
         p1.insertTriples(result2);
         p1.execute();
         p1.query.results.forEachRemaining(binding -> {
-            System.out.println("second exec: " + binding.toString());
+            System.err.println("[2] second exec: " + binding.toString());
         });
         // now p1 should have all results from p2
     }

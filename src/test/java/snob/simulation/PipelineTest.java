@@ -6,7 +6,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
 
@@ -21,13 +20,13 @@ import java.util.stream.Stream;
 
 public class PipelineTest {
     @Test
-    public void testPipelineAgainstJenaOverDiseasomeDataset () throws ParseException {
+    public void testPipelineAgainstJenaOverDiseasomeDataset() throws ParseException {
         Profile p = new Profile(10000, 2);
         String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
-            paths.filter(Files::isRegularFile).forEach((fileName)->filenames.add(fileName));
-        } catch(IOException e) {
+            paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
+        } catch (IOException e) {
             System.err.println(e.toString());
         }
         filenames.forEach(f -> p.datastore.update(f.toString()));
@@ -45,7 +44,7 @@ public class PipelineTest {
                 // execute the pipeline over JENA
                 ResultSet resJena = p.datastore.select(p.query.realQuery);
                 int countJena = 0;
-                while(resJena.hasNext()){
+                while (resJena.hasNext()) {
                     resJena.next();
                     countJena++;
                 }
@@ -54,7 +53,7 @@ public class PipelineTest {
                 p.execute();
                 ResultSet resPipeline = p.query.results;
                 int countPipeline = 0;
-                while(resPipeline.hasNext()){
+                while (resPipeline.hasNext()) {
                     resPipeline.next();
                     countPipeline++;
                 }
