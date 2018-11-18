@@ -86,11 +86,14 @@ public class InvertibleBloomFilter {
     public List<Triple> _absentTriple(IBLT<IntegerData, IntegerData> incomingIBLT) {
         ResidualData<IntegerData, IntegerData> res = _reconcile(new IBLT<IntegerData, IntegerData>(incomingIBLT.getCells().clone(), new IntegerDataSubtablesHashFunctions(incomingIBLT.getCells().length, hashFunctionCount)), mydata());
         List<Triple> output = new ArrayList<>();
-        if(res==null) return null;
-        res.getAbsentEntries().forEach((k, v) -> {
-            output.add(this.mapping.get(k).getTriple());
-        });
-        return output;
+        if(res == null) {
+            return null;
+        } else {
+            res.getAbsentEntries().forEach((k, v) -> {
+                output.add(this.mapping.get(k).getTriple());
+            });
+            return output;
+        }
     }
 
 

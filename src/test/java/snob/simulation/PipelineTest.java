@@ -21,9 +21,8 @@ import java.util.stream.Stream;
 
 public class PipelineTest {
     @Test
-    @Ignore
     public void testPipelineAgainstJenaOverDiseasomeDataset () throws ParseException {
-        Profile p = new Profile(100, 2);
+        Profile p = new Profile(10000, 2);
         String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
