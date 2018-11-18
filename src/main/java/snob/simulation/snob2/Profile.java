@@ -59,7 +59,7 @@ public class Profile {
         try {
             has_query = true;
             this.query = new QuerySnob(query);
-            System.err.printf("[update-string] Updating the profile a pipeline expecting %d result(s) %n", this.query.cardinality);
+            System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
             patterns = this.query.plan.patterns;
             createInvertiblesFromPatterns(patterns);
             initPipeline(patterns);
@@ -81,7 +81,7 @@ public class Profile {
         try {
             this.has_query = true;
             this.query = new QuerySnob(query, card);
-            System.err.printf("[update-string-card] Updating the profile with a pipeline expecting %d result(s) %n", this.query.cardinality);
+            System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
             this.patterns = this.query.plan.patterns;
             this.createInvertiblesFromPatterns(this.patterns);
             this.initPipeline(this.patterns);
