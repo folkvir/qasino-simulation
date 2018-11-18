@@ -22,12 +22,17 @@ public class SnobObserver implements ObserverProgram {
                 long responsesSize = 0;
                 int totalreceivedresults = 0;
                 int totalcardinality = 0;
+                int triplessend = 0;
+                int triplesback = 0;
                 for(int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
                     messagesSize += snob.messagesSize;
                     requestsSize += snob.requestsSize;
                     responsesSize += snob.responsesSize;
+                    triplessend += snob.tripleRequests;
+                    triplesback += snob.tripleResponses;
+
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
                         // System.err.printf("Query: %s waits %d results %n", pipeline.pipeline.toString(), pipeline.cardinality);
@@ -59,7 +64,6 @@ public class SnobObserver implements ObserverProgram {
                 if (snob_default.son) {
                     System.out.println(currentTick
                             + ", " + observer.size()
-                            + ", " + observer.countPartialViewsWithDuplicates()
                             + ", " + observer.meanPartialViewSize()
                             + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
                             + ", " + snob_default.getSonPeers(Integer.MAX_VALUE).size()
@@ -70,11 +74,12 @@ public class SnobObserver implements ObserverProgram {
                             + ", " + completenessinresults
                             + ", " + messagesSize
                             + ", " + requestsSize
-                            + ", " + responsesSize);
+                            + ", " + responsesSize
+                            + ", " + triplessend
+                            + ", " + triplesback);
                 } else {
                     System.out.println(currentTick
                             + ", " + observer.size()
-                            + ", " + observer.countPartialViewsWithDuplicates()
                             + ", " + observer.meanPartialViewSize()
                             + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
                             + ", " + 0
@@ -85,7 +90,9 @@ public class SnobObserver implements ObserverProgram {
                             + ", " + completenessinresults
                             + ", " + messagesSize
                             + ", " + requestsSize
-                            + ", " + responsesSize);
+                            + ", " + responsesSize
+                            + ", " + triplessend
+                            + ", " + triplesback);
                 }
             } catch(Exception e) {
                 System.err.println("ERROR:" + e);

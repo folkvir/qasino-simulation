@@ -14,14 +14,14 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.snob snob.simulation.snob2.Snob
 protocol.snob.rps snob
-protocol.snob.c 5
-protocol.snob.l 4
+protocol.snob.c 10
+protocol.snob.l 10
 protocol.snob.delta 1
 protocol.snob.step 1
 protocol.snob.start 2
 protocol.snob.son true
-protocol.snob.sonc 5
-protocol.snob.sonl 4
+protocol.snob.sonc 10
+protocol.snob.sonl 10
 protocol.snob.sondelta 1
 protocol.snob.linkable link
 protocol.snob.fail 0.000

@@ -360,6 +360,7 @@ public class AppTest
         }
     }
 
+    @Ignore
     @Test
     public void GenerateDiseasomeDataset() {
         Datastore d = new Datastore();
@@ -410,7 +411,7 @@ public class AppTest
             e.printStackTrace();
         }
     }
-
+    @Ignore
     @Test
     public void GenerateLinkedmdbDataset() {
         Datastore d = new Datastore();

@@ -89,7 +89,6 @@ public class InvertibleBloomFilter {
         res.getAbsentEntries().forEach((k, v) -> {
             output.add(this.mapping.get(k).getTriple());
         });
-        System.err.printf("Remaining triples:  %d%n", output.size());
         return output;
     }
 
