@@ -8,6 +8,6 @@ xps=(snob-50-rps+son.txt snob-50-rps.txt snob-50-rps.txt snob-100-rps+son.txt sn
 for xp in ${xps[*]}
 do
     echo "Running: " $xp
-    java $(HEAP) $(JAR) $xp > $(LOG)
+    java $HEAP $JAR $xp
 done
 wait
