@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-rm -rf xp.log
 sh install.sh
 LOG="xp.log"
 HEAP="-Xms500000m"
