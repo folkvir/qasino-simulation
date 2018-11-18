@@ -24,6 +24,7 @@ public class SnobObserver implements ObserverProgram {
                 int totalcardinality = 0;
                 int triplessend = 0;
                 int triplesback = 0;
+                int errorsListentries = 0;
                 for(int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
@@ -32,6 +33,7 @@ public class SnobObserver implements ObserverProgram {
                     responsesSize += snob.responsesSize;
                     triplessend += snob.tripleRequests;
                     triplesback += snob.tripleResponses;
+                    errorsListentries += snob.errorsListentries;
 
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
@@ -61,39 +63,24 @@ public class SnobObserver implements ObserverProgram {
                 completeness = completeness / snob_default.profile.qlimit;
                 System.err.println("Global Completeness in the network: " + completeness + "% ("+ snob_default.profile.qlimit + "," + networksize + ")");
                 System.err.println("Number of messages in the network: " + messages);
-                if (snob_default.son) {
-                    System.out.println(currentTick
-                            + ", " + observer.size()
-                            + ", " + observer.meanPartialViewSize()
-                            + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
-                            + ", " + snob_default.getSonPeers(Integer.MAX_VALUE).size()
-                            + ", " + completeness
-                            + ", " + messages
-                            + ", " + totalreceivedresults
-                            + ", " + totalreceivedresults
-                            + ", " + completenessinresults
-                            + ", " + messagesSize
-                            + ", " + requestsSize
-                            + ", " + responsesSize
-                            + ", " + triplessend
-                            + ", " + triplesback);
-                } else {
-                    System.out.println(currentTick
-                            + ", " + observer.size()
-                            + ", " + observer.meanPartialViewSize()
-                            + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
-                            + ", " + 0
-                            + ", " + completeness
-                            + ", " + messages
-                            + ", " + totalreceivedresults
-                            + ", " + totalreceivedresults
-                            + ", " + completenessinresults
-                            + ", " + messagesSize
-                            + ", " + requestsSize
-                            + ", " + responsesSize
-                            + ", " + triplessend
-                            + ", " + triplesback);
-                }
+
+                String res = currentTick
+                        + ", " + observer.size()
+                        + ", " + observer.meanPartialViewSize()
+                        + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
+                        + ", " + ((snob_default.son)?snob_default.getSonPeers(Integer.MAX_VALUE).size():0)
+                        + ", " + completeness
+                        + ", " + messages
+                        + ", " + totalreceivedresults
+                        + ", " + totalreceivedresults
+                        + ", " + completenessinresults
+                        + ", " + messagesSize
+                        + ", " + requestsSize
+                        + ", " + responsesSize
+                        + ", " + triplessend
+                        + ", " + triplesback
+                        + ", " + errorsListentries;
+                System.out.println(res);
             } catch(Exception e) {
                 System.err.println("ERROR:" + e);
             }

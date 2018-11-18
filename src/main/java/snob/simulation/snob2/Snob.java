@@ -51,6 +51,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public long responsesSize = 0;
     public long tripleRequests = 0;
     public long tripleResponses = 0;
+    public int errorsListentries = 0;
 
 	/**
 	 * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
@@ -191,6 +192,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 				InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, cellcount, hashcount);
 				List<Triple> absent = local.absentTriple(ibf);
 				if(absent == null) {
+                    errorsListentries++;
                     result.put(pattern, listTriples);
                     System.err.printf("[no-query] send all triples... %n");
                 } else {
@@ -203,6 +205,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 			    if(this.profile.invertibles.containsKey(pattern)) {
                     List<Triple> absent = this.profile.invertibles.get(pattern).absentTriple(ibf);
                     if(absent == null) {
+                        errorsListentries++;
                         result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
                         System.err.printf("[query-common-pattern] send all  %n");
                     } else {
@@ -214,6 +217,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                     InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, cellcount, hashcount);
                     List<Triple> absent = local.absentTriple(ibf);
                     if(absent == null) {
+                        errorsListentries++;
                         result.put(pattern, listTriples);
                         System.err.printf("[query-no-common-pattern] send all triples... %n");
                     } else {
