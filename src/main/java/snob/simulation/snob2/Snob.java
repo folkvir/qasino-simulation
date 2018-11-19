@@ -232,10 +232,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                         if (absent == null) {
                             errorsListentries++;
                             result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                            System.err.printf("[no-query-pattern-others] send all  %n");
+                            System.err.printf("[no-query-pattern-global] send all  %n");
                         } else {
                             result.put(pattern, absent.iterator());
-                            System.err.printf("[no-query-pattern-others] Remaining triples:  %d%n", absent.size());
+                            System.err.printf("[no-query-pattern-global] Remaining triples:  %d%n", absent.size());
                         }
                     } else {
                         throw new Error("IBF not found, problem. Please report.");
@@ -258,10 +258,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                         if (absent == null) {
                             errorsListentries++;
                             result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                            System.err.printf("[query-pattern-others] send all  %n");
+                            System.err.printf("[query-pattern-global] send all  %n");
                         } else {
                             result.put(pattern, absent.iterator());
-                            System.err.printf("[query-pattern-others] Remaining triples:  %d%n", absent.size());
+                            System.err.printf("[query-pattern-global] Remaining triples:  %d%n", absent.size());
                         }
                     } else {
                         throw new Error("IBF not found, problem. Please report.");
