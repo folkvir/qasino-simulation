@@ -14,6 +14,8 @@ import snob.simulation.snob2.messages.SnobTpqsResponse;
 
 import java.util.*;
 
+import static java.lang.System.exit;
+
 /**
  * The Snob protocol
  */
@@ -222,70 +224,53 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         Map<Triple, InvertibleBloomFilter> messageReceived = (Map<Triple, InvertibleBloomFilter>) message.getPayload();
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         // if we have a pipeline, use the normal behavior, getTriplesMatchingTriples -> populate a new ibf and return the missing values
-        if (!this.profile.has_query) {
-            messageReceived.forEach((pattern, ibf) -> {
-                if (this.profile.global.containsKey(pattern)) {
-                    List<Triple> absent = this.profile.others.get(pattern).absentTriple(ibf);
-                    if (absent == null) {
-                        errorsListentries++;
-                        result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                        System.err.printf("[no-query-pattern-others] send all  %n");
+        try {
+            if (!this.profile.has_query) {
+                messageReceived.forEach((pattern, ibf) -> {
+                    if (this.profile.global.containsKey(pattern)) {
+                        List<Triple> absent = this.profile.global.get(pattern).absentTriple(ibf);
+                        if (absent == null) {
+                            errorsListentries++;
+                            result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
+                            System.err.printf("[no-query-pattern-others] send all  %n");
+                        } else {
+                            result.put(pattern, absent.iterator());
+                            System.err.printf("[no-query-pattern-others] Remaining triples:  %d%n", absent.size());
+                        }
                     } else {
-                        result.put(pattern, absent.iterator());
-                        System.err.printf("[no-query-pattern-others] Remaining triples:  %d%n", absent.size());
+                        throw new Error("IBF not found, problem. Please report.");
                     }
-                } else {
-                    Iterator<Triple> listTriples = this.profile.datastore.getTriplesMatchingTriplePattern(pattern);
-                    InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, cellcount, hashcount);
-                    this.profile.others.put(pattern, local);
-                    List<Triple> absent = local.absentTriple(ibf);
-                    if (absent == null) {
-                        errorsListentries++;
-                        result.put(pattern, listTriples);
-                        System.err.printf("[no-query] send all triples... %n");
+                });
+            } else {
+                messageReceived.forEach((pattern, ibf) -> {
+                    if (this.profile.invertibles.containsKey(pattern)) {
+                        List<Triple> absent = this.profile.invertibles.get(pattern).absentTriple(ibf);
+                        if (absent == null) {
+                            errorsListentries++;
+                            result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
+                            System.err.printf("[query-common-pattern] send all  %n");
+                        } else {
+                            result.put(pattern, absent.iterator());
+                            System.err.printf("[query-common-pattern] Remaining triples:  %d%n", absent.size());
+                        }
+                    } else if (this.profile.global.containsKey(pattern)) {
+                        List<Triple> absent = this.profile.global.get(pattern).absentTriple(ibf);
+                        if (absent == null) {
+                            errorsListentries++;
+                            result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
+                            System.err.printf("[query-pattern-others] send all  %n");
+                        } else {
+                            result.put(pattern, absent.iterator());
+                            System.err.printf("[query-pattern-others] Remaining triples:  %d%n", absent.size());
+                        }
                     } else {
-                        result.put(pattern, absent.iterator());
-                        System.err.printf("[no-query] Remaining triples:  %d%n", absent.size());
+                        throw new Error("IBF not found, problem. Please report.");
                     }
-                }
-            });
-        } else {
-            messageReceived.forEach((pattern, ibf) -> {
-                if (this.profile.invertibles.containsKey(pattern)) {
-                    List<Triple> absent = this.profile.invertibles.get(pattern).absentTriple(ibf);
-                    if (absent == null) {
-                        errorsListentries++;
-                        result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                        System.err.printf("[query-common-pattern] send all  %n");
-                    } else {
-                        result.put(pattern, absent.iterator());
-                        System.err.printf("[query-common-pattern] Remaining triples:  %d%n", absent.size());
-                    }
-                } else if (this.profile.others.containsKey(pattern)) {
-                    List<Triple> absent = this.profile.others.get(pattern).absentTriple(ibf);
-                    if (absent == null) {
-                        errorsListentries++;
-                        result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                        System.err.printf("[query-pattern-others] send all  %n");
-                    } else {
-                        result.put(pattern, absent.iterator());
-                        System.err.printf("[query-pattern-others] Remaining triples:  %d%n", absent.size());
-                    }
-                } else {
-                    Iterator<Triple> listTriples = this.profile.datastore.getTriplesMatchingTriplePattern(pattern);
-                    InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, cellcount, hashcount);
-                    this.profile.others.put(pattern, local);
-                    List<Triple> absent = local.absentTriple(ibf);
-                    if (absent == null) {
-                        errorsListentries++;
-                        result.put(pattern, listTriples);
-                        System.err.printf("[query-no-common-pattern] send all triples... %n");
-                    } else {
-                        result.put(pattern, absent.iterator());
-                        System.err.printf("[query-no-common-pattern] Remaining triples:  %d%n", absent.size());
-                    }
-                }
-            });
+                });
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            exit(1); // sry, but we need to stop for debugging, illegal error
         }
         this.tripleResponses += result.size();
         return new SnobTpqsResponse(result);
