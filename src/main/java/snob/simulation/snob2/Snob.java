@@ -1,5 +1,6 @@
 package snob.simulation.snob2;
 
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Triple;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -201,14 +202,20 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * @param snob
      */
     private void exchangeTriplePatterns(Snob snob) {
-        SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
-        // count the number of triples inserted in each ibf
-        msg.getPayload().forEach((k, v) -> {
-            this.tripleRequests += v.count;
+//        SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
+//        // count the number of triples inserted in each ibf
+//        msg.getPayload().forEach((k, v) -> {
+//            this.tripleRequests += v.count;
+//        });
+//        IMessage received = snob.onTpqs(this.node, msg);
+//        // 2 - insert responses into our datastore
+//        System.err.println("Receving results for our TPQs requests, inserting missing triples...");
+        Map<Triple, Iterator<Triple>> result = new HashMap<>();
+        this.profile.patterns.forEach(pattern -> {
+            result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, snob.profile).iterator());
         });
-        IMessage received = snob.onTpqs(this.node, msg);
-        // 2 - insert responses into our datastore
-        this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
+        // this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
+        this.profile.insertTriples(result);
         this.messages++;
     }
 

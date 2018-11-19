@@ -5,6 +5,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.util.ResultSetUtils;
+import snob.simulation.snob2.data.IBFStrata;
 import snob.simulation.snob2.data.InvertibleBloomFilter;
 
 import java.util.*;
@@ -23,6 +24,7 @@ public class Profile {
     public Map<Triple, InvertibleBloomFilter> invertibles = new HashMap<>();
     public Map<Triple, InvertibleBloomFilter> others = new HashMap<>();
     public Map<Triple, InvertibleBloomFilter> global = new HashMap<>();
+    public Map<Triple, IBFStrata> strata = new HashMap<>();
     public QuerySnob query;
     public Datastore datastore = new Datastore();
 
@@ -105,6 +107,7 @@ public class Profile {
     private void createInvertiblesFromPatterns(List<Triple> patterns) {
         for (Triple pattern : patterns) {
             if (!this.invertibles.containsKey(pattern)) {
+                strata.put(pattern, new IBFStrata());
                 invertibles.put(pattern, new InvertibleBloomFilter(cellCount, hashCount));
                 System.err.printf("IBF for the pattern created: %s with %d cells and %d hashfunctions %n", pattern.toString(), cellCount, hashCount);
             }
@@ -149,13 +152,16 @@ public class Profile {
         System.err.println("Initializing the pipeline...");
         for (Triple pattern : patterns) {
             System.err.printf("Inserting triples from %s into the pipeline: ", pattern.toString());
+            List<Triple> list = new ArrayList<>();
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
                 // System.err.printf(".");
                 // populate the pipeline plan
                 this.query.plan.insertTriple(pattern, triple);
                 // populate the bloom filter associated to the pattern
                 invertibles.get(pattern).insert(triple);
+                list.add(triple);
             });
+            this.strata.get(pattern).insert(list);
             System.err.println(":end.");
         }
     }

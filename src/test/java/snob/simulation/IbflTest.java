@@ -176,4 +176,41 @@ public class IbflTest {
         });
         // now p1 should have all results from p2
     }
+
+    /**
+     * //     * Update fonction of profile should extract tpq
+     * //
+     */
+    @Test
+    public void test2peersStratEstimator() {
+
+        String query = "PREFIX ns: <http://example.org/ns#> \n" +
+                "PREFIX : <http://example.org/ns#> \n" +
+                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
+        // init peer 1
+        Profile p1 = new Profile(100, 2);
+        p1.datastore.update("./datasets/test-peer1.ttl");
+        p1.update(query);
+        p1.execute();
+        // init peer 2
+        Profile p2 = new Profile(100, 2);
+        p2.datastore.update("./datasets/test-peer2.ttl");
+        p2.update(query);
+        p2.execute();
+        p1.query.results.forEachRemaining(binding -> {
+            System.err.println("[1] first exec: " + binding.toString());
+        });
+        Map<Triple, Iterator<Triple>> result = new HashMap<>();
+        p1.strata.forEach((pattern, strata) -> {
+            List<Triple> triples = strata.exchange(pattern, p2);
+            // add new triple from 2 to 1
+            result.put(pattern, triples.iterator());
+        });
+        // add new triple from 2 to 1
+        p1.insertTriples(result);
+        p1.execute();
+        p1.query.results.forEachRemaining(binding -> {
+            System.err.println("[1] first exec: " + binding.toString());
+        });
+    }
 }

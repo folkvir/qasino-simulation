@@ -150,7 +150,7 @@ public class SnobInit implements ObserverProgram {
                 pickedQuery++;
             }
 
-            // collect all possible triple patterns available in initialized profiles...
+            /*// collect all possible triple patterns available in initialized profiles...
             List<Triple> patterns = new ArrayList();
             System.err.println("Initialize all globa IBFs on all peers (could be very long to to this, please wait.)");
             for (int i = 0; i < networksize; ++i) {
@@ -166,7 +166,7 @@ public class SnobInit implements ObserverProgram {
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 snob.profile.initializeGlobalIBF(patterns);
-            }
+            }*/
         }
     }
 
