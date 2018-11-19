@@ -12,7 +12,7 @@ import se.rosenbaum.iblt.util.ResidualData;
 import java.util.*;
 
 public class InvertibleBloomFilter {
-    public static long count = 0;
+    public long count = 0;
     private IBLT<IntegerData, IntegerData> iblt;
     private Map<IntegerData, HashedTriple> mapping;
     private int cellCount;
@@ -58,11 +58,11 @@ public class InvertibleBloomFilter {
                 if (data(h.getValue().asInt()) == res) {
                     return t;
                 } else {
-                    throw new Exception("checkSum different for the triple: " + t.toString());
+                    throw new Exception("[IBF] checkSum different for the triple: " + t.toString());
                 }
             }
         } else {
-            throw new Exception("Not found: " + t.toString());
+            throw new Exception("[IBF] Not found: " + t.toString());
         }
     }
 
@@ -89,6 +89,7 @@ public class InvertibleBloomFilter {
     }
 
     public List<Triple> _absentTriple(IBLT<IntegerData, IntegerData> incomingIBLT) {
+        System.err.println("[IBF] Cloning the ibf for not loosing data before reconciliation...");
         ResidualData<IntegerData, IntegerData> res = _reconcile(new IBLT<>(incomingIBLT.getCells().clone(), new IntegerDataSubtablesHashFunctions(incomingIBLT.getCells().length, hashFunctionCount)), mydata());
         List<Triple> output = new ArrayList<>();
         if (res == null) {

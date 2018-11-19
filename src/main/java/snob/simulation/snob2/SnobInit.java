@@ -1,5 +1,6 @@
 package snob.simulation.snob2;
 
+import org.apache.jena.graph.Triple;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,7 +16,10 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.rmi.ServerError;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Vector;
 import java.util.stream.Stream;
 
@@ -23,12 +27,13 @@ import java.util.stream.Stream;
 public class SnobInit implements ObserverProgram {
     private int qlimit; // limit of queries loaded in the network
     private int dlimit; // limit of fragments loaded in the network
-
-
+    private int replicate;
     public SnobInit(String prefix) {
         System.err.println("Initializing: " + prefix);
         try {
             this.qlimit = Configuration.getInt(prefix + ".qlimit", -1);
+            System.err.println("Setting the replicate factor to (%): " + this.qlimit);
+            this.replicate = Configuration.getInt(prefix + ".replicate", 50);
             System.err.println("Setting the query limit to: " + this.qlimit);
             this.dlimit = Configuration.getInt(prefix + ".dlimit", -1);
             System.err.println("Setting the fragments limit to: " + this.dlimit);
@@ -104,20 +109,38 @@ public class SnobInit implements ObserverProgram {
                 e.printStackTrace();
             }
 
-            queriesDiseasome.addAll(queriesLinkedmdb);
-            Collections.shuffle(queriesDiseasome);
+            // create a vector containing all queries where queries are inserted one after the other respectively from each dataset
+            Vector<JSONObject> finalQueries = new Vector();
+            int j = 0;
+            for (int i = 0; i < queriesDiseasome.size(); i++) {
+                finalQueries.add(queriesDiseasome.get(i));
+                if(j < queriesLinkedmdb.size()){
+                    finalQueries.add(queriesLinkedmdb.get(j));
+                }
+                j++;
+            }
 
+            // now check the replicate factor and replicate the first query in this vector
+            JSONObject queryToreplicate = finalQueries.get(0);
+            double numberOfReplicatedQueries = Math.floor(peers.size() / replicate);
+            System.err.printf("Replicating %f times the query: %s", numberOfReplicatedQueries, queryToreplicate.get("query").toString());
+            for(int i = 0; i < numberOfReplicatedQueries; ++i) {
+                finalQueries.set(i, (JSONObject) queryToreplicate.clone());
+            }
+
+            // set queries on each peer
             int pickedQuery = 0;
             peersPicked = 0;
-            this.qlimit = (this.qlimit == -1) ? queriesDiseasome.size() : this.qlimit;
+            this.qlimit = (this.qlimit == -1) ? finalQueries.size() : this.qlimit;
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 snob.profile.qlimit = this.qlimit;
+                snob.profile.replicate = this.replicate;
             }
-            System.err.println("Number of queries to load: [" + this.qlimit + "/" + queriesDiseasome.size() + "]...");
-            while (pickedQuery < this.qlimit && pickedQuery < queriesDiseasome.size()) {
-                long card = (long) queriesDiseasome.get(pickedQuery).get("card");
-                String query = queriesDiseasome.get(pickedQuery).get("query").toString();
+            System.err.println("Number of queries to load: [" + this.qlimit + "/" + finalQueries.size() + "]...");
+            while (pickedQuery < this.qlimit && pickedQuery < finalQueries.size()) {
+                long card = (long) finalQueries.get(pickedQuery).get("card");
+                String query = finalQueries.get(pickedQuery).get("query").toString();
                 System.err.printf("Loading query with %d expected result(s) into peer: %d%n", card, peersPicked);
                 System.err.println(query);
                 peers.get(peersPicked).profile.update(query, card);
@@ -125,6 +148,24 @@ public class SnobInit implements ObserverProgram {
                 peersPicked++;
                 if (peersPicked > peers.size() - 1) peersPicked = 0;
                 pickedQuery++;
+            }
+
+            // collect all possible triple patterns available in initialized profiles...
+            List<Triple> patterns = new ArrayList();
+            System.err.println("Initialize all globa IBFs on all peers (could be very long to to this, please wait.)");
+            for (int i = 0; i < networksize; ++i) {
+                Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
+                // collect all patterns
+                snob.profile.patterns.forEach(pattern -> {
+                    if(!patterns.contains(pattern)) {
+                        patterns.add(pattern);
+                    }
+                });
+            }
+            // now initialize IBFs
+            for (int i = 0; i < networksize; ++i) {
+                Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
+                snob.profile.initializeGlobalIBF(patterns);
             }
         }
     }

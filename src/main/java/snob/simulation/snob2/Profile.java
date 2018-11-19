@@ -17,23 +17,47 @@ public class Profile {
     public int hashCount;
     public boolean has_query = false;
     public long qlimit = 1; // number of queries in the network
+    public long replicate = 50; // replicate factor in % (one query is replicated over a limited number of peer, 'replicate is this number)
 
-    public List<Triple> patterns;
-    public Map<Triple, InvertibleBloomFilter> invertibles;
-    public Map<Triple, InvertibleBloomFilter> others;
+    public List<Triple> patterns = new ArrayList<>();
+    public Map<Triple, InvertibleBloomFilter> invertibles = new HashMap<>();
+    public Map<Triple, InvertibleBloomFilter> others = new HashMap<>();
+    public Map<Triple, InvertibleBloomFilter> global = new HashMap<>();
     public QuerySnob query;
-    public Datastore datastore;
+    public Datastore datastore = new Datastore();
 
 
-    public Profile(int ibflCounCell, int ibflHashCount) {
-        cellCount = ibflCounCell;
-        hashCount = ibflHashCount;
-        this.patterns = new ArrayList<>();
-        this.invertibles = new HashMap<>();
-        this.others = new HashMap<>();
-        this.datastore = new Datastore();
+    public Profile(int cellCount, int hashCount) {
+        this.cellCount = cellCount;
+        this.hashCount = hashCount;
     }
 
+    /**
+     * (For the simulation only) Compute all possible triple patterns of the simulation in order to not slow down the simulation.
+     * IRL, triple patterns should be created at runtime.
+     * @param patterns
+     */
+    public void initializeGlobalIBF(List<Triple> patterns) {
+        System.err.println("Initializing the global IBFs structure for all possible triple patterns...");
+        try {
+            patterns.forEach(pattern -> {
+                InvertibleBloomFilter ibf = new InvertibleBloomFilter(cellCount, hashCount);
+                Iterator<Triple> its = this.datastore.getTriplesMatchingTriplePattern(pattern);
+                its.forEachRemaining(triple -> {
+                    ibf.insert(triple);
+                });
+                global.put(pattern, ibf);
+            });
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    /**
+     * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
+     * @param its Iterator of triples associated to a triple pattern.
+     */
     public void insertTriples(Map<Triple, Iterator<Triple>> its) {
         its.forEach((pattern, iterator) -> {
             List<Triple> list = new ArrayList<>();
@@ -55,8 +79,13 @@ public class Profile {
         });
     }
 
+    /**
+     * Update the profile with a new Query as string only
+     * @param query
+     */
     public void update(String query) {
         try {
+            this.reset();
             has_query = true;
             this.query = new QuerySnob(query);
             System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
@@ -69,6 +98,10 @@ public class Profile {
         }
     }
 
+    /**
+     * Initialize an IBF from a list of pattern
+     * @param patterns
+     */
     private void createInvertiblesFromPatterns(List<Triple> patterns) {
         for (Triple pattern : patterns) {
             if (!this.invertibles.containsKey(pattern)) {
@@ -78,8 +111,24 @@ public class Profile {
         }
     }
 
+    /**
+     * Reset the structure
+     */
+    private void reset() {
+        this.has_query = false;
+        this.invertibles = new HashMap<>();
+        this.others = new HashMap<>();
+        this.patterns = new ArrayList<>();
+    }
+
+    /**
+     * Update the profile with a new Query as string and its number of results
+     * @param query
+     * @param card
+     */
     public void update(String query, long card) {
         try {
+            this.reset();
             this.has_query = true;
             this.query = new QuerySnob(query, card);
             System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
@@ -92,6 +141,10 @@ public class Profile {
         }
     }
 
+    /**
+     * Initialize the pipeline of iterators using data stored in the datastore
+     * @param patterns
+     */
     private void initPipeline(List<Triple> patterns) {
         System.err.println("Initializing the pipeline...");
         for (Triple pattern : patterns) {
@@ -107,6 +160,9 @@ public class Profile {
         }
     }
 
+    /**
+     * Execute the query using the pipeline of iterators
+     */
     public void execute() {
         try {
             if (this.query != null) {
@@ -162,31 +218,31 @@ public class Profile {
         return score;
     }
 
-    public boolean equivalence(Triple tpa, Triple tpb) {
+    private boolean equivalence(Triple tpa, Triple tpb) {
         return tpa.equals(tpb);
     }
 
-    public boolean containment(Triple tpa, Triple tpb) {
+    private boolean containment(Triple tpa, Triple tpb) {
         return this.contain(tpa.getSubject(), tpb.getSubject()) &&
                 contain(tpa.getPredicate(), tpb.getPredicate()) &&
                 contain(tpa.getObject(), tpb.getObject());
     }
 
-    public boolean subset(Triple tpa, Triple tpb) {
+    private boolean subset(Triple tpa, Triple tpb) {
         return this.sub(tpa.getSubject(), tpb.getSubject()) &&
                 sub(tpa.getPredicate(), tpb.getPredicate()) &&
                 sub(tpa.getObject(), tpb.getObject());
     }
 
-    public boolean contain(Node v1, Node v2) {
+    private boolean contain(Node v1, Node v2) {
         return this.eq(v1, v2) || (!v1.isVariable() && v2.isVariable());
     }
 
-    public boolean sub(Node v1, Node v2) {
+    private boolean sub(Node v1, Node v2) {
         return this.eq(v1, v2) || (v1.isVariable() && !v2.isVariable());
     }
 
-    public boolean eq(Node v1, Node v2) {
+    private boolean eq(Node v1, Node v2) {
         return v1.equals(v2);
     }
 }

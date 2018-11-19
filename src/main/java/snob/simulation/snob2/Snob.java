@@ -175,12 +175,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         for (Node node1 : rps_neigh) {
             if (this.profile.patterns.size() > 0) {
                 Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-                this.tripleRequests += InvertibleBloomFilter.count;
-                SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
-                IMessage received = snob.onTpqs(this.node, msg);
-                // 2 - insert responses into our datastore
-                this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
-                this.messages++;
+                this.exchangeTriplePatterns(snob);
             }
         }
         if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
@@ -188,17 +183,31 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             for (Node node1 : son_neigh) {
                 if (this.profile.patterns.size() > 0) {
                     Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-                    SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
-                    this.tripleRequests += InvertibleBloomFilter.count;
-                    IMessage received = snob.onTpqs(this.node, msg);
-                    this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
-                    this.messages++;
+                    this.exchangeTriplePatterns(snob);
                 }
             }
         }
 
         // 3 - perform the execution of all queries
         profile.execute();
+    }
+
+    /**
+     * Exchange Triple patterns with Invertible bloom filters associated with.
+     * In return the other peers send us missing triples for each triple pattern.
+     * See onTpqs(...) function
+     * @param snob
+     */
+    private void exchangeTriplePatterns(Snob snob) {
+        SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
+        // count the number of triples inserted in each ibf
+        msg.getPayload().forEach((k, v) -> {
+            this.tripleRequests += v.count;
+        });
+        IMessage received = snob.onTpqs(this.node, msg);
+        // 2 - insert responses into our datastore
+        this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
+        this.messages++;
     }
 
     /**
@@ -215,7 +224,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         // if we have a pipeline, use the normal behavior, getTriplesMatchingTriples -> populate a new ibf and return the missing values
         if (!this.profile.has_query) {
             messageReceived.forEach((pattern, ibf) -> {
-                if (this.profile.others.containsKey(pattern)) {
+                if (this.profile.global.containsKey(pattern)) {
                     List<Triple> absent = this.profile.others.get(pattern).absentTriple(ibf);
                     if (absent == null) {
                         errorsListentries++;
