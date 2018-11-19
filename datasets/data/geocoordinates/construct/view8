@@ -1,4 +1,0 @@
-CONSTRUCT 
-  { <http://dbpedia.org/resource/Bowman_Lake_State_Park> <http://www.georss.org/georss/point> ?x3 .}
-WHERE
-  { <http://dbpedia.org/resource/Bowman_Lake_State_Park> <http://www.georss.org/georss/point> ?x3 }

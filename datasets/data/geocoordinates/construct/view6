@@ -1,4 +1,0 @@
-CONSTRUCT 
-  { ?x1 <http://www.georss.org/georss/point> ?x2 .}
-WHERE
-  { ?x1 <http://www.georss.org/georss/point> ?x2 }

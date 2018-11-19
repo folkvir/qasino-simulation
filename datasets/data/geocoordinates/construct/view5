@@ -1,4 +1,0 @@
-CONSTRUCT 
-  { ?x1 <http://www.georss.org/georss/point> "-46.333333333333336 168.85"@en .}
-WHERE
-  { ?x1 <http://www.georss.org/georss/point> "-46.333333333333336 168.85"@en }
