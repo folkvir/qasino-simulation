@@ -1,14 +1,17 @@
 package snob.simulation;
 
 import com.google.common.hash.HashCode;
-import org.apache.jena.atlas.iterator.Iter;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
-import snob.simulation.snob2.data.InvertibleBloomFilter;
 
+import javax.naming.Binding;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -38,179 +41,63 @@ public class IbflTest {
         Assert.assertEquals(xse, xse2);
     }
 
-    @Test
-    public void testReconciliation() {
-        Triple t = new Triple(NodeFactory.createURI("a"),
-                NodeFactory.createURI("a"),
-                NodeFactory.createURI("a"));
-        Triple t2 = new Triple(NodeFactory.createURI("b"),
-                NodeFactory.createURI("b"),
-                NodeFactory.createURI("b"));
-        Triple t3 = new Triple(NodeFactory.createURI("d"),
-                NodeFactory.createURI("d"),
-                NodeFactory.createURI("d"));
-        InvertibleBloomFilter b1 = new InvertibleBloomFilter(10, 2);
-        try {
-            b1.insert(t);
-            b1.insert(t2);
-            b1.insert(t3);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        InvertibleBloomFilter b2 = new InvertibleBloomFilter(100, 2);
-        Triple t4 = new Triple(NodeFactory.createURI("a"),
-                NodeFactory.createURI("a"),
-                NodeFactory.createURI("a"));
-        Triple t5 = new Triple(NodeFactory.createURI("c"),
-                NodeFactory.createURI("c"),
-                NodeFactory.createURI("c"));
-        b2.insert(t4);
-        b2.insert(t5);
-
-        // get absent triple, triples that are in A but not in B
-        List<Triple> absentTriples = b2.absentTriple(b1);
-        absentTriples.forEach(triple -> {
-            System.out.println("Absent triple: " + triple.toString());
-            Assert.assertEquals(triple.toString(), "c @c c");
-        });
-    }
-
-    /**
-     * //     * Update fonction of profile should extract tpq
-     * //
-     */
-    @Test
-    public void test2peers() {
-
-        String query = "PREFIX ns: <http://example.org/ns#> \n" +
-                "PREFIX : <http://example.org/ns#> \n" +
-                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
-        // init peer 1
-        Profile p1 = new Profile(100, 2);
-        p1.datastore.update("./datasets/test-peer1.ttl");
-        p1.update(query);
-        p1.execute();
-        // init peer 2
-        Profile p2 = new Profile(100, 2);
-        p2.datastore.update("./datasets/test-peer2.ttl");
-        p2.update(query);
-        p2.execute();
-
-        // simulate an exchange from 1 to 2
-        System.err.println("[1] Simulate the 1st exchange from P1 to P2");
-        Map<Triple, Iterator<Triple>> result = new HashMap<>();
-        p1.invertibles.forEach((pattern, ibf) -> {
-            ibf.getMapping().forEach((k, v) -> System.err.println("[1] IBF triple:" + v.getTriple().toString()));
-            System.err.println("[1] Pattern: " + pattern.toString());
-            int count = 0;
-            Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(pattern);
-            while(it.hasNext()) {
-                Triple t = it.next();
-                System.err.println("[1] Reading triple: " + t.toString());
-                count++;
-            }
-            Assert.assertEquals(2, count);
-            // for each ibf ask for missing triples to profile 2
-            if (p2.invertibles.containsKey(pattern)) {
-                List<Triple> absent = p2.invertibles.get(pattern).absentTriple(ibf);
-                System.err.println("[1] Missing triples size: " + absent.size());
-                Assert.assertEquals(2, absent.size());
-                result.put(pattern, absent.iterator());
-            } else {
-                Iterator<Triple> listTriples = p2.datastore.getTriplesMatchingTriplePattern(pattern);
-                InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, 100, 2);
-                List<Triple> absent = local.absentTriple(ibf);
-                System.err.println("[1] Missing triples size: " + absent.size());
-                Assert.assertEquals(2, absent.size());
-                result.put(pattern, absent.iterator());
-            }
-        });
-        // add new triple from 2 to 1
-        p1.insertTriples(result);
-        p1.execute();
-        p1.query.results.forEachRemaining(binding -> {
-            System.err.println("[1] first exec: " + binding.toString());
-        });
-
-        // simulate an exchange from 1 to 2
-        System.err.println("[2] Simulate the 2nd exchange from P1 to P2");
-        Map<Triple, Iterator<Triple>> result2 = new HashMap<>();
-        p1.invertibles.forEach((pattern, ibf) -> {
-            ibf.getMapping().forEach((k, v) -> System.err.println("[2] IBF triple:" + v.getTriple().toString()));
-            System.err.println("[2] Triple pattern " + pattern.toString());
-            int count = 0;
-            Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(pattern);
-            while(it.hasNext()) {
-                Triple t = it.next();
-                System.err.println("[2] Reading triple: " + t.toString());
-                count++;
-            }
-            Assert.assertEquals(4, count);
-            // for each ibf ask for missing triples to profile 2
-            if (p2.invertibles.containsKey(pattern)) {
-                List<Triple> absent = p2.invertibles.get(pattern).absentTriple(ibf);
-                System.err.println("[2] Missing triples size: " + absent.size());
-                Object[] clone = absent.toArray().clone();
-                for (int i = 0; i < clone.length; i++) {
-                    System.err.println("Missing triple: " + clone[i].toString());
-                }
-                Assert.assertEquals(0, absent.size());
-
-                result2.put(pattern, absent.iterator());
-            } else {
-                Iterator<Triple> listTriples = p2.datastore.getTriplesMatchingTriplePattern(pattern);
-                InvertibleBloomFilter local = InvertibleBloomFilter.createIBFFromTriples(listTriples, 100, 2);
-                List<Triple> absent = local.absentTriple(ibf);
-                System.err.println("[2] Missing triples size: " + absent.size());
-                Assert.assertEquals(0, absent.size());
-                result2.put(pattern, absent.iterator());
-            }
-        });
-
-        p1.insertTriples(result2);
-        p1.execute();
-        p1.query.results.forEachRemaining(binding -> {
-            System.err.println("[2] second exec: " + binding.toString());
-        });
-        // now p1 should have all results from p2
-    }
-
     /**
      * //     * Update fonction of profile should extract tpq
      * //
      */
     @Test
     public void test2peersStratEstimator() {
-
+        System.err.println("HEY COUCOU");
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
         // init peer 1
-        Profile p1 = new Profile(100, 2);
+        int count = 0;
+        int dtriples = 0;
+        Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
         p1.update(query);
+        Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
+        while(it.hasNext()) {
+            System.err.println("[1] Triple: " + it.next());
+            dtriples++;
+        }
+        Assert.assertEquals(2, dtriples);
         p1.execute();
+        System.err.println(p1.query.getResults());
+        count = p1.query.getResults().size();
+        System.err.println("Size of: " + count);
+
         // init peer 2
-        Profile p2 = new Profile(100, 2);
+        Profile p2 = new Profile();
         p2.datastore.update("./datasets/test-peer2.ttl");
         p2.update(query);
         p2.execute();
-        p1.query.results.forEachRemaining(binding -> {
-            System.err.println("[1] first exec: " + binding.toString());
-        });
+
+        // simulate an exchange of triples pattern using the exchange method of strata estimator
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         p1.strata.forEach((pattern, strata) -> {
-            List<Triple> triples = strata.exchange(pattern, p2);
+            List<Triple> triples = strata._exchange(pattern, p2, 0);
             // add new triple from 2 to 1
             result.put(pattern, triples.iterator());
+            Assert.assertEquals(2, strata.count);
         });
+
         // add new triple from 2 to 1
         p1.insertTriples(result);
+
+        // now check we have all triples, including ours and missing triples
+        Iterator<Triple> it2 = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
+        while(it2.hasNext()) {
+            System.err.println("[1] Triple: " + it2.next());
+            dtriples++;
+        }
+        Assert.assertEquals(4, dtriples);
+        // execute again
         p1.execute();
-        p1.query.results.forEachRemaining(binding -> {
-            System.err.println("[1] first exec: " + binding.toString());
-        });
+        // check the number of results, total = 2 "abc" anc "efg"
+        System.err.println(p1.query.getResults());
+        count = p1.query.getResults().size();
+        Assert.assertEquals(2, count);
     }
 }

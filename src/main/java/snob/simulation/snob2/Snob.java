@@ -1,6 +1,5 @@
 package snob.simulation.snob2;
 
-import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Triple;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -8,10 +7,7 @@ import peersim.core.Node;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
-import snob.simulation.snob2.data.InvertibleBloomFilter;
 import snob.simulation.snob2.messages.SnobMessage;
-import snob.simulation.snob2.messages.SnobTpqsRequest;
-import snob.simulation.snob2.messages.SnobTpqsResponse;
 
 import java.util.*;
 
@@ -21,14 +17,15 @@ import static java.lang.System.exit;
  * The Snob protocol
  */
 public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
+    private static int snobs = 0;
+    public final int id = Snob.snobs++;
+
     // #A the names of the parameters in the configuration file of peersim
     private static final String PAR_C = "c"; // max partial view size
     private static final String PAR_L = "l"; // shuffle size
     private static final String PAR_SON_C = "sonc"; // shuffle size on the rps
     private static final String PAR_SON_L = "sonl"; // shuffle size on the son
     private static final String PAR_SON = "son"; // enable son or not
-    private static final String PAR_CELL_COUNT = "cellcount"; // invertible bloom filter cell count
-    private static final String PAR_HASH_COUNT = "hashcount"; // invertible bloom filter hash count
 
     // #B the values from the configuration file of peersim
     public static int c;
@@ -36,8 +33,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static boolean son;
     public static int sonc;
     public static int sonl;
-    public static int cellcount;
-    public static int hashcount;
     public static int RND_WALK = 5;
     // Profile of the peer
     public Profile profile;
@@ -67,14 +62,12 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         Snob.sonc = Configuration.getInt(prefix + "." + PAR_SON_C);
         Snob.sonl = Configuration.getInt(prefix + "." + PAR_SON_L);
         Snob.son = Configuration.getBoolean(prefix + "." + PAR_SON);
-        Snob.cellcount = Configuration.getInt(prefix + "." + PAR_CELL_COUNT);
-        Snob.hashcount = Configuration.getInt(prefix + "." + PAR_HASH_COUNT);
         this.partialView = new SnobPartialView(Snob.c, Snob.l);
         if (Snob.son) {
             this.sonPartialView = new SonPartialView(Snob.sonc, Snob.sonl);
         }
         try {
-            this.profile = new Profile(cellcount, hashcount);
+            this.profile = new Profile();
             System.err.println("Creating the profile...");
         } catch (Exception e) {
             System.err.println(e);
@@ -199,88 +192,16 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * Exchange Triple patterns with Invertible bloom filters associated with.
      * In return the other peers send us missing triples for each triple pattern.
      * See onTpqs(...) function
-     * @param snob
+     * @param remote
      */
-    private void exchangeTriplePatterns(Snob snob) {
-//        SnobTpqsRequest msg = new SnobTpqsRequest(this.profile.invertibles);
-//        // count the number of triples inserted in each ibf
-//        msg.getPayload().forEach((k, v) -> {
-//            this.tripleRequests += v.count;
-//        });
-//        IMessage received = snob.onTpqs(this.node, msg);
-//        // 2 - insert responses into our datastore
-//        System.err.println("Receving results for our TPQs requests, inserting missing triples...");
+    private void exchangeTriplePatterns(Snob remote) {
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         this.profile.patterns.forEach(pattern -> {
-            result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, snob.profile).iterator());
+            result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, remote).iterator());
         });
-        // this.profile.insertTriples((Map<Triple, Iterator<Triple>>) received.getPayload());
+        this.tripleResponses += result.size();
         this.profile.insertTriples(result);
         this.messages++;
-    }
-
-    /**
-     * When we receive a TPQs request, we do a set reconcialition over Invertible bloom filters
-     * Get missing triples, then send back them
-     *
-     * @param origin
-     * @param message
-     * @return
-     */
-    public IMessage onTpqs(Node origin, IMessage message) {
-        Map<Triple, InvertibleBloomFilter> messageReceived = (Map<Triple, InvertibleBloomFilter>) message.getPayload();
-        Map<Triple, Iterator<Triple>> result = new HashMap<>();
-        // if we have a pipeline, use the normal behavior, getTriplesMatchingTriples -> populate a new ibf and return the missing values
-        try {
-            if (!this.profile.has_query) {
-                messageReceived.forEach((pattern, ibf) -> {
-                    if (this.profile.global.containsKey(pattern)) {
-                        List<Triple> absent = this.profile.global.get(pattern).absentTriple(ibf);
-                        if (absent == null) {
-                            errorsListentries++;
-                            result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                            System.err.printf("[no-query-pattern-global] send all  %n");
-                        } else {
-                            result.put(pattern, absent.iterator());
-                            System.err.printf("[no-query-pattern-global] Remaining triples:  %d%n", absent.size());
-                        }
-                    } else {
-                        throw new Error("IBF not found, problem. Please report.");
-                    }
-                });
-            } else {
-                messageReceived.forEach((pattern, ibf) -> {
-                    if (this.profile.invertibles.containsKey(pattern)) {
-                        List<Triple> absent = this.profile.invertibles.get(pattern).absentTriple(ibf);
-                        if (absent == null) {
-                            errorsListentries++;
-                            result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                            System.err.printf("[query-common-pattern] send all  %n");
-                        } else {
-                            result.put(pattern, absent.iterator());
-                            System.err.printf("[query-common-pattern] Remaining triples:  %d%n", absent.size());
-                        }
-                    } else if (this.profile.global.containsKey(pattern)) {
-                        List<Triple> absent = this.profile.global.get(pattern).absentTriple(ibf);
-                        if (absent == null) {
-                            errorsListentries++;
-                            result.put(pattern, this.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                            System.err.printf("[query-pattern-global] send all  %n");
-                        } else {
-                            result.put(pattern, absent.iterator());
-                            System.err.printf("[query-pattern-global] Remaining triples:  %d%n", absent.size());
-                        }
-                    } else {
-                        throw new Error("IBF not found, problem. Please report.");
-                    }
-                });
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-            exit(1); // sry, but we need to stop for debugging, illegal error
-        }
-        this.tripleResponses += result.size();
-        return new SnobTpqsResponse(result);
     }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {

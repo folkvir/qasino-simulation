@@ -12,6 +12,8 @@ import org.apache.jena.util.FileManager;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.lang.System.exit;
+
 
 public class Datastore {
     public Dataset dataset;
@@ -48,6 +50,9 @@ public class Datastore {
                 if (!this.dataset.asDatasetGraph().getDefaultGraph().contains(p)) {
                     // System.err.println("Inserting triple: " + p.toString());
                     this.dataset.asDatasetGraph().getDefaultGraph().add(p);
+                } else {
+                    System.err.println(new Error("[]inserting twice a triple..."));
+                    exit(1);
                 }
             }
             this.dataset.commit();

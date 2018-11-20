@@ -6,55 +6,24 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.util.ResultSetUtils;
 import snob.simulation.snob2.data.IBFStrata;
-import snob.simulation.snob2.data.InvertibleBloomFilter;
 
 import java.util.*;
+
+import static java.lang.System.exit;
 
 public class Profile {
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
     public int WEIGH_CONTAINMENT = 2;
     public int WEIGH_SUBSET = 1;
-    public int cellCount;
-    public int hashCount;
     public boolean has_query = false;
     public long qlimit = 1; // number of queries in the network
     public long replicate = 50; // replicate factor in % (one query is replicated over a limited number of peer, 'replicate is this number)
 
     public List<Triple> patterns = new ArrayList<>();
-    public Map<Triple, InvertibleBloomFilter> invertibles = new HashMap<>();
-    public Map<Triple, InvertibleBloomFilter> others = new HashMap<>();
-    public Map<Triple, InvertibleBloomFilter> global = new HashMap<>();
     public Map<Triple, IBFStrata> strata = new HashMap<>();
     public QuerySnob query;
     public Datastore datastore = new Datastore();
 
-
-    public Profile(int cellCount, int hashCount) {
-        this.cellCount = cellCount;
-        this.hashCount = hashCount;
-    }
-
-    /**
-     * (For the simulation only) Compute all possible triple patterns of the simulation in order to not slow down the simulation.
-     * IRL, triple patterns should be created at runtime.
-     * @param patterns
-     */
-    public void initializeGlobalIBF(List<Triple> patterns) {
-        System.err.println("Initializing the global IBFs structure for all possible triple patterns...");
-        try {
-            patterns.forEach(pattern -> {
-                InvertibleBloomFilter ibf = new InvertibleBloomFilter(cellCount, hashCount);
-                Iterator<Triple> its = this.datastore.getTriplesMatchingTriplePattern(pattern);
-                its.forEachRemaining(triple -> {
-                    ibf.insert(triple);
-                });
-                global.put(pattern, ibf);
-            });
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
 
     /**
      * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
@@ -66,13 +35,11 @@ public class Profile {
             while (iterator.hasNext()) {
                 Triple t = iterator.next();
 
-                this.invertibles.get(pattern).insert(t);
                 if (!this.datastore.contains(t)) {
-                    // System.err.printf("Adding triple: %s to the datastore and the pipeline and the IBF... %n", t.toString());
+                    // System.err.printf("Adding triple: [%s] for pattern=[%s]to the datastore %n", t.toString(), pattern.toString());
                     // populate the pipeline plan
                     query.plan.insertTriple(pattern, t);
-                    // populate the bloom filter associated to the pattern
-                    list.add(t);
+                    // populate the bloom filter associated to the patter
                 }
             }
             // System.err.print("!end! count=" + count);
@@ -92,25 +59,10 @@ public class Profile {
             this.query = new QuerySnob(query);
             System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
             patterns = this.query.plan.patterns;
-            createInvertiblesFromPatterns(patterns);
-            initPipeline(patterns);
+            init(patterns);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
-        }
-    }
-
-    /**
-     * Initialize an IBF from a list of pattern
-     * @param patterns
-     */
-    private void createInvertiblesFromPatterns(List<Triple> patterns) {
-        for (Triple pattern : patterns) {
-            if (!this.invertibles.containsKey(pattern)) {
-                strata.put(pattern, new IBFStrata());
-                invertibles.put(pattern, new InvertibleBloomFilter(cellCount, hashCount));
-                System.err.printf("IBF for the pattern created: %s with %d cells and %d hashfunctions %n", pattern.toString(), cellCount, hashCount);
-            }
         }
     }
 
@@ -119,8 +71,6 @@ public class Profile {
      */
     private void reset() {
         this.has_query = false;
-        this.invertibles = new HashMap<>();
-        this.others = new HashMap<>();
         this.patterns = new ArrayList<>();
     }
 
@@ -136,8 +86,7 @@ public class Profile {
             this.query = new QuerySnob(query, card);
             System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
             this.patterns = this.query.plan.patterns;
-            this.createInvertiblesFromPatterns(this.patterns);
-            this.initPipeline(this.patterns);
+            this.init(this.patterns);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -146,21 +95,23 @@ public class Profile {
 
     /**
      * Initialize the pipeline of iterators using data stored in the datastore
+     * And also initialize Invertible Bloom Filters
      * @param patterns
      */
-    private void initPipeline(List<Triple> patterns) {
-        System.err.println("Initializing the pipeline...");
+    private void init(List<Triple> patterns) {
+        System.err.println("[INIT] Initializing the pipeline...");
         for (Triple pattern : patterns) {
-            System.err.printf("Inserting triples from %s into the pipeline: ", pattern.toString());
+            System.err.printf("[INIT] Inserting triples from %s into the pipeline: ", pattern.toString());
             List<Triple> list = new ArrayList<>();
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
                 // System.err.printf(".");
                 // populate the pipeline plan
                 this.query.plan.insertTriple(pattern, triple);
-                // populate the bloom filter associated to the pattern
-                invertibles.get(pattern).insert(triple);
                 list.add(triple);
             });
+            if(!this.strata.containsKey(pattern)) {
+              this.strata.put(pattern, new IBFStrata());
+            }
             this.strata.get(pattern).insert(list);
             System.err.println(":end.");
         }
@@ -172,12 +123,7 @@ public class Profile {
     public void execute() {
         try {
             if (this.query != null) {
-                ResultSet set = this.query.plan.execute();
-                if (this.query.results == null) {
-                    this.query.results = set;
-                } else {
-                    this.query.results = ResultSetUtils.union(this.query.results, set);
-                }
+                this.query.insertResults(this.query.plan.execute());
             }
         } catch (Exception e) {
             e.printStackTrace();

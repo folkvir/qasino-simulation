@@ -41,7 +41,6 @@ public class HalfHashJoin implements QueryIterator {
 
         // insert into inner table
         innerTable.put(key, binding);
-
         // probe outer table
         return new QueryIterPlainWrapper(outerTable.probe(key, binding));
     }

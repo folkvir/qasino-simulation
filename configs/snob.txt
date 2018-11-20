@@ -1,8 +1,8 @@
 # network size
-SIZE 10
+SIZE 20
 
 # parameters of periodic execution
-CYCLES 10
+CYCLES 50
 
 random.seed 1237567890
 network.size SIZE
@@ -14,19 +14,17 @@ protocol.link peersim.core.IdleProtocol
 
 protocol.snob snob.simulation.snob2.Snob
 protocol.snob.rps snob
-protocol.snob.c 10
-protocol.snob.l 10
+protocol.snob.c 2
+protocol.snob.l 2
 protocol.snob.delta 1
 protocol.snob.step 1
 protocol.snob.start 2
 protocol.snob.son true
-protocol.snob.sonc 10
-protocol.snob.sonl 10
+protocol.snob.sonc 2
+protocol.snob.sonl 2
 protocol.snob.sondelta 1
 protocol.snob.linkable link
 protocol.snob.fail 0.000
-protocol.snob.cellcount 1000000
-protocol.snob.hashcount 2
 
 control.o1 snob.simulation.controllers.DynamicNetwork
 control.o1.protocol snob
@@ -57,7 +55,7 @@ control.1 snob.simulation.observers.Observer
 control.1.program snob.simulation.snob2.SnobInit
 control.1.protocol snob
 control.1.replicate 50
-control.1.qlimit 10
+control.1.qlimit 20
 control.1.dlimit -1
 control.1.FINAL
 control.1.step 1

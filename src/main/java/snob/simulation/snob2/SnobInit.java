@@ -122,32 +122,35 @@ public class SnobInit implements ObserverProgram {
 
             // now check the replicate factor and replicate the first query in this vector
             JSONObject queryToreplicate = finalQueries.get(0);
-            double numberOfReplicatedQueries = Math.floor(peers.size() / replicate);
+            double numberOfReplicatedQueries = Math.floor(peers.size() * replicate / 100);
             System.err.printf("Replicating %f times the query: %s", numberOfReplicatedQueries, queryToreplicate.get("query").toString());
             for(int i = 0; i < numberOfReplicatedQueries; ++i) {
                 finalQueries.set(i, (JSONObject) queryToreplicate.clone());
             }
 
+
+
             // set queries on each peer
             int pickedQuery = 0;
             peersPicked = 0;
-            this.qlimit = (this.qlimit == -1) ? finalQueries.size() : this.qlimit;
+            List<JSONObject> queries = new ArrayList<>();
+            for(int i= 0;i < peers.size(); ++i) {
+                queries.add(finalQueries.get(i));
+            }
+
+            // shuffle queries =)
+            Collections.shuffle(queries);
+
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 snob.profile.qlimit = this.qlimit;
                 snob.profile.replicate = this.replicate;
-            }
-            System.err.println("Number of queries to load: [" + this.qlimit + "/" + finalQueries.size() + "]...");
-            while (pickedQuery < this.qlimit && pickedQuery < finalQueries.size()) {
-                long card = (long) finalQueries.get(pickedQuery).get("card");
-                String query = finalQueries.get(pickedQuery).get("query").toString();
-                System.err.printf("Loading query with %d expected result(s) into peer: %d%n", card, peersPicked);
-                System.err.println(query);
-                peers.get(peersPicked).profile.update(query, card);
-                // System.err.println("Number of queries for peer-" + peersPicked + ": " + 1);
-                peersPicked++;
-                if (peersPicked > peers.size() - 1) peersPicked = 0;
-                pickedQuery++;
+                if(this.qlimit != 0) {
+                    JSONObject query = queries.get(i);
+                    snob.profile.update((String) query.get("query"), (long) query.get("card"));
+                    qlimit--;
+                }
+
             }
 
             /*// collect all possible triple patterns available in initialized profiles...

@@ -23,7 +23,7 @@ public class PipelineTest {
     @Ignore
     @Test
     public void testPipelineAgainstJenaOverDiseasomeDataset() throws ParseException {
-        Profile p = new Profile(10000, 2);
+        Profile p = new Profile();
         String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
@@ -53,14 +53,8 @@ public class PipelineTest {
                 System.out.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
                 // execute the pipeline over the pipeline
                 p.execute();
-                ResultSet resPipeline = p.query.results;
-                int countPipeline = 0;
-                while (resPipeline.hasNext()) {
-                    resPipeline.next();
-                    countPipeline++;
-                }
-                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, countPipeline);
-                Assert.assertEquals(countPipeline, countJena);
+                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, p.query.getResults().size());
+                Assert.assertEquals(p.query.getResults().size(), countJena);
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();
@@ -69,7 +63,7 @@ public class PipelineTest {
     @Ignore
     @Test
     public void testPipelineAgainstJenaOverLinkedmdbDataset() throws ParseException {
-        Profile p = new Profile(10000, 2);
+        Profile p = new Profile();
         String diseasome = System.getProperty("user.dir") + "/datasets/data/linkedmdb/fragments/";
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
@@ -99,14 +93,8 @@ public class PipelineTest {
                 System.out.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
                 // execute the pipeline over the pipeline
                 p.execute();
-                ResultSet resPipeline = p.query.results;
-                int countPipeline = 0;
-                while (resPipeline.hasNext()) {
-                    resPipeline.next();
-                    countPipeline++;
-                }
-                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, countPipeline);
-                Assert.assertEquals(countPipeline, countJena);
+                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, p.query.getResults().size());
+                Assert.assertEquals(p.query.getResults().size(), countJena);
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();

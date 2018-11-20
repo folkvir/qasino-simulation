@@ -16,7 +16,7 @@ public class ProfileTest {
      */
     @Test
     public void profileShouldUpdateWithQuery() {
-        Profile p = new Profile(100, 2);
+        Profile p = new Profile();
         p.update("PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
                 "SELECT DISTINCT ?name ?nick {" +
                 "   ?x foaf:mbox <mailt:person@server> ." +
@@ -37,11 +37,11 @@ public class ProfileTest {
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}";
-        Profile p = new Profile(100, 2);
+        Profile p = new Profile();
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        Profile p2 = new Profile(100, 2);
+        Profile p2 = new Profile();
         p2.update(query);
         // System.out.println(p2.tpqs.toString());
 
@@ -63,11 +63,11 @@ public class ProfileTest {
                 "SELECT DISTINCT ?name ?nick {" +
                 "  ?x ?p <mailt:person@server>" +
                 "}";
-        Profile p = new Profile(100, 2);
+        Profile p = new Profile();
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        Profile p2 = new Profile(100, 2);
+        Profile p2 = new Profile();
         p2.update(query2);
         // System.out.println(p2.tpqs.toString());
 
@@ -90,11 +90,11 @@ public class ProfileTest {
                 "  ?x ?p <mailt:person@server> ." +
                 "  ?x foaf:name \"toto\" " +
                 "}";
-        Profile p = new Profile(100, 2);
+        Profile p = new Profile();
         p.update(query);
         // System.out.println(p.tpqs.toString());
 
-        Profile p2 = new Profile(100, 2);
+        Profile p2 = new Profile();
         p2.update(query2);
         // System.out.println(p2.tpqs.toString());
 
@@ -120,29 +120,5 @@ public class ProfileTest {
             count++;
         }
         Assert.assertEquals(3, count);
-    }
-
-    /**
-     * Update fonction of profile should extract tpq
-     */
-    @Test
-    public void PipelineIteratorShouldWork() {
-        Profile p = new Profile(100, 2);
-        p.datastore.update("./datasets/test.ttl");
-        String query = "SELECT * WHERE { ?s ?p ?o . }";
-        p.update(query);
-        p.execute();
-        ResultSet res = p.query.results;
-        int count = 0;
-        while (res.hasNext()) {
-            count++;
-            res.next();
-        }
-        Assert.assertEquals(3, count); // 3 triples
-        Assert.assertEquals(p.invertibles.size(), 1); // one spo
-        Triple spo = new Triple(Var.alloc("s"),
-                Var.alloc("p"),
-                Var.alloc("o"));
-        Assert.assertEquals(p.invertibles.get(spo).mydata().size(), 3);
     }
 }
