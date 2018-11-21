@@ -14,12 +14,11 @@ do
         F=$(basename "$file")
         if [[ "$PARALLEL" = "$PARA" ]]
         then
-
             echo "Running parallel: $F"
-            java  ${HEAP} ${JAR} --config ${xp} &
+            java  ${HEAP} ${JAR} --config ${F} &
         else
             echo "Running: $F"
-            java  ${HEAP} ${JAR} --config ${xp}
+            java  ${HEAP} ${JAR} --config ${F}
         fi
     fi
 done
