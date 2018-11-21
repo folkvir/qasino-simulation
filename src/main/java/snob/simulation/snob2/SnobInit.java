@@ -148,7 +148,7 @@ public class SnobInit implements ObserverProgram {
             }
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
-                snob.profile.qlimit = this.qlimit;
+                snob.profile.qlimit = max;
                 snob.profile.replicate = this.replicate;
                 if(max != 0) {
                     JSONObject query = queries.get(i);
