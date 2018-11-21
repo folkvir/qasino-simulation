@@ -3,7 +3,7 @@ bash install.sh
 PARALLEL=$1
 PARA="--parallel"
 LOG="xp.log"
-HEAP="-Xms500000m"
+HEAP="-Xms100000m"
 JAR="-jar target/snob.jar"
 
 java  ${HEAP} ${JAR} --init
@@ -16,10 +16,10 @@ do
         then
 
             echo "Running parallel: $F"
-            java  ${HEAP} ${JAR} ${xp} &
+            java  ${HEAP} ${JAR} --config ${xp} &
         else
             echo "Running: $F"
-            java  ${HEAP} ${JAR} ${xp}
+            java  ${HEAP} ${JAR} --config ${xp}
         fi
     fi
 done
