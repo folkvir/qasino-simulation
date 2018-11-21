@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-bash install.sh
+bash install.bash
 PARALLEL=$1
 PARA="--parallel"
 LOG="xp.log"
