@@ -30,7 +30,7 @@ public class Profile {
      * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
      * @param its Iterator of triples associated to a triple pattern.
      */
-    public int insertTriples(Map<Triple, Iterator<Triple>> its) {
+    public int insertTriples(Map<Triple, Iterator<Triple>> its, boolean traffic) {
         int count = 0;
         for (Map.Entry<Triple, Iterator<Triple>> entry : its.entrySet()) {
             Triple pattern = entry.getKey();
@@ -48,6 +48,7 @@ public class Profile {
             }
             // System.err.print("!end! count=" + count);
             // insert triples in datastore
+            if(traffic) this.strata.get(pattern).insert(list);
             datastore.insertTriples(list);
         }
         return count;

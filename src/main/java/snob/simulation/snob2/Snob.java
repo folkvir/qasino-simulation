@@ -211,7 +211,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             result.put(pattern, tmpres.iterator());
             tripleResponses += tmpres.size();
         });
-        this.profile.insertTriples(result);
+        this.profile.insertTriples(result, traffic);
         this.messages++;
     }
 

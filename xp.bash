@@ -3,7 +3,7 @@ bash install.sh
 PARALLEL=$1
 PARA="--parallel"
 LOG="xp.log"
-HEAP="-Xms100000m"
+HEAP="-Xms50000m" # 50go per job
 JAR="-jar target/snob.jar"
 
 java  ${HEAP} ${JAR} --init
