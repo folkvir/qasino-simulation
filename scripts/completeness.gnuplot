@@ -30,7 +30,7 @@ set key bottom right
 set xrange [0:100]
 set xtics 20
 set output path."completeness.png"
-set multiplot layout 1,3
+# set multiplot layout 1,1
 set yrange [0:100]
 set title "50 Queries"
 plot quarterrps using round:completeness lw 2 title "RPS", \
