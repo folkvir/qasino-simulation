@@ -140,15 +140,20 @@ public class SnobInit implements ObserverProgram {
 
             // shuffle queries =)
             Collections.shuffle(queries);
-
+            int max = 0;
+            if(qlimit == -1) {
+                max = peers.size();
+            } else {
+                max = qlimit;
+            }
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 snob.profile.qlimit = this.qlimit;
                 snob.profile.replicate = this.replicate;
-                if(this.qlimit != 0) {
+                if(max != 0) {
                     JSONObject query = queries.get(i);
                     snob.profile.update((String) query.get("query"), (long) query.get("card"));
-                    qlimit--;
+                    max--;
                 }
 
             }

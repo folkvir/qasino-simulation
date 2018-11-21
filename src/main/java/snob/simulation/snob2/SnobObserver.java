@@ -24,7 +24,7 @@ public class SnobObserver implements ObserverProgram {
             try {
                 Snob snob_default = (Snob) observer.nodes.get(Network.get(0).getID()).pss;
 
-                double completeness = 0;
+                long completeness = 0;
                 double completenessinresults;
                 long messages = 0;
                 double totalreceivedresults = 0;
@@ -44,7 +44,7 @@ public class SnobObserver implements ObserverProgram {
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
                         List<QuerySolution> res = query.getResults();
-                        double cpt = res.size();
+                        int cpt = res.size();
                         System.err.printf("[Peer-%d] has a query with %d/%d results. %n", snob.id, cpt, query.cardinality);
                         totalreceivedresults += cpt;
                         totalcardinality += query.cardinality;
@@ -66,7 +66,6 @@ public class SnobObserver implements ObserverProgram {
                     System.err.println("totalcardinality=0");
                     completenessinresults = 0;
                 } else {
-                    System.err.println(((long) totalreceivedresults / (long) totalcardinality));
                     completenessinresults = (totalreceivedresults) / (totalcardinality) * 100;
                 }
                 completeness = completeness / snob_default.profile.qlimit;

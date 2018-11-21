@@ -2,14 +2,100 @@ package snob.simulation;
 
 import peersim.Simulator;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class App {
-    public static void main(String[] args) {
-        String[] config = {"./configs/" + args[0], "./results/" + args[0] + "-output.txt"};
-        executeConfig(config[0], config[1]);
+    public static void main(String[] args) throws IOException {
+        if(args.length > 0 && args[0].equals("--init")) {
+            int peers = 200;
+            int cycles = 200;
+            int[] replicate = {5, 10, 20, 30, 40, 60, 80};
+            int delta_rps = 1;
+            int delta_son = 1;
+            int rps_size = 5;
+            int son_size = 4;
+            int qlimit = -1; // unlimited
+            int dlimit = -1; // unlimited
+
+            boolean[] son_activated = {false, true};
+            // firstly do it with only the rps
+            for (int i : replicate) {
+                for (boolean b : son_activated) {
+                    // create a file
+                    // first copy the template
+                    System.out.println("Copying template to config...");
+                    String configName = "p" + peers
+                            + "-son" + b
+                            + "-rep" + i
+                            + "-config.conf";
+                    String pathTemplate = System.getProperty("user.dir") + "/configs/template.conf";
+                    String pathConfig = System.getProperty("user.dir") + "/configs/generated/" + configName;
+                    System.out.println("Template location: " + pathTemplate);
+                    System.out.println("Config location: " + pathConfig);
+                    File in = new File(pathTemplate);
+                    File out = new File(pathConfig);
+                    out.createNewFile();
+                    copyFileUsingStream(in, out);
+                    System.out.println("Replacing config vars to their values...");
+                    replace(pathConfig, "\\$son_activated\\$", String.valueOf(b));
+                    replace(pathConfig, "\\$size\\$", String.valueOf(peers));
+                    replace(pathConfig, "\\$cycle\\$", String.valueOf(cycles));
+                    replace(pathConfig, "\\$rps_size\\$", String.valueOf(rps_size));
+                    replace(pathConfig, "\\$son_size\\$", String.valueOf(son_size));
+                    replace(pathConfig, "\\$rps_delta\\$", String.valueOf(delta_rps));
+                    replace(pathConfig, "\\$son_delta\\$", String.valueOf(delta_son));
+                    replace(pathConfig, "\\$replicate\\$", String.valueOf(i));
+                    replace(pathConfig, "\\$qlimit\\$", String.valueOf(qlimit));
+                    replace(pathConfig, "\\$dlimit\\$", String.valueOf(dlimit));
+                    replace(pathConfig, "\\\\$", String.valueOf(dlimit));
+                    System.out.printf("Executing: peers=%d cycles=%d rps_size=%d son_size=%d rps_delta=%d son_delta=%d replica=%d %n",
+                            peers, cycles, rps_size, son_size,
+                            delta_rps, delta_rps, i);
+                }
+            }
+        } else if (args.length > 0 && args[0].equals("--config")) {
+            String[] config = {"./configs/generated/" + args[1], "./results/" + args[1] + "-output.txt"};
+            executeConfig(config[0], config[1]);
+        }
+    }
+
+    private static void replace(String filename, String old, String newOne) throws IOException {
+        Path path = Paths.get(filename);
+        Charset charset = StandardCharsets.UTF_8;
+
+        String content = new String(Files.readAllBytes(path), charset);
+        content = content.replaceAll(old, newOne);
+        Files.write(path, content.getBytes(charset));
+    }
+
+    private static void copyFileUsingStream(File source, File dest) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            is.close();
+            os.close();
+        }
+    }
+
+    protected static PrintStream outputFile(String name) throws FileNotFoundException {
+        return new PrintStream(new FileOutputStream(name));
     }
 
     private static void executeConfig(String config, String output) {
@@ -18,15 +104,13 @@ public class App {
             PrintStream ps_console = System.out;
             System.setOut(outputFile(output));
             String[] arguments = {config};
-            Simulator.main(arguments);
+            // load the class
+            Simulator sim = new Simulator();
+            sim.main(arguments);
             // set to console print
             System.setOut(ps_console);
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    protected static PrintStream outputFile(String name) throws FileNotFoundException {
-        return new PrintStream(new FileOutputStream(name));
     }
 }

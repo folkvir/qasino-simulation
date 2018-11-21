@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 bash install.sh
+PARALLEL=$1
+PARA="--parallel"
 LOG="xp.log"
 HEAP="-Xms500000m"
 JAR="-jar target/snob.jar"
-xps[0]="snob-50-rps+son.txt"
-xps[1]="snob-50-rps.txt"
-xps[2]="snob-50-rps.txt"
-xps[3]="snob-100-rps+son.txt"
-xps[4]="snob-100-rps.txt"
-xps[5]="snob-200-rps+son.txt"
-xps[6]="snob-200-rps.txt"
-for xp in ${xps[*]}
+
+java  ${HEAP} ${JAR} --init
+
+for file in ./configs/generated/*.conf
 do
-    echo "Running: " $xp
-    java ${HEAP} ${JAR} ${xp}
+    if [[ -f $file ]]; then
+        F=$(basename "$file")
+        if [[ "$PARALLEL" = "$PARA" ]]
+        then
+
+            echo "Running parallel: $F"
+            java  ${HEAP} ${JAR} ${xp} &
+        else
+            echo "Running: $F"
+            java  ${HEAP} ${JAR} ${xp}
+        fi
+    fi
 done
 wait

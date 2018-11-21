@@ -28,3 +28,4 @@ results/
 !results/README.md
 
 !src/main/resources/*.jar
+configs/generated/*.conf
