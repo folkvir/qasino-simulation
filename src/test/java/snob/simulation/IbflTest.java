@@ -84,7 +84,7 @@ public class IbflTest {
         });
 
         // add new triple from 2 to 1
-        p1.insertTriples(result);
+        p1.insertTriples(result, true);
 
         // now check we have all triples, including ours and missing triples
         Iterator<Triple> it2 = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
