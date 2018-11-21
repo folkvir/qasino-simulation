@@ -201,17 +201,12 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         this.profile.patterns.forEach(pattern -> {
             List<Triple> tmpres = new ArrayList<>();
             if(this.traffic) {
-                tmpres = this.profile.strata.get(pattern).exchange(pattern, remote);
+                result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, remote).iterator());
             } else {
-                Iterator<Triple> it = remote.profile.datastore.getTriplesMatchingTriplePattern(pattern);
-                while(it.hasNext()) {
-                    tmpres.add(it.next());
-                }
+                result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
             }
-            result.put(pattern, tmpres.iterator());
-            tripleResponses += tmpres.size();
         });
-        this.profile.insertTriples(result, traffic);
+        tripleResponses += this.profile.insertTriples(result, traffic);
         this.messages++;
     }
 

@@ -43,7 +43,7 @@ public class IBFStrata  {
         return estimator.encode(Ints.toArray(s));
     }
     public IBF[] insert(Iterator<Triple> triples) {
-        System.err.println("Inserting data into the strata estimator...");
+        // System.err.println("Inserting data into the strata estimator...");
         List<Integer> tis = new ArrayList<Integer>();
         while(triples.hasNext()) {
             Triple triple = triples.next();
