@@ -9,28 +9,25 @@ import snob.simulation.snob2.data.Strata.Cell;
 import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
 
-
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class IBFStrata  {
+public class IBFStrata {
     public int constant = 2; // 1.5 -> 2 (-_-)"
     public IBF ibf100 = new IBF(100); // 2*50 diff
     public IBF ibf1k = new IBF(1000); // 2*500 diff
     public int estimateErrored = 0; // number of times the estimation return an estimation larger than 100k
     public int count = 0;
-    private Map<Integer, Triple> data = new HashMap<>();
     public Map<Integer, Integer> visited = new HashMap<>();
+    private Map<Integer, Triple> data = new HashMap<>();
+    private StrataEstimator estimator = new StrataEstimator(128);
 
     public StrataEstimator getEstimator() {
         return estimator;
     }
 
-    private StrataEstimator estimator = new StrataEstimator(128);
-
     public IBF[] insert(List<Triple> triples) {
-        System.err.println("Inserting data into the strata estimator...");
+        // System.err.println("Inserting data into the strata estimator...");
         List<Integer> s = triples.stream().map(triple -> {
             // System.err.println("Inserting into strata IBF -> " + triple.toString());
             int hashed = hash(triple);
@@ -42,10 +39,11 @@ public class IBFStrata  {
 
         return estimator.encode(Ints.toArray(s));
     }
+
     public IBF[] insert(Iterator<Triple> triples) {
         // System.err.println("Inserting data into the strata estimator...");
         List<Integer> tis = new ArrayList<Integer>();
-        while(triples.hasNext()) {
+        while (triples.hasNext()) {
             Triple triple = triples.next();
             // System.err.println("Inserting into strata IBF -> " + triple.toString());
             int hashed = hash(triple);
@@ -67,7 +65,7 @@ public class IBFStrata  {
 //        this.ibf100k.add(hashed);
     }
 
-    public int hash (Triple triple) {
+    public int hash(Triple triple) {
         return Hashing.murmur3_128().hashBytes(triple.toString().getBytes()).asInt(); // match the 32
     }
 
@@ -83,6 +81,7 @@ public class IBFStrata  {
      * and send only triples not in the set of A
      * Finally, only a maximum of 2 rounds (4*l, l is the latency) and a minimum of 2 rounds (2l) is necessary for exchanging data.
      * Basically, Estimator(A)[pattern] + IBF(A)[pattern] + count[pattern] is sent to B
+     *
      * @param pattern
      * @param snob
      * @return
@@ -96,34 +95,34 @@ public class IBFStrata  {
         // simulate the exchange
         IBFStrata remoteIbfstrata = remote.strata.get(pattern);
 
-        if(remoteIbfstrata == null) {
-            if(!visited.containsKey(id)){
+        if (remoteIbfstrata == null) {
+            if (!visited.containsKey(id)) {
                 visited.put(id, id);
-                estimateErrored++;
                 // get all triples matching the triple pattern
                 Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
                 List<Triple> result = new ArrayList<>();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     // check if
                     result.add(it.next());
                 }
                 // if size == 0 return an emtpty list
-                if(result.size() == 0) return Collections.emptyList();
+                if (result.size() == 0) return Collections.emptyList();
                 // this.count is send to B with the estimator and the IBF of B
-                if(result.size() * 2 > this.count) {
+                if (result.size() * 2 > this.count) {
                     // the remote peer have 2 times more result than us, it is most likely he has interesting triples.
                     // System.err.printf("[IBF-no] Returning  %d triples directly %n", result.size());
+                    estimateErrored++;
                     return result;
                 } else {
                     // check if triples are in IBF (2 second round)
                     List<Triple> finalresult = new ArrayList<>();
                     result.forEach(triple -> {
-                        if(count < 100) {
-                            if(remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf100.contains(remote.strata.get(pattern).hash(triple))) {
+                        if (count < 100) {
+                            if (remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf100.contains(remote.strata.get(pattern).hash(triple))) {
                                 finalresult.add(triple);
                             }
                         } else if (count < 1000) {
-                            if(remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf1k.contains(remote.strata.get(pattern).hash(triple))) {
+                            if (remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf1k.contains(remote.strata.get(pattern).hash(triple))) {
                                 finalresult.add(triple);
                             }
                         }
@@ -140,7 +139,7 @@ public class IBFStrata  {
             // System.err.println("[IBF-yes] Compute the set difference size estimation...");
             int diffSize = remoteStrata.decode(this.estimator);
 
-            if(diffSize == 0) {
+            if (diffSize == 0) {
                 // System.err.println("[IBF-yes] Returning an empty list.");
                 return Collections.emptyList();
             } else {
@@ -151,15 +150,15 @@ public class IBFStrata  {
                 IBF us;
 
                 // System.err.println("[IBF-yes] Difference size estimation is: |A-B| + |B-A| = " + (diffSize));
-                if((2 * diffSize) < 100) {
+                if ((2 * diffSize) < 100) {
                     // put it in the ibf100
                     result = remoteIbfstrata.ibf100;
-                    us =  this.ibf100;
+                    us = this.ibf100;
                 } else if ((2 * diffSize) < 1000) {
                     // put it in the ibf1000
                     result = remoteIbfstrata.ibf1k;
-                    us =  this.ibf1k;
-                }else {
+                    us = this.ibf1k;
+                } else {
                     // hum hum too large? directly send triples....
                     // perhaps ibf1M but seems to big
                     estimateErrored++;
@@ -183,7 +182,7 @@ public class IBFStrata  {
 //            System.err.println("Additional triples: " + remoteIbfstrata.data.get(hash).toString());
 //            triples.add(remoteIbfstrata.data.get(hash));
 //        }
-                while(miss.hasNext()) {
+                while (miss.hasNext()) {
                     int hash = miss.next();
                     // System.err.println("[IBF-yes] Missing triples: " + remoteIbfstrata.data.get(hash).toString());
                     triples.add(remoteIbfstrata.data.get(hash));

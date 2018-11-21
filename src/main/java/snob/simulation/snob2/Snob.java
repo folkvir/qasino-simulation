@@ -11,15 +11,10 @@ import snob.simulation.snob2.messages.SnobMessage;
 
 import java.util.*;
 
-import static java.lang.System.exit;
-
 /**
  * The Snob protocol
  */
 public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
-    private static int snobs = 0;
-    public final int id = Snob.snobs++;
-
     // #A the names of the parameters in the configuration file of peersim
     private static final String PAR_C = "c"; // max partial view size
     private static final String PAR_L = "l"; // shuffle size
@@ -27,7 +22,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     private static final String PAR_SON_L = "sonl"; // shuffle size on the son
     private static final String PAR_SON = "son"; // enable son or not
     private static final String PAR_TRAFFIC = "traffic"; // minimization of the traffic
-
     // #B the values from the configuration file of peersim
     public static int c;
     public static int l;
@@ -36,6 +30,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static int sonl;
     public static int RND_WALK = 5;
     public static boolean traffic;
+    private static int snobs = 0;
+    public final int id = Snob.snobs++;
     // Profile of the peer
     public Profile profile;
     // #C local variables
@@ -194,13 +190,14 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * Exchange Triple patterns with Invertible bloom filters associated with.
      * In return the other peers send us missing triples for each triple pattern.
      * See onTpqs(...) function
+     *
      * @param remote
      */
     private void exchangeTriplePatterns(Snob remote) {
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         this.profile.patterns.forEach(pattern -> {
             List<Triple> tmpres = new ArrayList<>();
-            if(this.traffic) {
+            if (this.traffic) {
                 result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, remote).iterator());
             } else {
                 result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));

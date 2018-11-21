@@ -30,6 +30,7 @@ public class DictGraph {
     private final Map<Long, Integer> dist;
     private final LinkedList<DictNode> Q;
     private List<DictNode> neighbourhood;
+
     private DictGraph(int size) {
         this.pssList = new ArrayList<IRandomPeerSampling>();
         this.neighbourhood = new ArrayList<DictNode>();

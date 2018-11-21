@@ -30,27 +30,27 @@ public class Cell {
         return false;
     }
 
-    public void setCount(int count) {
-        this.count = count;
-    }
-
-    public void setIdSum(int idSum) {
-        this.idSum = idSum;
-    }
-
-    public void setHashSum(int hashSum) {
-        this.hashSum = hashSum;
-    }
-
     public int getCount() {
         return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public int getIdSum() {
         return idSum;
     }
 
+    public void setIdSum(int idSum) {
+        this.idSum = idSum;
+    }
+
     public int getHashSum() {
         return hashSum;
+    }
+
+    public void setHashSum(int hashSum) {
+        this.hashSum = hashSum;
     }
 }

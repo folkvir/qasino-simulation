@@ -10,19 +10,10 @@ import java.util.List;
 import java.util.Queue;
 
 public class IBF implements Serializable {
-    private int numberOfAddedElements;
-    private int k = 3; // number of hash functions
-    private int ibfSize = 1000; //the size of IBF is d*1.5(d,size of the set difference) that are required to successfully decode the IBF
-    public Cell[] cells;
-
-    public Cell[] getCells() {
-        return cells;
-    }
-
     static final Charset charset = Charset.forName("UTF-8");
-
     static final String hashName = "MD5";
     static final MessageDigest digestFunction;
+
     static { // The digest method is reused between instances
         MessageDigest tmp;
         try {
@@ -33,11 +24,68 @@ public class IBF implements Serializable {
         digestFunction = tmp;
     }
 
+    public Cell[] cells;
+    private int numberOfAddedElements;
+    private int k = 3; // number of hash functions
+    private int ibfSize = 1000; //the size of IBF is d*1.5(d,size of the set difference) that are required to successfully decode the IBF
+
     public IBF(int ibfSize) {
         this.ibfSize = ibfSize;
         this.cells = new Cell[ibfSize]; // how to create a array of the inner class when the cell is a inner class ?
-        for(int i=0;i<cells.length;i++)
-            cells[i]=new Cell();
+        for (int i = 0; i < cells.length; i++)
+            cells[i] = new Cell();
+    }
+
+    public static int genIdHash(byte[] data) {
+        int result = 0;
+        byte salt = 125;
+        byte[] digest;
+        synchronized (digestFunction) {
+            digestFunction.update(salt);
+            digest = digestFunction.digest(data);
+        }
+
+        int h = 0;
+        for (int j = 0; j < 4; j++) {
+            h <<= 8;
+            h |= ((int) digest[j]) & 0xFF;
+        }
+        result = h;
+        return result;
+    }
+
+    public static int genHash(byte[] data) {
+        return genHashes(data, 1)[0];
+    }
+
+    public static int[] genHashes(byte[] data, int hashes) {
+        int[] result = new int[hashes];
+
+        int k = 0;
+        byte salt = 0;
+        while (k < hashes) {
+            byte[] digest;
+            synchronized (digestFunction) {
+                digestFunction.update(salt);
+                salt++;
+                digest = digestFunction.digest(data);
+            }
+
+            for (int i = 0; i < digest.length / 4 && k < hashes; i++) {
+                int h = 0;
+                for (int j = (i * 4); j < (i * 4) + 4; j++) {
+                    h <<= 8;
+                    h |= ((int) digest[j]) & 0xFF;
+                }
+                result[k] = h;
+                k++;
+            }
+        }
+        return result;
+    }
+
+    public Cell[] getCells() {
+        return cells;
     }
 
     public void add(int id) {
@@ -110,54 +158,6 @@ public class IBF implements Serializable {
             if (b3[i].getIdSum() != 0 || b3[i].getHashSum() != 0 || b3[i].getCount() != 0)
                 return null;
         }
-        return new List[] { addtional, miss };
-    }
-
-    public static int genIdHash(byte[] data) {
-        int result = 0;
-        byte salt = 125;
-        byte[] digest;
-        synchronized (digestFunction) {
-            digestFunction.update(salt);
-            digest = digestFunction.digest(data);
-        }
-
-        int h = 0;
-        for (int j = 0; j < 4; j++) {
-            h <<= 8;
-            h |= ((int) digest[j]) & 0xFF;
-        }
-        result = h;
-        return result;
-    }
-
-    public static int genHash(byte[] data) {
-        return genHashes(data, 1)[0];
-    }
-
-    public static int[] genHashes(byte[] data, int hashes) {
-        int[] result = new int[hashes];
-
-        int k = 0;
-        byte salt = 0;
-        while (k < hashes) {
-            byte[] digest;
-            synchronized (digestFunction) {
-                digestFunction.update(salt);
-                salt++;
-                digest = digestFunction.digest(data);
-            }
-
-            for (int i = 0; i < digest.length / 4 && k < hashes; i++) {
-                int h = 0;
-                for (int j = (i * 4); j < (i * 4) + 4; j++) {
-                    h <<= 8;
-                    h |= ((int) digest[j]) & 0xFF;
-                }
-                result[k] = h;
-                k++;
-            }
-        }
-        return result;
+        return new List[]{addtional, miss};
     }
 }

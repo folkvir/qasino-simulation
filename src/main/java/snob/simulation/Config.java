@@ -9,10 +9,12 @@ import java.io.PrintStream;
 public class Config implements Runnable {
     public String input;
     public String output;
+
     public Config(String input, String output) {
         this.input = input;
         this.output = output;
     }
+
     @Override
     public void run() {
         System.out.printf("Threading %s ...%n", input);

@@ -60,6 +60,7 @@ public class PipelineTest {
             e.printStackTrace();
         }
     }
+
     @Ignore
     @Test
     public void testPipelineAgainstJenaOverLinkedmdbDataset() throws ParseException {

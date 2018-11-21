@@ -1,17 +1,12 @@
 package snob.simulation;
 
 import com.google.common.hash.HashCode;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.QuerySolution;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
 
-import javax.naming.Binding;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,7 +53,7 @@ public class IbflTest {
         p1.datastore.update("./datasets/test-peer1.ttl");
         p1.update(query);
         Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             System.err.println("[1] Triple: " + it.next());
             dtriples++;
         }
@@ -88,7 +83,7 @@ public class IbflTest {
 
         // now check we have all triples, including ours and missing triples
         Iterator<Triple> it2 = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
-        while(it2.hasNext()) {
+        while (it2.hasNext()) {
             System.err.println("[1] Triple: " + it2.next());
             dtriples++;
         }

@@ -1,7 +1,6 @@
 package snob.simulation;
 
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.core.Var;
 import org.junit.Assert;
 import org.junit.Test;

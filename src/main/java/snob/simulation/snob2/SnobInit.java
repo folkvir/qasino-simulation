@@ -1,6 +1,5 @@
 package snob.simulation.snob2;
 
-import org.apache.jena.graph.Triple;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,7 +15,6 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.rmi.ServerError;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +26,7 @@ public class SnobInit implements ObserverProgram {
     private int qlimit; // limit of queries loaded in the network
     private int dlimit; // limit of fragments loaded in the network
     private int replicate;
+
     public SnobInit(String prefix) {
         System.err.println("Initializing: " + prefix);
         try {
@@ -114,7 +113,7 @@ public class SnobInit implements ObserverProgram {
             int j = 0;
             for (int i = 0; i < queriesDiseasome.size(); i++) {
                 finalQueries.add(queriesDiseasome.get(i));
-                if(j < queriesLinkedmdb.size()){
+                if (j < queriesLinkedmdb.size()) {
                     finalQueries.add(queriesLinkedmdb.get(j));
                 }
                 j++;
@@ -124,24 +123,23 @@ public class SnobInit implements ObserverProgram {
             JSONObject queryToreplicate = finalQueries.get(0);
             double numberOfReplicatedQueries = Math.floor(peers.size() * replicate / 100);
             System.err.printf("Replicating %f times the query: %s", numberOfReplicatedQueries, queryToreplicate.get("query").toString());
-            for(int i = 0; i < numberOfReplicatedQueries; ++i) {
+            for (int i = 0; i < numberOfReplicatedQueries; ++i) {
                 finalQueries.set(i, (JSONObject) queryToreplicate.clone());
             }
-
 
 
             // set queries on each peer
             int pickedQuery = 0;
             peersPicked = 0;
             List<JSONObject> queries = new ArrayList<>();
-            for(int i= 0;i < peers.size(); ++i) {
+            for (int i = 0; i < peers.size(); ++i) {
                 queries.add(finalQueries.get(i));
             }
 
             // shuffle queries =)
             Collections.shuffle(queries);
             int max = 0;
-            if(qlimit == -1) {
+            if (qlimit == -1) {
                 max = peers.size();
             } else {
                 max = qlimit;
@@ -150,7 +148,7 @@ public class SnobInit implements ObserverProgram {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 snob.profile.qlimit = max;
                 snob.profile.replicate = this.replicate;
-                if(max != 0) {
+                if (max != 0) {
                     JSONObject query = queries.get(i);
                     snob.profile.update((String) query.get("query"), (long) query.get("card"));
                     max--;

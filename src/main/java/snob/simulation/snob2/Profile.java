@@ -1,16 +1,11 @@
 package snob.simulation.snob2;
 
 
-import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.sparql.util.ResultSetUtils;
 import snob.simulation.snob2.data.IBFStrata;
 
 import java.util.*;
-
-import static java.lang.System.exit;
 
 public class Profile {
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
@@ -28,6 +23,7 @@ public class Profile {
 
     /**
      * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
+     *
      * @param its Iterator of triples associated to a triple pattern.
      */
     public int insertTriples(Map<Triple, Iterator<Triple>> its, boolean traffic) {
@@ -48,7 +44,7 @@ public class Profile {
             }
             // System.err.print("!end! count=" + count);
             // insert triples in datastore
-            if(traffic) this.strata.get(pattern).insert(list);
+            if (traffic) this.strata.get(pattern).insert(list);
             datastore.insertTriples(list);
         }
         return count;
@@ -56,6 +52,7 @@ public class Profile {
 
     /**
      * Update the profile with a new Query as string only
+     *
      * @param query
      */
     public void update(String query) {
@@ -82,6 +79,7 @@ public class Profile {
 
     /**
      * Update the profile with a new Query as string and its number of results
+     *
      * @param query
      * @param card
      */
@@ -102,6 +100,7 @@ public class Profile {
     /**
      * Initialize the pipeline of iterators using data stored in the datastore
      * And also initialize Invertible Bloom Filters
+     *
      * @param patterns
      */
     private void init(List<Triple> patterns) {
@@ -115,8 +114,8 @@ public class Profile {
                 this.query.plan.insertTriple(pattern, triple);
                 list.add(triple);
             });
-            if(!this.strata.containsKey(pattern)) {
-              this.strata.put(pattern, new IBFStrata());
+            if (!this.strata.containsKey(pattern)) {
+                this.strata.put(pattern, new IBFStrata());
             }
             this.strata.get(pattern).insert(list);
             System.err.println(":end.");

@@ -1,14 +1,11 @@
 package snob.simulation.snob2;
 
 import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
 import peersim.core.Network;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
 import snob.simulation.snob2.data.IBFStrata;
-import snob.simulation.snob2.data.Strata.IBF;
 
-import java.nio.channels.Selector;
 import java.util.Iterator;
 import java.util.List;
 
@@ -37,7 +34,7 @@ public class SnobObserver implements ObserverProgram {
                     messages += snob.messages;
                     triplesback += snob.tripleResponses;
                     Iterator<IBFStrata> it = snob.profile.strata.values().iterator();
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         estimateErrores += it.next().estimateErrored;
                     }
 
@@ -62,7 +59,7 @@ public class SnobObserver implements ObserverProgram {
                     }
                 }
 
-                if(totalcardinality == 0) {
+                if (totalcardinality == 0) {
                     System.err.println("totalcardinality=0");
                     completenessinresults = 0;
                 } else {

@@ -3,7 +3,6 @@ package snob.simulation;
 import peersim.Simulator;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,7 +11,7 @@ import java.nio.file.Paths;
 
 public class App {
     public static void main(String[] args) throws IOException {
-        if(args.length > 0 && args[0].equals("--init")) {
+        if (args.length > 0 && args[0].equals("--init")) {
             int peers = 200;
             int cycles = 200;
             int[] replicate = {5, 10, 20, 30, 40, 60, 80, 100};
@@ -27,7 +26,7 @@ public class App {
             // firstly do it with only the rps
             for (int i : replicate) {
                 for (boolean b : son_activated) {
-                    for(boolean traffic: trafficMin) {
+                    for (boolean traffic : trafficMin) {
                         // create a file
                         // first copy the template
                         System.out.println("Copying template to config...");
