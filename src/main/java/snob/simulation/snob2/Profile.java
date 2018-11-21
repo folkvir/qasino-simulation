@@ -1,6 +1,7 @@
 package snob.simulation.snob2;
 
 
+import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
@@ -29,13 +30,16 @@ public class Profile {
      * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
      * @param its Iterator of triples associated to a triple pattern.
      */
-    public void insertTriples(Map<Triple, Iterator<Triple>> its) {
-        its.forEach((pattern, iterator) -> {
+    public int insertTriples(Map<Triple, Iterator<Triple>> its) {
+        int count = 0;
+        for (Map.Entry<Triple, Iterator<Triple>> entry : its.entrySet()) {
+            Triple pattern = entry.getKey();
+            Iterator<Triple> iterator = entry.getValue();
             List<Triple> list = new ArrayList<>();
             while (iterator.hasNext()) {
                 Triple t = iterator.next();
-
                 if (!this.datastore.contains(t)) {
+                    count++;
                     // System.err.printf("Adding triple: [%s] for pattern=[%s]to the datastore %n", t.toString(), pattern.toString());
                     // populate the pipeline plan
                     query.plan.insertTriple(pattern, t);
@@ -45,7 +49,8 @@ public class Profile {
             // System.err.print("!end! count=" + count);
             // insert triples in datastore
             datastore.insertTriples(list);
-        });
+        }
+        return count;
     }
 
     /**

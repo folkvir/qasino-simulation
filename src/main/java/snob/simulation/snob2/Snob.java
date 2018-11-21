@@ -26,6 +26,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     private static final String PAR_SON_C = "sonc"; // shuffle size on the rps
     private static final String PAR_SON_L = "sonl"; // shuffle size on the son
     private static final String PAR_SON = "son"; // enable son or not
+    private static final String PAR_TRAFFIC = "traffic"; // minimization of the traffic
 
     // #B the values from the configuration file of peersim
     public static int c;
@@ -34,6 +35,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static int sonc;
     public static int sonl;
     public static int RND_WALK = 5;
+    public static boolean traffic;
     // Profile of the peer
     public Profile profile;
     // #C local variables
@@ -42,9 +44,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public String prefix;
     // instrumentations
     public int messages = 0;
-    //    public long messagesSize = 0;
-//    public long requestsSize = 0;
-//    public long responsesSize = 0;
     public long tripleRequests = 0;
     public long tripleResponses = 0;
     public int errorsListentries = 0;
@@ -62,6 +61,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         Snob.sonc = Configuration.getInt(prefix + "." + PAR_SON_C);
         Snob.sonl = Configuration.getInt(prefix + "." + PAR_SON_L);
         Snob.son = Configuration.getBoolean(prefix + "." + PAR_SON);
+        Snob.traffic = Configuration.getBoolean(prefix + "." + PAR_TRAFFIC);
         this.partialView = new SnobPartialView(Snob.c, Snob.l);
         if (Snob.son) {
             this.sonPartialView = new SonPartialView(Snob.sonc, Snob.sonl);
@@ -127,6 +127,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
+        messages = 0;
+        tripleResponses = 0;
         // do the periodic shuffling of the rps
         if (this.isUp() && this.partialView.size() > 0) {
             // do the periodic shuffling for Cyclon
@@ -197,9 +199,18 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     private void exchangeTriplePatterns(Snob remote) {
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         this.profile.patterns.forEach(pattern -> {
-            result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, remote).iterator());
+            List<Triple> tmpres = new ArrayList<>();
+            if(this.traffic) {
+                tmpres = this.profile.strata.get(pattern).exchange(pattern, remote);
+            } else {
+                Iterator<Triple> it = remote.profile.datastore.getTriplesMatchingTriplePattern(pattern);
+                while(it.hasNext()) {
+                    tmpres.add(it.next());
+                }
+            }
+            result.put(pattern, tmpres.iterator());
+            tripleResponses += tmpres.size();
         });
-        this.tripleResponses += result.size();
         this.profile.insertTriples(result);
         this.messages++;
     }
