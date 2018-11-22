@@ -14,7 +14,7 @@ public class HashJoinTable {
 
     public void put(String key, Binding bindings) {
         if (!content.containsKey(key)) {
-            content.put(key, new LinkedList<>());
+            content.put(key, new ArrayList<>());
         }
         List<Binding> old = content.get(key);
         old.add(bindings);

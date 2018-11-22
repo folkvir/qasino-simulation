@@ -24,7 +24,7 @@ public class AppendableSource implements QueryIteratorPlus {
     public AppendableSource(Triple triple, List<Var> vars) {
         this.triple = triple;
         this.vars = vars;
-        buffer = new LinkedList<>();
+        buffer = new LinkedList<>(); // LinkedList because we just add and remove
     }
 
     public Triple getTriple() {
