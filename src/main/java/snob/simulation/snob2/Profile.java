@@ -49,17 +49,21 @@ public class Profile {
 
     public int insertTriples(Triple pattern, Iterator<Triple> it, boolean traffic) {
         List<Triple> list = new ArrayList<>();
+        List<Triple> ibf = new ArrayList<>();
         while (it.hasNext()) {
             Triple t = it.next();
             if (!data.get(pattern).contains(t)) {
                 query.plan.insertTriple(pattern, t);
-                list.add(t);
+                ibf.add(t);
             } else {
                 data.get(pattern).add(t);
             }
+            if(!datastore.contains(t)){
+                list.add(t);
+            }
         }
         datastore.insertTriples(list);
-        if (traffic) this.strata.get(pattern).insert(list);
+        if (traffic) this.strata.get(pattern).insert(ibf);
         return list.size();
     }
 
