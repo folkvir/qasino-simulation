@@ -39,7 +39,7 @@ public class Profile {
                     // System.err.printf("Adding triple: [%s] for pattern=[%s]to the datastore %n", t.toString(), pattern.toString());
                     // populate the pipeline plan
                     query.plan.insertTriple(pattern, t);
-                    // populate the bloom filter associated to the patter
+                    // populate the bloom filter associated to the pattern
                 }
             }
             // System.err.print("!end! count=" + count);
