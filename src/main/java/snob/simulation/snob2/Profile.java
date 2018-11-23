@@ -19,8 +19,15 @@ public class Profile {
     public Map<Triple, IBFStrata> strata = new HashMap<>();
     public QuerySnob query;
     public Datastore datastore = new Datastore();
+    public Set<Integer> alreadySeen = new HashSet<>();
 
 
+    public void addAlreadySeend (int remote) {
+        alreadySeen.add(remote);
+    }
+    public void mergeAlreadySeen (Set<Integer> remote) {
+        alreadySeen.addAll(remote);
+    }
     /**
      * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
      *
@@ -46,6 +53,7 @@ public class Profile {
             // insert triples in datastore
             if (traffic) this.strata.get(pattern).insert(list);
             datastore.insertTriples(list);
+
         }
         return count;
     }

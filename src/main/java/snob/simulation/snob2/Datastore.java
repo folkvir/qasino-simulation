@@ -85,7 +85,6 @@ public class Datastore {
 
             QueryExecution qe = QueryExecutionFactory.create(query, tdb);
             result = qe.execConstructTriples();
-
             //qe.close();
         } catch (Exception e) {
             e.printStackTrace();

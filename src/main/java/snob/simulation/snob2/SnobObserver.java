@@ -27,12 +27,20 @@ public class SnobObserver implements ObserverProgram {
                 double totalreceivedresults = 0;
                 double totalcardinality = 0;
                 int triplesback = 0;
+                double triplebackmean = 0;
                 int estimateErrores = 0;
+                double peerSeenMean = 0;
+                int peerHigherThanPeers = 0;
                 System.err.println("Network size: " + networksize);
                 for (int i = 0; i < networksize; ++i) {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
                     triplesback += snob.tripleResponses;
+                    peerSeenMean += snob.profile.alreadySeen.size();
+                    if(snob.profile.alreadySeen.size() >= 200) {
+                        peerHigherThanPeers++;
+                    }
+
                     Iterator<IBFStrata> it = snob.profile.strata.values().iterator();
                     while (it.hasNext()) {
                         estimateErrores += it.next().estimateErrored;
@@ -65,7 +73,9 @@ public class SnobObserver implements ObserverProgram {
                 } else {
                     completenessinresults = (totalreceivedresults) / (totalcardinality) * 100;
                 }
+                triplebackmean = triplesback / snob_default.profile.qlimit;
                 completeness = completeness / snob_default.profile.qlimit;
+                peerSeenMean = peerSeenMean / snob_default.profile.qlimit;
                 System.err.println("Global Completeness in the network: " + completeness + "% (" + snob_default.profile.qlimit + "," + networksize + ")");
                 System.err.println("Global Completeness (in results) in the network: " + completenessinresults + "% (" + totalreceivedresults + "," + totalcardinality + ")");
                 System.err.println("Number of messages in the network: " + messages);
@@ -81,7 +91,10 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + totalcardinality
                         + ", " + completenessinresults
                         + ", " + triplesback
-                        + ", " + estimateErrores;
+                        + ", " + triplebackmean
+                        + ", " + estimateErrores
+                        + ", " + peerSeenMean
+                        + ", " + peerHigherThanPeers ;
                 System.out.println(res);
                 System.err.println(res);
             } catch (Exception e) {

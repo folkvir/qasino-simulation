@@ -40,9 +40,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public String prefix;
     // instrumentations
     public int messages = 0;
-    public long tripleRequests = 0;
     public long tripleResponses = 0;
-    public int errorsListentries = 0;
 
     /**
      * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
@@ -195,8 +193,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      */
     private void exchangeTriplePatterns(Snob remote) {
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
+
         this.profile.patterns.forEach(pattern -> {
-            List<Triple> tmpres = new ArrayList<>();
             if (this.traffic) {
                 result.put(pattern, this.profile.strata.get(pattern).exchange(pattern, remote).iterator());
             } else {
@@ -204,6 +202,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             }
         });
         tripleResponses += this.profile.insertTriples(result, traffic);
+        this.profile.addAlreadySeend(remote.id);
+        this.profile.mergeAlreadySeen(remote.profile.alreadySeen);
         this.messages++;
     }
 
