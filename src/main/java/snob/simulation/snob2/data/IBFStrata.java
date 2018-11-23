@@ -163,22 +163,12 @@ public class IBFStrata {
                     // on remote
                     return remoteIbfstrata.data.values().parallelStream().collect(Collectors.toList());
                 }
-                // System.err.println("[IBF-yes] common triple pattern.");
-                // second round trip, on us
-                // substract us from result then decode us from the difference
-                // System.err.println("[IBF-yes] Computing the set difference...");
                 Cell[] cells = us.subtract(result.getCells()).clone();
                 List<Integer>[] difference = us.decode(cells);
-                Iterator<Integer> additional = difference[0].iterator();
                 Iterator<Integer> miss = difference[1].iterator();
                 // all triples in additionnal need to be ask from the remote
                 // so simulate the second round trip
                 List<Triple> triples = new ArrayList<>();
-//        while(additional.hasNext()) {
-//            int hash = additional.next();
-//            System.err.println("Additional triples: " + remoteIbfstrata.data.get(hash).toString());
-//            triples.add(remoteIbfstrata.data.get(hash));
-//        }
                 while (miss.hasNext()) {
                     int hash = miss.next();
                     // System.err.println("[IBF-yes] Missing triples: " + remoteIbfstrata.data.get(hash).toString());
