@@ -22,7 +22,7 @@ public class Profile {
     public Set<Integer> alreadySeen = new HashSet<>();
 
 
-    public void addAlreadySeend (int remote) {
+    public void addAlreadySeen (int remote) {
         alreadySeen.add(remote);
     }
     public void mergeAlreadySeen (Set<Integer> remote) {
@@ -47,6 +47,7 @@ public class Profile {
                     // populate the pipeline plan
                     query.plan.insertTriple(pattern, t);
                     // populate the bloom filter associated to the pattern
+                    list.add(t);
                 }
             }
             // System.err.print("!end! count=" + count);
