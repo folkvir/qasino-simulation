@@ -51,9 +51,9 @@ public class SnobObserver implements ObserverProgram {
                         List<QuerySolution> res = query.getResults();
                         int cpt = res.size();
                         System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.alreadySeen.size());
-                        for (Object o : snob.profile.alreadySeen.toArray()) {
-                            System.err.printf("[%d]", o);
-                        }
+                        snob.profile.alreadySeen.forEach(id -> {
+                            System.err.printf("[%s]", id);
+                        });
                         System.err.println();
                         totalreceivedresults += cpt;
                         totalcardinality += query.cardinality;
