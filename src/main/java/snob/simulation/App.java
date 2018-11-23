@@ -26,6 +26,12 @@ public class App {
             // firstly do it with only the rps
             for (int i : replicate) {
                 for (boolean b : son_activated) {
+                    int rpss;
+                    if(b) {
+                        rpss = rps_size;
+                    } else {
+                        rpss = 2 * rps_size;
+                    }
                     for (boolean traffic : trafficMin) {
                         // create a file
                         // first copy the template
