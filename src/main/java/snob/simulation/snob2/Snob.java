@@ -66,8 +66,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         } catch (Exception e) {
             System.err.println(e);
         }
-
-
     }
 
     /**

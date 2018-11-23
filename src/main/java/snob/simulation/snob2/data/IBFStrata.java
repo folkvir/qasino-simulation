@@ -9,6 +9,7 @@ import snob.simulation.snob2.data.Strata.Cell;
 import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
 
+import java.rmi.ServerError;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -155,16 +156,21 @@ public class IBFStrata {
                 }
                 Cell[] cells = us.subtract(result.getCells()).clone();
                 List<Integer>[] difference = us.decode(cells);
-                Iterator<Integer> miss = difference[1].iterator();
-                // all triples in additionnal need to be ask from the remote
-                // so simulate the second round trip
-                List<Triple> triples = new ArrayList<>();
-                while (miss.hasNext()) {
-                    int hash = miss.next();
-                    // System.err.println("[IBF-yes] Missing triples: " + remoteIbfstrata.data.get(hash).toString());
-                    triples.add(remoteIbfstrata.data.get(hash));
+                if(difference == null) {
+                    estimateErrored++;
+                    return remoteIbfstrata.data.values().parallelStream().collect(Collectors.toList());
+                } else {
+                    Iterator<Integer> miss = difference[1].iterator();
+                    // all triples in additionnal need to be ask from the remote
+                    // so simulate the second round trip
+                    List<Triple> triples = new ArrayList<>();
+                    while (miss.hasNext()) {
+                        int hash = miss.next();
+                        // System.err.println("[IBF-yes] Missing triples: " + remoteIbfstrata.data.get(hash).toString());
+                        triples.add(remoteIbfstrata.data.get(hash));
+                    }
+                    return triples;
                 }
-                return triples;
             }
         }
     }

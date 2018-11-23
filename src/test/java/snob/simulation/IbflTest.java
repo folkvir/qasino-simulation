@@ -73,7 +73,7 @@ public class IbflTest {
         // simulate an exchange of triples pattern using the exchange method of strata estimator
         Map<Triple, List<Triple>> m = new HashMap<>();
         for (Triple pattern : p1.patterns) {
-            p1.insertTriples(pattern, p2.datastore.getTriplesMatchingTriplePattern(pattern), true);
+            p1.insertTriples(pattern, p1.strata.get(pattern)._exchange(pattern, p2, 0).iterator(), true);
         }
 
         // now check we have all triples, including ours and missing triples
