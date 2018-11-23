@@ -19,7 +19,7 @@ public class IBFStrata {
     public int estimateErrored = 0; // number of times the estimation return an estimation larger than 100k
     public int count = 0;
     public Map<Integer, Integer> visited = new HashMap<>();
-    private Map<Integer, Triple> data = new HashMap<>();
+    public Map<Integer, Triple> data = new HashMap<>();
     private StrataEstimator estimator = new StrataEstimator(128);
 
     public StrataEstimator getEstimator() {
@@ -42,10 +42,9 @@ public class IBFStrata {
 
     public IBF[] insert(Iterator<Triple> triples) {
         // System.err.println("Inserting data into the strata estimator...");
-        List<Integer> tis = new ArrayList<Integer>();
+        List<Integer> tis = new ArrayList<>();
         while (triples.hasNext()) {
             Triple triple = triples.next();
-            // System.err.println("Inserting into strata IBF -> " + triple.toString());
             int hashed = hash(triple);
             _insert(hashed);
             this.data.put(hashed, triple);
@@ -61,8 +60,6 @@ public class IBFStrata {
     private void _insert(int hashed) {
         this.ibf100.add(hashed);
         this.ibf1k.add(hashed);
-//        this.ibf10k.add(hashed);
-//        this.ibf100k.add(hashed);
     }
 
     public int hash(Triple triple) {

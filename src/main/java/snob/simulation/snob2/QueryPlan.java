@@ -50,7 +50,6 @@ public class QueryPlan {
     }
 
     public void insertTriple(Triple pattern, Triple triple) {
-        //System.err.printf("Inserting a triple into the pipleline for the pattern %s...%n", pattern.toString());
         Binding b = projection(pattern, triple);
         sources.get(pattern).append(b);
     }

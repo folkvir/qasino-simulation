@@ -9,7 +9,6 @@ import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.serializer.SerializationContext;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class SymmetricHashJoin implements QueryIteratorPlus {

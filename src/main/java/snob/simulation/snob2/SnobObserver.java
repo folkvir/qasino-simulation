@@ -37,7 +37,7 @@ public class SnobObserver implements ObserverProgram {
                     messages += snob.messages;
                     triplesback += snob.tripleResponses;
                     peerSeenMean += snob.profile.alreadySeen.size();
-                    if(snob.profile.alreadySeen.size() >= 200) {
+                    if (snob.profile.alreadySeen.size() >= 200) {
                         peerHigherThanPeers++;
                     }
 
@@ -97,7 +97,7 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + triplebackmean
                         + ", " + estimateErrores
                         + ", " + peerSeenMean
-                        + ", " + peerHigherThanPeers ;
+                        + ", " + peerHigherThanPeers;
                 System.out.println(res);
                 System.err.println(res);
             } catch (Exception e) {

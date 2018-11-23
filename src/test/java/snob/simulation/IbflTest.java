@@ -1,9 +1,12 @@
 package snob.simulation;
 
 import com.google.common.hash.HashCode;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
 
@@ -58,30 +61,23 @@ public class IbflTest {
             dtriples++;
         }
         Assert.assertEquals(2, dtriples);
+        // execute the query...
         p1.execute();
-        System.err.println(p1.query.getResults());
-        count = p1.query.getResults().size();
-        System.err.println("Size of: " + count);
+        Assert.assertEquals(1, p1.query.getResults().size());
 
         // init peer 2
         Profile p2 = new Profile();
         p2.datastore.update("./datasets/test-peer2.ttl");
         p2.update(query);
-        p2.execute();
 
         // simulate an exchange of triples pattern using the exchange method of strata estimator
-        Map<Triple, Iterator<Triple>> result = new HashMap<>();
-        p1.strata.forEach((pattern, strata) -> {
-            List<Triple> triples = strata._exchange(pattern, p2, 0);
-            // add new triple from 2 to 1
-            result.put(pattern, triples.iterator());
-            Assert.assertEquals(2, strata.count);
-        });
-
-        // add new triple from 2 to 1
-        p1.insertTriples(result, true);
+        Map<Triple, List<Triple>> m = new HashMap<>();
+        for (Triple pattern : p1.patterns) {
+            p1.insertTriples(pattern, p2.datastore.getTriplesMatchingTriplePattern(pattern), true);
+        }
 
         // now check we have all triples, including ours and missing triples
+        dtriples = 0;
         Iterator<Triple> it2 = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
         while (it2.hasNext()) {
             System.err.println("[1] Triple: " + it2.next());
@@ -94,5 +90,20 @@ public class IbflTest {
         System.err.println(p1.query.getResults());
         count = p1.query.getResults().size();
         Assert.assertEquals(2, count);
+    }
+
+    @Test
+    public void test1peer(){
+        System.err.println("HEY COUCOU");
+        String query = "PREFIX ns: <http://example.org/ns#> \n" +
+                "PREFIX : <http://example.org/ns#> \n" +
+                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
+        // init peer 1
+        Profile p1 = new Profile();
+        p1.datastore.update("./datasets/test-peer1.ttl");
+        p1.datastore.update("./datasets/test-peer2.ttl");
+        p1.update(query);
+        p1.execute();
+        Assert.assertEquals(2, p1.query.getResults().size());
     }
 }
