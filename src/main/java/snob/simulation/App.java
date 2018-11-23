@@ -22,7 +22,7 @@ public class App {
             int qlimit = -1; // unlimited
             int dlimit = -1; // unlimited
             boolean[] son_activated = {false, true};
-            boolean[] trafficMin = {false, true};
+            boolean[] trafficMin = {true};
             // firstly do it with only the rps
             for (int i : replicate) {
                 for (boolean b : son_activated) {
