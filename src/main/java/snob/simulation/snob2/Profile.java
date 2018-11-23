@@ -53,11 +53,9 @@ public class Profile {
             Triple t = it.next();
             if (!data.get(pattern).contains(t)) {
                 query.plan.insertTriple(pattern, t);
+                list.add(t);
             } else {
                 data.get(pattern).add(t);
-            }
-            if (!datastore.contains(t)) {
-                list.add(t);
             }
         }
         datastore.insertTriples(list);

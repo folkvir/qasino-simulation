@@ -14,8 +14,7 @@ import java.util.stream.Collectors;
 
 public class IBFStrata {
     public int constant = 2; // 1.5 -> 2 (-_-)"
-    public IBF ibf100 = new IBF(100); // 2*50 diff
-    public IBF ibf1k = new IBF(1000); // 2*500 diff
+    public IBF ibf = new IBF(10000); // 2*5000 diff
     public int estimateErrored = 0; // number of times the estimation return an estimation larger than 100k
     public int count = 0;
     public Map<Integer, Integer> visited = new HashMap<>();
@@ -58,8 +57,7 @@ public class IBFStrata {
     }
 
     private void _insert(int hashed) {
-        this.ibf100.add(hashed);
-        this.ibf1k.add(hashed);
+        this.ibf.add(hashed);
     }
 
     public int hash(Triple triple) {
@@ -114,12 +112,8 @@ public class IBFStrata {
                     // check if triples are in IBF (2 second round)
                     List<Triple> finalresult = new ArrayList<>();
                     result.forEach(triple -> {
-                        if (count < 100) {
-                            if (remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf100.contains(remote.strata.get(pattern).hash(triple))) {
-                                finalresult.add(triple);
-                            }
-                        } else if (count < 1000) {
-                            if (remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf1k.contains(remote.strata.get(pattern).hash(triple))) {
+                        if (count < 10000) {
+                            if (remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf.contains(remote.strata.get(pattern).hash(triple))) {
                                 finalresult.add(triple);
                             }
                         }
@@ -147,14 +141,10 @@ public class IBFStrata {
                 IBF us;
 
                 // System.err.println("[IBF-yes] Difference size estimation is: |A-B| + |B-A| = " + (diffSize));
-                if ((2 * diffSize) < 100) {
+                if ((2 * diffSize) < 10000) {
                     // put it in the ibf100
-                    result = remoteIbfstrata.ibf100;
-                    us = this.ibf100;
-                } else if ((2 * diffSize) < 1000) {
-                    // put it in the ibf1000
-                    result = remoteIbfstrata.ibf1k;
-                    us = this.ibf1k;
+                    result = remoteIbfstrata.ibf;
+                    us = this.ibf;
                 } else {
                     // hum hum too large? directly send triples....
                     // perhaps ibf1M but seems to big
