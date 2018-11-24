@@ -59,11 +59,11 @@ public class SnobInit implements ObserverProgram {
             } catch (IOException e) {
                 System.err.println(e.toString());
             }
-            try (Stream<Path> paths = Files.walk(Paths.get(linkedmdb))) {
-                paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
-            } catch (IOException e) {
-                System.err.println(e.toString());
-            }
+//            try (Stream<Path> paths = Files.walk(Paths.get(linkedmdb))) {
+//                paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
+//            } catch (IOException e) {
+//                System.err.println(e.toString());
+//            }
             System.err.println("[INIT:SNOB] Number of fragments to load: " + filenames.size());
 
             Vector<Snob> peers = new Vector();
@@ -97,16 +97,16 @@ public class SnobInit implements ObserverProgram {
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
             }
-            // linkedmdb queries
-            try (Reader is = new FileReader(linkedmdbQuery)) {
-                JSONArray jsonArray = (JSONArray) parser.parse(is);
-                jsonArray.stream().forEach((q) -> {
-                    JSONObject j = (JSONObject) q;
-                    queriesLinkedmdb.add(j);
-                });
-            } catch (IOException | ParseException e) {
-                e.printStackTrace();
-            }
+//            // linkedmdb queries
+//            try (Reader is = new FileReader(linkedmdbQuery)) {
+//                JSONArray jsonArray = (JSONArray) parser.parse(is);
+//                jsonArray.stream().forEach((q) -> {
+//                    JSONObject j = (JSONObject) q;
+//                    queriesLinkedmdb.add(j);
+//                });
+//            } catch (IOException | ParseException e) {
+//                e.printStackTrace();
+//            }
 
             // create a vector containing all queries where queries are inserted one after the other respectively from each dataset
             Vector<JSONObject> finalQueries = new Vector();
@@ -153,7 +153,6 @@ public class SnobInit implements ObserverProgram {
                     snob.profile.update((String) query.get("query"), (long) query.get("card"));
                     max--;
                 }
-
             }
         }
     }

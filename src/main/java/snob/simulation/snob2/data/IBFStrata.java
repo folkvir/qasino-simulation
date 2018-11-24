@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
 
 public class IBFStrata {
     public int constant = 2; // 1.5 -> 2 (-_-)"
-    public IBF ibf = new IBF(10000); // 2*5000 diff
+    public static final int ibfSize = 10000;
+    public IBF ibf = new IBF(ibfSize); // 2*5000 diff
     public int estimateErrored = 0; // number of times the estimation return an estimation larger than 100k
     public int count = 0;
     public Map<Integer, Integer> visited = new HashMap<>();
@@ -94,32 +95,28 @@ public class IBFStrata {
         if (remoteIbfstrata == null) {
             if (!visited.containsKey(id)) {
                 visited.put(id, id);
-                // get all triples matching the triple pattern
+
+                // get all triples matching the triple pattern on the remote site
                 Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
                 List<Triple> result = new ArrayList<>();
+                List<Triple> finalresult = new ArrayList<>();
+                // for all triple, create the List of triple and check if contained in the ibf that A send to us.
                 while (it.hasNext()) {
-                    // check if
-                    result.add(it.next());
+                    Triple triple = it.next();
+                    result.add(triple);
+                    if (!this.ibf.contains(this.hash(triple))) {
+                        finalresult.add(triple);
+                    }
                 }
                 // if size == 0 return an emtpty list
                 if (result.size() == 0) return Collections.emptyList();
                 // this.count is send to B with the estimator and the IBF of B
-                if (result.size() * 2 > this.count) {
+                if (result.size() > this.count * 2) {
                     // the remote peer have 2 times more result than us, it is most likely he has interesting triples.
-                    // System.err.printf("[IBF-no] Returning  %d triples directly %n", result.size());
                     estimateErrored++;
                     return result;
                 } else {
-                    // check if triples are in IBF (2 second round)
-                    List<Triple> finalresult = new ArrayList<>();
-                    result.forEach(triple -> {
-                        if (count < 10000) {
-                            if (remote.query.strata.get(pattern) != null && !remote.query.strata.get(pattern).ibf.contains(remote.query.strata.get(pattern).hash(triple))) {
-                                finalresult.add(triple);
-                            }
-                        }
-                    });
-                    // System.err.printf("[IBF-no] Returning  %d triples after checking in the set. %n", finalresult.size());
+                    // send only missing triples, perhaps, a lot of false positives
                     return finalresult;
                 }
             } else {
@@ -136,13 +133,11 @@ public class IBFStrata {
                 return Collections.emptyList();
             } else {
                 // create the IBF of size diffSize with triple from the remote peer
-                // for the simulation we previously loaded ibfs of 100/1k/10k/100k cells
-                // and we return the corresponding ibf with data already inserted.
                 IBF result;
                 IBF us;
 
                 // System.err.println("[IBF-yes] Difference size estimation is: |A-B| + |B-A| = " + (diffSize));
-                if ((2 * diffSize) < 10000) {
+                if ((2 * diffSize) < ibfSize) {
                     // put it in the ibf100
                     result = remoteIbfstrata.ibf;
                     us = this.ibf;
@@ -157,8 +152,16 @@ public class IBFStrata {
                 Cell[] cells = us.subtract(result.getCells()).clone();
                 List<Integer>[] difference = us.decode(cells);
                 if(difference == null) {
-                    estimateErrored++;
-                    return remoteIbfstrata.data.values().parallelStream().collect(Collectors.toList());
+                    // estimateErrored++;
+                    List<Triple> finalresult = new ArrayList<>();
+                    // send only missing triples.
+                    // perhaps a lot of false positives here?
+                    remoteIbfstrata.data.values().parallelStream().forEach(triple -> {
+                        if (!this.ibf.contains(this.hash(triple))) {
+                            finalresult.add(triple);
+                        }
+                    });
+                    return finalresult;
                 } else {
                     Iterator<Integer> miss = difference[1].iterator();
                     // all triples in additionnal need to be ask from the remote
@@ -173,5 +176,6 @@ public class IBFStrata {
                 }
             }
         }
-    }
+    } // end exchange
+
 }

@@ -165,7 +165,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         // 1 - send tpqs to neighbours and receive responses
         List<Node> rps_neigh = this.getPeers(1000000);
         for (Node node1 : rps_neigh) {
-            if (this.profile.query.patterns.size() > 0) {
+            if (this.profile.has_query && this.profile.query.patterns.size() > 0) {
                 Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
                 this.exchangeTriplePatterns(snob);
             }
@@ -173,7 +173,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
             List<Node> son_neigh = this.getSonPeers(1000000);
             for (Node node1 : son_neigh) {
-                if (this.profile.query.patterns.size() > 0) {
+                if (this.profile.has_query && this.profile.query.patterns.size() > 0) {
                     Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
                     this.exchangeTriplePatterns(snob);
                 }

@@ -148,34 +148,38 @@ public class Profile {
      */
     public int score(Profile p) {
         int score = 0;
-        boolean stop = false;
-        Iterator<Triple> it = p.query.patterns.iterator();
-        while (!stop && it.hasNext()) {
-            Triple pt = it.next();
-            Iterator<Triple> ittpqs = this.query.patterns.iterator();
-            while (!stop && ittpqs.hasNext()) {
-                Triple us = ittpqs.next();
-                if (this.equivalence(us, pt)) {
-                    stop = true; // we have the highest score, stop or it will cause an overflow
-                } else if (this.containment(us, pt)) {
-                    try {
-                        score = Math.addExact(score, WEIGH_CONTAINMENT);
-                    } catch (ArithmeticException e) {
-                        stop = true;
-                    }
-                } else if (this.subset(us, pt)) {
-                    try {
-                        score = Math.addExact(score, WEIGH_SUBSET);
-                    } catch (ArithmeticException e) {
-                        stop = true;
+        if(p.query == null) {
+            return score;
+        } else {
+            boolean stop = false;
+            Iterator<Triple> it = p.query.patterns.iterator();
+            while (!stop && it.hasNext()) {
+                Triple pt = it.next();
+                Iterator<Triple> ittpqs = this.query.patterns.iterator();
+                while (!stop && ittpqs.hasNext()) {
+                    Triple us = ittpqs.next();
+                    if (this.equivalence(us, pt)) {
+                        stop = true; // we have the highest score, stop or it will cause an overflow
+                    } else if (this.containment(us, pt)) {
+                        try {
+                            score = Math.addExact(score, WEIGH_CONTAINMENT);
+                        } catch (ArithmeticException e) {
+                            stop = true;
+                        }
+                    } else if (this.subset(us, pt)) {
+                        try {
+                            score = Math.addExact(score, WEIGH_SUBSET);
+                        } catch (ArithmeticException e) {
+                            stop = true;
+                        }
                     }
                 }
             }
+            if (stop) {
+                return WEIGH_EQUIVALENCE;
+            }
+            return score;
         }
-        if (stop) {
-            return WEIGH_EQUIVALENCE;
-        }
-        return score;
     }
 
     private boolean equivalence(Triple tpa, Triple tpb) {
