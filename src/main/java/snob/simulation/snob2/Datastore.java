@@ -4,6 +4,9 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.impl.StatementImpl;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
@@ -17,11 +20,29 @@ import static java.lang.System.exit;
 
 
 public class Datastore {
+    public Model general;
     public Dataset dataset;
 
     public Datastore() {
+        general = ModelFactory.createDefaultModel();
         this.dataset = DatasetFactory.createTxnMem();
     }
+
+//    public void update(String filename) {
+//        System.err.println("Updating the datastore with the following filename: " + filename);
+//        // this.dataset.begin(ReadWrite.WRITE);
+//        try {
+//            RDFParser.create()
+//                    .source(filename)
+//                    .parse(this.dataset);
+//            // this.dataset.commit();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            // this.dataset.abort();
+//        } finally {
+//            // this.dataset.end();
+//        }
+//    }
 
     public void update(String filename) {
         System.err.println("Updating the datastore with the following filename: " + filename);
@@ -29,7 +50,7 @@ public class Datastore {
         try {
             RDFParser.create()
                     .source(filename)
-                    .parse(this.dataset);
+                    .parse(general);
             // this.dataset.commit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -40,13 +61,14 @@ public class Datastore {
     }
 
     public boolean contains(Triple p) {
-        return this.dataset.asDatasetGraph().getDefaultGraph().contains(p);
+        return general.getGraph().contains(p);
+        // this.dataset.asDatasetGraph().getDefaultGraph().contains(p);
     }
 
     public void insertTriples(List<Triple> triples) {
         // this.dataset.begin(ReadWrite.WRITE);
         try {
-            Graph g = this.dataset.asDatasetGraph().getDefaultGraph();
+            Graph g = general.getGraph(); // this.dataset.asDatasetGraph().getDefaultGraph();
             Iterator<Triple> it = triples.iterator();
             while (it.hasNext()) {
                 Triple p = it.next();
@@ -71,7 +93,8 @@ public class Datastore {
         Iterator<Triple> result;
         try {
             // this.dataset.begin(ReadWrite.READ);
-            Model tdb = this.dataset.getDefaultModel();
+            // Model tdb = this.dataset.getDefaultModel();
+            Model tdb = general;
 
             // build bgp and where clause
             BasicPattern bgp = new BasicPattern();
@@ -103,7 +126,7 @@ public class Datastore {
         ResultSet result;
         try {
             // this.dataset.begin(ReadWrite.READ);
-            Model tdb = this.dataset.getDefaultModel();
+            Model tdb = general; // this.dataset.getDefaultModel();
             QueryExecution qe = QueryExecutionFactory.create(q, tdb);
             result = qe.execSelect();
         } catch (Exception e) {
