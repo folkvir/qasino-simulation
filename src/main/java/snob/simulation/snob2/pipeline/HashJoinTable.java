@@ -22,6 +22,7 @@ public class HashJoinTable {
     }
 
     public Iterator<Binding> probe(String key, Binding bindings) {
+        System.err.printf(".");
         if (content.containsKey(key)) {
             return content.get(key)
                     .parallelStream()
