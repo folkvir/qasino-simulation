@@ -1,5 +1,6 @@
 package snob.simulation.snob2;
 
+import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
@@ -24,17 +25,18 @@ public class Datastore {
 
     public void update(String filename) {
         System.err.println("Updating the datastore with the following filename: " + filename);
-        this.dataset.begin(ReadWrite.WRITE);
+        // this.dataset.begin(ReadWrite.WRITE);
         try {
             RDFParser.create()
                     .source(filename)
                     .parse(this.dataset);
-            this.dataset.commit();
+            // this.dataset.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            this.dataset.abort();
+            // this.dataset.abort();
+        } finally {
+            // this.dataset.end();
         }
-        this.dataset.end();
     }
 
     public boolean contains(Triple p) {
@@ -42,31 +44,33 @@ public class Datastore {
     }
 
     public void insertTriples(List<Triple> triples) {
-        this.dataset.begin(ReadWrite.WRITE);
+        // this.dataset.begin(ReadWrite.WRITE);
         try {
+            Graph g = this.dataset.asDatasetGraph().getDefaultGraph();
             Iterator<Triple> it = triples.iterator();
             while (it.hasNext()) {
                 Triple p = it.next();
-                if (!this.dataset.asDatasetGraph().getDefaultGraph().contains(p)) {
+                if (!g.contains(p)) {
                     // System.err.println("Inserting triple: " + p.toString());
-                    this.dataset.asDatasetGraph().getDefaultGraph().add(p);
+                    g.add(p);
                 } else {
                     System.err.println(new Error("[]inserting twice a triple..."));
                     exit(1);
                 }
             }
-            this.dataset.commit();
+            // this.dataset.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            this.dataset.abort();
+            // this.dataset.abort();
+        } finally {
+            // this.dataset.end();
         }
-        this.dataset.end();
     }
 
     public Iterator<Triple> getTriplesMatchingTriplePattern(Triple p) {
         Iterator<Triple> result;
         try {
-            this.dataset.begin(ReadWrite.READ);
+            // this.dataset.begin(ReadWrite.READ);
             Model tdb = this.dataset.getDefaultModel();
 
             // build bgp and where clause
@@ -90,7 +94,7 @@ public class Datastore {
             e.printStackTrace();
             throw e;
         } finally {
-            this.dataset.end();
+            // this.dataset.end();
         }
         return result;
     }
@@ -98,14 +102,14 @@ public class Datastore {
     public ResultSet select(Query q) {
         ResultSet result;
         try {
-            this.dataset.begin(ReadWrite.READ);
+            // this.dataset.begin(ReadWrite.READ);
             Model tdb = this.dataset.getDefaultModel();
             QueryExecution qe = QueryExecutionFactory.create(q, tdb);
             result = qe.execSelect();
         } catch (Exception e) {
             throw e;
         } finally {
-            this.dataset.end();
+            // this.dataset.end();
         }
         return result;
     }
