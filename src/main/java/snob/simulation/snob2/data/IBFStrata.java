@@ -8,8 +8,6 @@ import snob.simulation.snob2.Snob;
 import snob.simulation.snob2.data.Strata.Cell;
 import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
-
-import java.rmi.ServerError;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,7 +40,6 @@ public class IBFStrata {
     }
 
     public IBF[] insert(Iterator<Triple> triples) {
-        // System.err.println("Inserting data into the strata estimator...");
         List<Integer> tis = new ArrayList<>();
         while (triples.hasNext()) {
             Triple triple = triples.next();
@@ -95,7 +92,7 @@ public class IBFStrata {
         if (remoteIbfstrata == null) {
             if (!visited.containsKey(id)) {
                 visited.put(id, id);
-
+                System.err.printf("No common pattern, getting all triples matching the pattern ");
                 // get all triples matching the triple pattern on the remote site
                 Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
                 List<Triple> result = new ArrayList<>();
@@ -108,6 +105,7 @@ public class IBFStrata {
                         finalresult.add(triple);
                     }
                 }
+                System.err.printf(" *end* %n");
                 // if size == 0 return an emtpty list
                 if (result.size() == 0) return Collections.emptyList();
                 // this.count is send to B with the estimator and the IBF of B
@@ -153,6 +151,7 @@ public class IBFStrata {
                 List<Integer>[] difference = us.decode(cells);
                 if(difference == null) {
                     // estimateErrored++;
+                    System.err.printf("Cant make a difference, send directly triples...");
                     List<Triple> finalresult = new ArrayList<>();
                     // send only missing triples.
                     // perhaps a lot of false positives here?
@@ -161,6 +160,7 @@ public class IBFStrata {
                             finalresult.add(triple);
                         }
                     });
+                    System.err.printf(" *end* %n");
                     return finalresult;
                 } else {
                     Iterator<Integer> miss = difference[1].iterator();

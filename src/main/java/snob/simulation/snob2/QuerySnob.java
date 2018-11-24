@@ -8,6 +8,8 @@ import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONObject;
 import snob.simulation.snob2.data.IBFStrata;
 
+import javax.xml.transform.Result;
+import java.rmi.ServerError;
 import java.util.*;
 
 public class QuerySnob {
@@ -101,6 +103,9 @@ public class QuerySnob {
     }
 
     public ResultSet execute() {
-        return this.plan.execute();
+        System.err.printf("Executing a query ... (%d/%d) ", this.getResults().size(), this.cardinality);
+        ResultSet res = this.plan.execute();
+        System.err.printf(" *end* %n");
+        return res;
     }
 }
