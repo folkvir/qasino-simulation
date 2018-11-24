@@ -155,24 +155,6 @@ public class SnobInit implements ObserverProgram {
                 }
 
             }
-
-            /*// collect all possible triple patterns available in initialized profiles...
-            List<Triple> patterns = new ArrayList();
-            System.err.println("Initialize all globa IBFs on all peers (could be very long to to this, please wait.)");
-            for (int i = 0; i < networksize; ++i) {
-                Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
-                // collect all patterns
-                snob.profile.patterns.forEach(pattern -> {
-                    if(!patterns.contains(pattern)) {
-                        patterns.add(pattern);
-                    }
-                });
-            }
-            // now initialize IBFs
-            for (int i = 0; i < networksize; ++i) {
-                Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
-                snob.profile.initializeGlobalIBF(patterns);
-            }*/
         }
     }
 

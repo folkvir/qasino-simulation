@@ -3,6 +3,7 @@ package snob.simulation.snob2;
 import org.apache.jena.graph.Triple;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
+import peersim.core.Network;
 import peersim.core.Node;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
@@ -66,6 +67,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         } catch (Exception e) {
             System.err.println(e);
         }
+        System.err.printf("[%d/%d] Snob peer initialized. %n", id, Network.size());
     }
 
     /**
@@ -163,7 +165,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         // 1 - send tpqs to neighbours and receive responses
         List<Node> rps_neigh = this.getPeers(1000000);
         for (Node node1 : rps_neigh) {
-            if (this.profile.patterns.size() > 0) {
+            if (this.profile.query.patterns.size() > 0) {
                 Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
                 this.exchangeTriplePatterns(snob);
             }
@@ -171,7 +173,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
             List<Node> son_neigh = this.getSonPeers(1000000);
             for (Node node1 : son_neigh) {
-                if (this.profile.patterns.size() > 0) {
+                if (this.profile.query.patterns.size() > 0) {
                     Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
                     this.exchangeTriplePatterns(snob);
                 }
@@ -190,21 +192,31 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * @param remote
      */
     private void exchangeTriplePatterns(Snob remote) {
-        Map<Triple, Iterator<Triple>> result = new HashMap<>();
+        if (!this.profile.query.terminated) {
+            Map<Triple, Iterator<Triple>> result = new HashMap<>();
+            this.profile.query.patterns.forEach(pattern -> {
+                if (this.traffic) {
+                    List<Triple> l = this.profile.query.strata.get(pattern).exchange(pattern, remote);
+                    // if(l.size() > 0) System.err.printf("[%s] just receive %d triples from %s...%n", this.id, l.size(), remote.id);
+                    result.put(pattern, l.iterator());
+                } else {
+                    result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
+                }
+                this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
+                if(remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+                    this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
+                }
+            });
+            int insertedtriples = this.profile.insertTriples(result, traffic);
+            tripleResponses += insertedtriples;
+            // System.err.printf("[%s] Inserting %d triples from %s%n ", this.id, insertedtriples, remote.id);
+            this.messages++;
 
-        this.profile.patterns.forEach(pattern -> {
-            if (this.traffic) {
-                List<Triple> l = this.profile.strata.get(pattern).exchange(pattern, remote);
-                // if(l.size() > 0) System.err.printf("[%s] just receive %d triples from %s...%n", this.id, l.size(), remote.id);
-                result.put(pattern, l.iterator());
-            } else {
-                result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
+            // test if the query is terminated or not
+            if(this.profile.query.globalseen == Network.size()) {
+                this.profile.query.stop();
             }
-        });
-        tripleResponses += this.profile.insertTriples(result, traffic);
-        this.profile.addAlreadySeen(remote.id);
-        this.profile.mergeAlreadySeen(remote.profile.alreadySeen);
-        this.messages++;
+        }
     }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {

@@ -72,8 +72,8 @@ public class IbflTest {
 
         // simulate an exchange of triples pattern using the exchange method of strata estimator
         Map<Triple, List<Triple>> m = new HashMap<>();
-        for (Triple pattern : p1.patterns) {
-            p1.insertTriples(pattern, p1.strata.get(pattern)._exchange(pattern, p2, 0).iterator(), true);
+        for (Triple pattern : p1.query.patterns) {
+            p1.insertTriples(pattern, p1.query.strata.get(pattern)._exchange(pattern, p2, 0).iterator(), true);
         }
 
         // now check we have all triples, including ours and missing triples
@@ -90,6 +90,94 @@ public class IbflTest {
         System.err.println(p1.query.getResults());
         count = p1.query.getResults().size();
         Assert.assertEquals(2, count);
+    }
+
+    @Test
+    public void test3peersTrafficNormal() {
+        System.err.println("HEY COUCOU");
+        String query = "PREFIX ns: <http://example.org/ns#> \n" +
+                "PREFIX : <http://example.org/ns#> \n" +
+                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
+        // init peer 1
+        int count = 0;
+        int dtriples = 0;
+        Profile p1 = new Profile();
+        p1.datastore.update("./datasets/test-peer1.ttl");
+        p1.update(query);
+        // init peer 2
+        Profile p2 = new Profile();
+        p2.datastore.update("./datasets/test-peer2.ttl");
+        p2.update(query);
+        // init peer 3
+        Profile p3 = new Profile();
+        p3.datastore.update("./datasets/test-peer3.ttl");
+        p3.update(query);
+
+        // p2 exchange with p3 first
+        for (Triple pattern : p2.query.patterns) {
+            p2.insertTriples(pattern, p3.datastore.getTriplesMatchingTriplePattern(pattern), false);
+        }
+
+        p2.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
+            System.err.println("Triple in p2: " + triple);
+        });
+
+        // then p1 exchange with p2
+        for (Triple pattern : p1.query.patterns) {
+            p1.insertTriples(pattern, p2.datastore.getTriplesMatchingTriplePattern(pattern), false);
+        }
+
+        p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
+            System.err.println("Triple in p1: " + triple);
+        });
+
+        p1.execute();
+        Assert.assertEquals(3, p1.query.getResults().size());
+        System.err.println(p1.query.getResults());
+    }
+
+    @Test
+    public void test3peersTrafficMinimized() {
+        System.err.println("HEY COUCOU");
+        String query = "PREFIX ns: <http://example.org/ns#> \n" +
+                "PREFIX : <http://example.org/ns#> \n" +
+                "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
+        // init peer 1
+        int count = 0;
+        int dtriples = 0;
+        Profile p1 = new Profile();
+        p1.datastore.update("./datasets/test-peer1.ttl");
+        p1.update(query);
+        // init peer 2
+        Profile p2 = new Profile();
+        p2.datastore.update("./datasets/test-peer2.ttl");
+        p2.update(query);
+        // init peer 3
+        Profile p3 = new Profile();
+        p3.datastore.update("./datasets/test-peer3.ttl");
+        p3.update(query);
+
+        // p2 exchange with p3 first
+        for (Triple pattern : p2.query.patterns) {
+            p2.insertTriples(pattern, p2.query.strata.get(pattern)._exchange(pattern, p3, 2).iterator(), true);
+        }
+
+        p2.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
+            System.err.println("Triple in p2: " + triple);
+        });
+
+        // then p1 exchange with p2
+        for (Triple pattern : p1.query.patterns) {
+            p1.insertTriples(pattern, p1.query.strata.get(pattern)._exchange(pattern, p2, 2).iterator(), true);
+        }
+
+        p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
+            System.err.println("Triple in p1: " + triple);
+        });
+
+        p1.execute();
+        Assert.assertEquals(3, p1.query.getResults().size());
+        System.err.println(p1.query.getResults());
     }
 
     @Test

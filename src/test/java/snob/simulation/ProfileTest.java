@@ -22,7 +22,7 @@ public class ProfileTest {
                 "   ?x foaf:name ?name" +
                 "   OPTIONAL { ?x foaf:nick ?nick }" +
                 "}");
-        Assert.assertEquals(3, p.patterns.size());
+        Assert.assertEquals(3, p.query.patterns.size());
     }
 
     /**

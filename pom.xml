@@ -80,7 +80,6 @@
               <executions>
                   <execution>
                       <phase>package</phase>
-                      <!--<phase /><!- - Switch off -->
                       <goals>
                           <goal>shade</goal>
                       </goals>

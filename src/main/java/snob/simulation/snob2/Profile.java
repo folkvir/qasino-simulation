@@ -8,8 +8,6 @@ import snob.simulation.snob2.data.IBFStrata;
 
 import java.util.*;
 
-import static snob.simulation.snob2.Snob.traffic;
-
 public class Profile {
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
     public int WEIGH_CONTAINMENT = 2;
@@ -18,21 +16,8 @@ public class Profile {
     public long qlimit = 1; // number of queries in the network
     public long replicate = 50; // replicate factor in % (one query is replicated over a limited number of peer, 'replicate is this number)
 
-    public List<Triple> patterns = new ArrayList<>();
-    public Map<Triple, Set<Triple>> data = new HashMap<>();
-    public Map<Triple, IBFStrata> strata = new HashMap<>();
     public QuerySnob query;
     public Datastore datastore = new Datastore();
-    public Set<Integer> alreadySeen = new HashSet<>();
-
-
-    public void addAlreadySeen(int remote) {
-        alreadySeen.add(remote);
-    }
-
-    public void mergeAlreadySeen(Set<Integer> remote) {
-        alreadySeen.addAll(remote);
-    }
 
     /**
      * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
@@ -46,24 +31,23 @@ public class Profile {
         }
         return count;
     }
-
     public int insertTriples(Triple pattern, Iterator<Triple> it, boolean traffic) {
         List<Triple> list = new ArrayList<>();
         List<Triple> ibf = new ArrayList<>();
         while (it.hasNext()) {
             Triple t = it.next();
-            if (!data.get(pattern).contains(t)) {
+            if (!query.data.get(pattern).contains(t)) {
                 query.plan.insertTriple(pattern, t);
                 ibf.add(t);
             } else {
-                data.get(pattern).add(t);
+                query.data.get(pattern).add(t);
             }
             if(!datastore.contains(t)){
                 list.add(t);
             }
         }
         datastore.insertTriples(list);
-        if (traffic) this.strata.get(pattern).insert(ibf);
+        if (traffic) this.query.strata.get(pattern).insert(ibf);
         return list.size();
     }
 
@@ -78,8 +62,8 @@ public class Profile {
             has_query = true;
             this.query = new QuerySnob(query);
             System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
-            patterns = this.query.plan.patterns;
-            init(patterns);
+            this.query.patterns = this.query.plan.patterns;
+            init(this.query.patterns);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -91,7 +75,7 @@ public class Profile {
      */
     private void reset() {
         this.has_query = false;
-        this.patterns = new ArrayList<>();
+        this.query = null;
     }
 
     /**
@@ -106,8 +90,8 @@ public class Profile {
             this.has_query = true;
             this.query = new QuerySnob(query, card);
             System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
-            this.patterns = this.query.plan.patterns;
-            this.init(this.patterns);
+            this.query.patterns = this.query.plan.patterns;
+            this.init(this.query.patterns);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -127,17 +111,15 @@ public class Profile {
             List<Triple> list = new ArrayList<>();
             Set<Triple> set = new HashSet<>();
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
-                // System.err.printf(".");
-                // populate the pipeline plan
                 this.query.plan.insertTriple(pattern, triple);
                 list.add(triple);
                 set.add(triple);
             });
-            if (!this.strata.containsKey(pattern)) {
-                this.strata.put(pattern, new IBFStrata());
+            if (!this.query.strata.containsKey(pattern)) {
+                this.query.strata.put(pattern, new IBFStrata());
             }
-            this.strata.get(pattern).insert(list);
-            this.data.put(pattern, set);
+            this.query.strata.get(pattern).insert(list);
+            this.query.data.put(pattern, set);
             System.err.println(":end.");
         }
     }
@@ -148,7 +130,7 @@ public class Profile {
     public void execute() {
         try {
             if (this.query != null) {
-                ResultSet res = this.query.plan.execute();
+                ResultSet res = this.query.execute();
                 this.query.insertResults(res);
             }
         } catch (Exception e) {
@@ -167,10 +149,10 @@ public class Profile {
     public int score(Profile p) {
         int score = 0;
         boolean stop = false;
-        Iterator<Triple> it = p.patterns.iterator();
+        Iterator<Triple> it = p.query.patterns.iterator();
         while (!stop && it.hasNext()) {
             Triple pt = it.next();
-            Iterator<Triple> ittpqs = this.patterns.iterator();
+            Iterator<Triple> ittpqs = this.query.patterns.iterator();
             while (!stop && ittpqs.hasNext()) {
                 Triple us = ittpqs.next();
                 if (this.equivalence(us, pt)) {

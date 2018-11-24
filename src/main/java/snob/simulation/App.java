@@ -13,7 +13,7 @@ public class App {
     public static void main(String[] args) throws IOException {
         if (args.length > 0 && args[0].equals("--init")) {
             int peers = 200;
-            int cycles = 200;
+            int cycles = 2000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
             int[] replicate = {5, 10, 20, 30, 40, 60, 80, 100};
             int delta_rps = 1;
             int delta_son = 1;

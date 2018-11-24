@@ -89,7 +89,7 @@ public class IBFStrata {
     public List<Triple> _exchange(Triple pattern, Profile remote, int id) {
         // System.err.printf("[IBF]  Exchanging (tp, Estimator, IBF, count) with peer number %d...%n", id);
         // simulate the exchange
-        IBFStrata remoteIbfstrata = remote.strata.get(pattern);
+        IBFStrata remoteIbfstrata = remote.query.strata.get(pattern);
 
         if (remoteIbfstrata == null) {
             if (!visited.containsKey(id)) {
@@ -114,7 +114,7 @@ public class IBFStrata {
                     List<Triple> finalresult = new ArrayList<>();
                     result.forEach(triple -> {
                         if (count < 10000) {
-                            if (remote.strata.get(pattern) != null && !remote.strata.get(pattern).ibf.contains(remote.strata.get(pattern).hash(triple))) {
+                            if (remote.query.strata.get(pattern) != null && !remote.query.strata.get(pattern).ibf.contains(remote.query.strata.get(pattern).hash(triple))) {
                                 finalresult.add(triple);
                             }
                         }

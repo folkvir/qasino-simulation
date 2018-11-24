@@ -9,6 +9,8 @@ import snob.simulation.snob2.data.IBFStrata;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.lang.System.exit;
+
 public class SnobObserver implements ObserverProgram {
     public SnobObserver(String p) {
     }
@@ -36,12 +38,12 @@ public class SnobObserver implements ObserverProgram {
                     Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                     messages += snob.messages;
                     triplesback += snob.tripleResponses;
-                    peerSeenMean += snob.profile.alreadySeen.size();
-                    if (snob.profile.alreadySeen.size() >= 200) {
+                    peerSeenMean += snob.profile.query.globalseen;
+                    if (snob.profile.query.globalseen >= networksize) {
                         peerHigherThanPeers++;
                     }
 
-                    Iterator<IBFStrata> it = snob.profile.strata.values().iterator();
+                    Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
                     while (it.hasNext()) {
                         estimateErrores += it.next().estimateErrored;
                     }
@@ -50,10 +52,7 @@ public class SnobObserver implements ObserverProgram {
                     if (query != null) {
                         List<QuerySolution> res = query.getResults();
                         int cpt = res.size();
-                        System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.alreadySeen.size());
-//                        snob.profile.alreadySeen.forEach(id -> {
-//                            System.err.printf("[%s/%s]", id, String.valueOf(cpt/query.cardinality));
-//                        });
+                        // System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.query.globalseen);
                         totalreceivedresults += cpt;
                         totalcardinality += query.cardinality;
                         if (cpt > query.cardinality) {
@@ -100,6 +99,10 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + peerHigherThanPeers;
                 System.out.println(res);
                 System.err.println(res);
+
+                if(peerHigherThanPeers == Network.size()) {
+                    exit(0);
+                }
             } catch (Exception e) {
                 System.err.println("ERROR:" + e);
             }

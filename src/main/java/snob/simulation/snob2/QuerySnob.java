@@ -1,20 +1,28 @@
 package snob.simulation.snob2;
 
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONObject;
+import snob.simulation.snob2.data.IBFStrata;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class QuerySnob {
+    public boolean terminated = false;
     public String query;
     public Query realQuery;
     public long cardinality;
     public QueryPlan plan;
     public List<QuerySolution> finalResults = new LinkedList<>();
+
+    public List<Triple> patterns = new ArrayList<>();
+    public Map<Triple, Set<Triple>> data = new HashMap<>();
+    public Map<Triple, IBFStrata> strata = new HashMap<>();
+    public Map<Triple, Set<Integer>> alreadySeen = new HashMap<>();
+    public int globalseen = 0;
 
     public QuerySnob(JSONObject json) {
         this.cardinality = (long) json.get("card");
@@ -37,6 +45,11 @@ public class QuerySnob {
         plan = new QueryPlan(query);
     }
 
+    public void stop() {
+        System.err.printf("[query] %s is finished. %n", query);
+        terminated = true;
+    }
+
     public Query getQuery() {
         return realQuery;
     }
@@ -50,9 +63,44 @@ public class QuerySnob {
         return "Query: " + this.query + " Cardinality: " + this.cardinality;
     }
 
+    public void addAlreadySeen(Triple pattern, int remote, int ours) {
+        if(!this.alreadySeen.containsKey(pattern)) {
+            this.alreadySeen.put(pattern, new HashSet<>());
+        }
+        if(!this.alreadySeen.get(pattern).contains(ours)) this.alreadySeen.get(pattern).add(ours);
+        this.alreadySeen.get(pattern).add(remote);
+        this.computeGlobalSeen();
+    }
+
+    private void computeGlobalSeen() {
+        boolean first = false;
+        int count = 0;
+        for (Set<Integer> set : this.alreadySeen.values()) {
+            if(!first) {
+                count = set.size();
+                first = true;
+            } else {
+                count = Math.min(count, set.size());
+            }
+            globalseen = count;
+        }
+    }
+
+    public void mergeAlreadySeen(Triple pattern, Set<Integer> remote) {
+        if(pattern == null || remote == null) return;
+        if(!this.alreadySeen.containsKey(pattern)) {
+            this.alreadySeen.put(pattern, new HashSet<>());
+        }
+        this.alreadySeen.get(pattern).addAll(remote);
+    }
+
     public void insertResults(ResultSet execute) {
         while (execute.hasNext()) {
             finalResults.add(execute.next());
         }
+    }
+
+    public ResultSet execute() {
+        return this.plan.execute();
     }
 }
