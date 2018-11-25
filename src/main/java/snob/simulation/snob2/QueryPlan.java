@@ -21,6 +21,7 @@ public class QueryPlan {
     public Map<Triple, AppendableSource> sources;
     public QueryIteratorPlus iterator;
     public List<String> vars;
+    public ResultSet results;
 
     public QueryPlan(String query) {
         this.query = query;
@@ -56,9 +57,10 @@ public class QueryPlan {
 
     public ResultSet execute() {
         try {
-            ResultSet set = null;
-            set = ResultSetFactory.create(iterator, vars);
-            return set;
+            if(results == null) {
+                results = ResultSetFactory.create(iterator, vars);
+            }
+            return results;
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

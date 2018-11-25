@@ -3,6 +3,7 @@ package snob.simulation;
 import com.google.common.hash.HashCode;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.junit.Assert;
@@ -99,7 +100,6 @@ public class IbflTest {
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
         // init peer 1
-        int count = 0;
         int dtriples = 0;
         Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
@@ -131,7 +131,7 @@ public class IbflTest {
             System.err.println("Triple in p1: " + triple);
         });
 
-        p1.execute();
+        p1.query.execute();
         Assert.assertEquals(3, p1.query.getResults().size());
         System.err.println(p1.query.getResults());
     }
@@ -143,7 +143,6 @@ public class IbflTest {
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
         // init peer 1
-        int count = 0;
         int dtriples = 0;
         Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
@@ -156,6 +155,14 @@ public class IbflTest {
         Profile p3 = new Profile();
         p3.datastore.update("./datasets/test-peer3.ttl");
         p3.update(query);
+
+        ResultSet set = p1.query.plan.execute();
+        int count = 0;
+        while(set.hasNext()){
+            set.next();
+            count++;
+        }
+        Assert.assertEquals(1, count);
 
         // p2 exchange with p3 first
         for (Triple pattern : p2.query.patterns) {
@@ -175,8 +182,13 @@ public class IbflTest {
             System.err.println("Triple in p1: " + triple);
         });
 
+        while(set.hasNext()){
+            set.next();
+            count++;
+        }
+
         p1.execute();
-        Assert.assertEquals(3, p1.query.getResults().size());
+        Assert.assertEquals(3, count);
         System.err.println(p1.query.getResults());
     }
 

@@ -120,7 +120,6 @@ public class Profile {
             }
             this.query.strata.get(pattern).insert(list);
             this.query.data.put(pattern, set);
-            System.err.println(":end.");
         }
     }
 
@@ -129,9 +128,8 @@ public class Profile {
      */
     public void execute() {
         try {
-            if (this.query != null) {
-                ResultSet res = this.query.execute();
-                this.query.insertResults(res);
+            if (this.query != null && !this.query.terminated) {
+                this.query.execute();
             }
         } catch (Exception e) {
             e.printStackTrace();

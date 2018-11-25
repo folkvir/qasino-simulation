@@ -162,26 +162,26 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
 
         // -------- QUERY EXECUTION MODEL -------
-        // 1 - send tpqs to neighbours and receive responses
-        List<Node> rps_neigh = this.getPeers(1000000);
-        for (Node node1 : rps_neigh) {
-            if (this.profile.has_query && this.profile.query.patterns.size() > 0) {
-                Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
-                this.exchangeTriplePatterns(snob);
-            }
-        }
-        if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
-            List<Node> son_neigh = this.getSonPeers(1000000);
-            for (Node node1 : son_neigh) {
+        if(profile.has_query && !profile.query.terminated) {
+            // 1 - send tpqs to neighbours and receive responses
+            List<Node> rps_neigh = this.getPeers(1000000);
+            for (Node node_rps : rps_neigh) {
                 if (this.profile.has_query && this.profile.query.patterns.size() > 0) {
-                    Snob snob = (Snob) node1.getProtocol(ARandomPeerSamplingProtocol.pid);
+                    Snob snob = (Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid);
                     this.exchangeTriplePatterns(snob);
                 }
             }
+            if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
+                List<Node> son_neigh = this.getSonPeers(1000000);
+                for (Node node_son : son_neigh) {
+                    if (this.profile.has_query && this.profile.query.patterns.size() > 0) {
+                        Snob snob = (Snob) node_son.getProtocol(ARandomPeerSamplingProtocol.pid);
+                        this.exchangeTriplePatterns(snob);
+                    }
+                }
+            }
+            profile.execute();
         }
-
-        // 3 - perform the execution of all queries
-        profile.execute();
     }
 
     /**

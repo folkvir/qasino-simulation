@@ -96,16 +96,18 @@ public class QuerySnob {
         this.alreadySeen.get(pattern).addAll(remote);
     }
 
-    public void insertResults(ResultSet execute) {
-        while (execute.hasNext()) {
-            finalResults.add(execute.next());
-        }
-    }
 
-    public ResultSet execute() {
-        System.err.printf("Executing a query ... (%d/%d) ", this.getResults().size(), this.cardinality);
-        ResultSet res = this.plan.execute();
-        System.err.printf(" *end* %n");
-        return res;
+    public void execute() {
+        System.err.printf("Executing a query ... (%d/%d) %s [", this.getResults().size(), this.cardinality, this.query);
+        ResultSet res;
+        if(plan.results == null) {
+            res = plan.execute();
+        } else {
+            res = plan.results;
+        }
+        while(res.hasNext()) {
+            finalResults.add(res.next());
+        }
+        System.err.printf("] *end* %n");
     }
 }
