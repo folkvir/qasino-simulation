@@ -13,10 +13,7 @@ import org.apache.jena.sparql.algebra.op.OpProject;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PipelineBuilder {
     private Map<Triple, AppendableSource> sources;
@@ -100,7 +97,9 @@ public class PipelineBuilder {
 
         @Override
         public Op transform(OpBGP opBGP) {
-            opBGP.getPattern().forEach(triple -> {
+            List<Triple> ordered = this.orderingConstant(opBGP);
+            ordered.forEach(triple -> {
+                System.err.println(triple);
                 triples.add(triple);
                 if (pipeline == null) {
                     AppendableSource source = new AppendableSource(triple, getVariables(triple));
@@ -114,6 +113,36 @@ public class PipelineBuilder {
                 }
             });
             return super.transform(opBGP);
+        }
+
+        public List<Triple> orderingConstant(OpBGP opBGP) {
+            List<Triple> result = opBGP.getPattern().getList();
+            Collections.sort(result, (o1, o2) -> {
+                int constantso1 = getConstants(o1);
+                int constantso2 = getConstants(o2);
+                if(constantso1 < constantso2) {
+                    return 1;
+                } else if (constantso1 > constantso2) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+            return result;
+        }
+
+        private int getConstants(Triple triple) {
+            int constants = 0;
+            if(!triple.getSubject().isVariable()) {
+                constants++;
+            }
+            if(!triple.getPredicate().isVariable()) {
+                constants++;
+            }
+            if(!triple.getObject().isVariable()) {
+                constants++;
+            }
+            return constants;
         }
     }
 }
