@@ -21,7 +21,7 @@ public class PipelineBuilder {
     private Query query;
 
     public PipelineBuilder() {
-        sources = new HashMap<>();
+        sources = new LinkedHashMap<>();
         triples = new LinkedList<>();
     }
 

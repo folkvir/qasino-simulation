@@ -9,7 +9,7 @@ public class HashJoinTable {
     private Map<String, List<Binding>> content;
 
     public HashJoinTable() {
-        content = new HashMap<>();
+        content = new LinkedHashMap<>();
     }
 
     public void put(String key, Binding bindings) {
