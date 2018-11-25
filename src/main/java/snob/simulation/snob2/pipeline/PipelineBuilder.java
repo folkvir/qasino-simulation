@@ -18,7 +18,7 @@ import java.util.*;
 public class PipelineBuilder {
     private Map<Triple, AppendableSource> sources;
     private List<Triple> triples;
-
+    private Query query;
     public PipelineBuilder() {
         sources = new HashMap<>();
         triples = new LinkedList<>();
@@ -26,6 +26,7 @@ public class PipelineBuilder {
 
     public QueryIteratorPlus create(String query) {
         Query q = QueryFactory.create(query);
+        this.query = q;
         Op queryTree = Algebra.compile(q);
         PipelineTransformer transformer = new PipelineTransformer(sources, triples);
         Transformer.transform(transformer, queryTree);
@@ -97,8 +98,8 @@ public class PipelineBuilder {
 
         @Override
         public Op transform(OpBGP opBGP) {
-            List<Triple> ordered = this.orderingConstant(opBGP);
-            ordered.forEach(triple -> {
+            List<Triple> list = reordering(opBGP.getPattern().getList());
+            list.forEach(triple -> {
                 System.err.println(triple);
                 triples.add(triple);
                 if (pipeline == null) {
@@ -115,20 +116,73 @@ public class PipelineBuilder {
             return super.transform(opBGP);
         }
 
-        public List<Triple> orderingConstant(OpBGP opBGP) {
-            List<Triple> result = opBGP.getPattern().getList();
-            Collections.sort(result, (o1, o2) -> {
-                int constantso1 = getConstants(o1);
-                int constantso2 = getConstants(o2);
-                if(constantso1 < constantso2) {
-                    return 1;
-                } else if (constantso1 > constantso2) {
-                    return -1;
-                } else {
-                    return 0;
-                }
+        public List<Triple> reordering(List<Triple> opBGPList) {
+            Collections.sort(opBGPList, (o1, o2) -> {
+                int cons = constantOrder(o1, o2);
+                if(cons != 0) return cons;
+                int classic = triplePatternOrder(o1, o2);
+                /*if(classic != 0)*/ return classic;
+                // return joinPatternOrder(o1, o2, opBGPList);
             });
-            return result;
+            return opBGPList;
+        }
+
+        private int joinPatternOrderBis(Triple o1, List<Triple> opBGPList) {
+            int count = 0;
+            for (Triple triple : opBGPList) {
+                count += joinPatternOrderTer(o1, triple);
+            }
+            return count;
+        }
+        private int joinPatternOrderTer(Triple o1, Triple o2) {
+            Var joinKey = computeJoinKey(getVariables(o1), getVariables(o2));
+            if(o1.getPredicate().equals(joinKey) && o2.getObject().equals(joinKey)) {
+                return 1;
+            } else if(o1.getSubject().equals(joinKey) && o2.getPredicate().equals(joinKey)) {
+                return 2;
+            } else if(o1.getSubject().equals(joinKey) && o2.getObject().equals(joinKey)) {
+                return 3;
+            } else if(o1.getObject().equals(joinKey) && o2.getObject().equals(joinKey)) {
+                return 4;
+            } else if(o1.getSubject().equals(joinKey) && o2.getSubject().equals(joinKey)) {
+                return 5;
+            } else if(o1.getPredicate().equals(joinKey) && o2.getPredicate().equals(joinKey)) {
+                return 6;
+            } else {
+                return 0;
+            }
+        }
+
+        /**
+         * Return a list of patterns ordered by the number of constants,
+         * Higher the constant number, smaller the index
+         * @param opBGPList
+         * @return
+         */
+        public List<Triple> constantOrdering(List<Triple> opBGPList) {
+            Collections.sort(opBGPList, (o1, o2) -> constantOrder(o1, o2));
+            return opBGPList;
+        }
+
+        /**
+         * Order the bgp by selectivity
+         * @param opBGPList
+         */
+        private List<Triple> triplePatternOrdering(List<Triple> opBGPList) {
+            Collections.sort(opBGPList, (o1, o2) -> triplePatternOrder(o1, o2));
+            return opBGPList;
+        }
+
+        private int constantOrder(Triple o1, Triple o2) {
+            int constantso1 = getConstants(o1);
+            int constantso2 = getConstants(o2);
+            if(constantso1 < constantso2) {
+                return 1;
+            } else if (constantso1 > constantso2) {
+                return -1;
+            } else {
+                return 0;
+            }
         }
 
         private int getConstants(Triple triple) {
@@ -143,6 +197,65 @@ public class PipelineBuilder {
                 constants++;
             }
             return constants;
+        }
+
+        private int triplePatternOrder(Triple o1, Triple o2) {
+            int indexo1 = 0;
+            try {
+                indexo1 = getPlace(o1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            int indexo2 = 0;
+            try {
+                indexo2 = getPlace(o2);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(indexo1 < indexo2) {
+                return -1;
+            } else if (indexo1 > indexo2) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        /**
+         * Return the form of the pattern,
+         * spo -> s?o -> ?po -> sp? -> ??o -> s?? -> ?p? -> ???
+         * 8 -> 7 -> ... 2 -> 1
+         * @param o1
+         * @return
+         */
+        private int getPlace(Triple o1) throws Exception {
+            if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+                // spo
+                return 8;
+            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+                // s?o
+                return 7;
+            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+                // ?po
+                return 6;
+            } else if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+                // sp?
+                return 5;
+            } else if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+                // ??o
+                return 4;
+            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+                // s??
+                return 3;
+            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+                // ?p?
+                return 2;
+            } else if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable() && !o1.getPredicate().isVariable() && o1.getPredicate().isURI() && o1.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
+                // ??? except for rdf:type
+                return 1;
+            } else {
+                throw new Exception("cannot classify this pattern: " + o1.toString());
+            }
         }
     }
 }

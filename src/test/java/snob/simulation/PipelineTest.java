@@ -21,6 +21,19 @@ import java.util.stream.Stream;
 
 public class PipelineTest {
     @Test
+    public void ordering() {
+        Profile p = new Profile();
+        p.update("PREFIX ns: <http://example.org/ns#> \n" +
+                "PREFIX :     <http://example.org/ns#> \n" +
+                "SELECT * WHERE   {\n" +
+                "  :a ?x :c .\n" +
+                "  ?x :b :c .\n" +
+                "  :a :b ?x .\n" +
+                "}");
+
+    }
+
+    @Test
     public void testPipelineAgainstJenaOverDiseasomeDataset() throws ParseException {
         Profile p = new Profile();
         String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
@@ -59,7 +72,6 @@ public class PipelineTest {
             e.printStackTrace();
         }
     }
-
     @Ignore
     @Test
     public void testPipelineAgainstJenaOverLinkedmdbDataset() throws ParseException {
