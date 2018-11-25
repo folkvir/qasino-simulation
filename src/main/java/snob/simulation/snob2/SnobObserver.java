@@ -26,7 +26,8 @@ public class SnobObserver implements ObserverProgram {
     private int qlimit; // limit of queries loaded in the network
     private int dlimit; // limit of fragments loaded in the network
     private int replicate;
-//    private int pid;
+
+    //    private int pid;
 //    private static final String PAR_PROTOCOL = "protocol";
     public SnobObserver(String prefix) {
         System.err.println("Initializing: " + prefix);
@@ -134,7 +135,7 @@ public class SnobObserver implements ObserverProgram {
             System.out.println(res);
             System.err.println(res);
 
-            if(peerHigherThanPeers == Network.size()) {
+            if (peerHigherThanPeers == Network.size()) {
                 exit(0);
             }
         } catch (Exception e) {

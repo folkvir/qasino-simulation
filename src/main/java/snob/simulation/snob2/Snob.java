@@ -162,7 +162,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
 
         // -------- QUERY EXECUTION MODEL -------
-        if(profile.has_query && !profile.query.terminated) {
+        if (profile.has_query && !profile.query.terminated) {
             // 1 - send tpqs to neighbours and receive responses
             List<Node> rps_neigh = this.getPeers(1000000);
             for (Node node_rps : rps_neigh) {
@@ -204,7 +204,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                     result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
                 }
                 this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
-                if(remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+                if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
                     this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
                 }
             });
@@ -214,7 +214,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             this.messages++;
 
             // test if the query is terminated or not
-            if(this.profile.query.globalseen == Network.size()) {
+            if (this.profile.query.globalseen == Network.size()) {
                 this.profile.query.stop();
             }
             System.err.printf(" *end* %n");

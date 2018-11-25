@@ -8,12 +8,13 @@ import snob.simulation.snob2.Snob;
 import snob.simulation.snob2.data.Strata.Cell;
 import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class IBFStrata {
-    public int constant = 2; // 1.5 -> 2 (-_-)"
     public static final int ibfSize = 10000;
+    public int constant = 2; // 1.5 -> 2 (-_-)"
     public IBF ibf = new IBF(ibfSize); // 2*5000 diff
     public int estimateErrored = 0; // number of times the estimation return an estimation larger than 100k
     public int count = 0;
@@ -149,7 +150,7 @@ public class IBFStrata {
                 }
                 Cell[] cells = us.subtract(result.getCells()).clone();
                 List<Integer>[] difference = us.decode(cells);
-                if(difference == null) {
+                if (difference == null) {
                     // estimateErrored++;
                     System.err.printf("Cant make a difference, send directly triples...");
                     List<Triple> finalresult = new ArrayList<>();

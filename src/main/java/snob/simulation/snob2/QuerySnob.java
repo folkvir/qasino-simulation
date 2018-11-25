@@ -8,8 +8,6 @@ import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONObject;
 import snob.simulation.snob2.data.IBFStrata;
 
-import javax.xml.transform.Result;
-import java.rmi.ServerError;
 import java.util.*;
 
 public class QuerySnob {
@@ -66,10 +64,10 @@ public class QuerySnob {
     }
 
     public void addAlreadySeen(Triple pattern, int remote, int ours) {
-        if(!this.alreadySeen.containsKey(pattern)) {
+        if (!this.alreadySeen.containsKey(pattern)) {
             this.alreadySeen.put(pattern, new HashSet<>());
         }
-        if(!this.alreadySeen.get(pattern).contains(ours)) this.alreadySeen.get(pattern).add(ours);
+        if (!this.alreadySeen.get(pattern).contains(ours)) this.alreadySeen.get(pattern).add(ours);
         this.alreadySeen.get(pattern).add(remote);
         this.computeGlobalSeen();
     }
@@ -78,7 +76,7 @@ public class QuerySnob {
         boolean first = false;
         int count = 0;
         for (Set<Integer> set : this.alreadySeen.values()) {
-            if(!first) {
+            if (!first) {
                 count = set.size();
                 first = true;
             } else {
@@ -89,8 +87,8 @@ public class QuerySnob {
     }
 
     public void mergeAlreadySeen(Triple pattern, Set<Integer> remote) {
-        if(pattern == null || remote == null) return;
-        if(!this.alreadySeen.containsKey(pattern)) {
+        if (pattern == null || remote == null) return;
+        if (!this.alreadySeen.containsKey(pattern)) {
             this.alreadySeen.put(pattern, new HashSet<>());
         }
         this.alreadySeen.get(pattern).addAll(remote);
@@ -100,12 +98,12 @@ public class QuerySnob {
     public void execute() {
         System.err.printf("Executing a query ... (%d/%d) %s [executing...", this.getResults().size(), this.cardinality, this.query);
         ResultSet res;
-        if(plan.results == null) {
+        if (plan.results == null) {
             res = plan.execute();
         } else {
             res = plan.results;
         }
-        while(res.hasNext()) {
+        while (res.hasNext()) {
             finalResults.add(res.next());
         }
         System.err.printf("] *end* %n");

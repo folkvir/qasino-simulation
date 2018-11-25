@@ -1,7 +1,5 @@
 package snob.simulation.snob2.pipeline;
 
-import com.google.common.collect.Collections2;
-import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
@@ -15,13 +13,13 @@ import org.apache.jena.sparql.algebra.op.OpProject;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 
-import java.rmi.ServerError;
 import java.util.*;
 
 public class PipelineBuilder {
     private Map<Triple, AppendableSource> sources;
     private List<Triple> triples;
     private Query query;
+
     public PipelineBuilder() {
         sources = new HashMap<>();
         triples = new LinkedList<>();
@@ -188,22 +186,22 @@ public class PipelineBuilder {
         private int joinPatternOrderTer(Triple o1, Triple o2) {
             Var joinKey = computeJoinKey(getVariables(o1), getVariables(o2));
             // System.err.println("Joinkey: " + joinKey + "_" );
-            if(o1.getPredicate().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
+            if (o1.getPredicate().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
                 // System.err.println("predicate === object");
                 return 6;
-            } else if(o1.getSubject().equals(o2.getPredicate()) && o1.getPredicate().equals(joinKey)) {
+            } else if (o1.getSubject().equals(o2.getPredicate()) && o1.getPredicate().equals(joinKey)) {
                 // System.err.println("subject === predicate");
                 return 5;
-            } else if(o1.getSubject().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
+            } else if (o1.getSubject().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
                 // System.err.println("subject === object");
                 return 4;
-            } else if(o1.getObject().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
+            } else if (o1.getObject().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
                 // System.err.println("object === object");
                 return 3;
-            } else if(o1.getSubject().equals(o2.getSubject()) && o1.getPredicate().equals(joinKey)) {
+            } else if (o1.getSubject().equals(o2.getSubject()) && o1.getPredicate().equals(joinKey)) {
                 // System.err.println("subject === subject");
                 return 2;
-            } else if(o1.getPredicate().equals(o2.getPredicate()) && o1.getPredicate().equals(joinKey)) {
+            } else if (o1.getPredicate().equals(o2.getPredicate()) && o1.getPredicate().equals(joinKey)) {
                 // System.err.println("predicate === predicate");
                 return 1;
             } else {
@@ -215,6 +213,7 @@ public class PipelineBuilder {
         /**
          * Return a list of patterns ordered by the number of constants,
          * Higher the constant number, smaller the index
+         *
          * @param opBGPList
          * @return
          */
@@ -225,6 +224,7 @@ public class PipelineBuilder {
 
         /**
          * Order the bgp by selectivity
+         *
          * @param opBGPList
          */
         private List<Triple> triplePatternOrdering(List<Triple> opBGPList) {
@@ -235,7 +235,7 @@ public class PipelineBuilder {
         private int constantOrder(Triple o1, Triple o2) {
             int constantso1 = getConstants(o1);
             int constantso2 = getConstants(o2);
-            if(constantso1 < constantso2) {
+            if (constantso1 < constantso2) {
                 return 1;
             } else if (constantso1 > constantso2) {
                 return -1;
@@ -246,13 +246,13 @@ public class PipelineBuilder {
 
         private int getConstants(Triple triple) {
             int constants = 0;
-            if(!triple.getSubject().isVariable()) {
+            if (!triple.getSubject().isVariable()) {
                 constants++;
             }
-            if(!triple.getPredicate().isVariable()) {
+            if (!triple.getPredicate().isVariable()) {
                 constants++;
             }
-            if(!triple.getObject().isVariable()) {
+            if (!triple.getObject().isVariable()) {
                 constants++;
             }
             return constants;
@@ -271,7 +271,7 @@ public class PipelineBuilder {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if(indexo1 < indexo2) {
+            if (indexo1 < indexo2) {
                 return -1;
             } else if (indexo1 > indexo2) {
                 return 1;
@@ -284,32 +284,33 @@ public class PipelineBuilder {
          * Return the form of the pattern,
          * spo -> s?o -> ?po -> sp? -> ??o -> s?? -> ?p? -> ???
          * 8 -> 7 -> ... 2 -> 1
+         *
          * @param o1
          * @return
          */
         private int getPlace(Triple o1) throws Exception {
-            if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable() && o1.getPredicate().isURI() && !o1.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
+            if (!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable() && o1.getPredicate().isURI() && !o1.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
                 // spo
                 return 8;
-            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+            } else if (!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
                 // s?o
                 return 7;
-            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+            } else if (o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
                 // ?po
                 return 6;
-            } else if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if (!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // sp?
                 return 5;
-            } else if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+            } else if (o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
                 // ??o
                 return 4;
-            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if (!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // s??
                 return 3;
-            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if (o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // ?p?
                 return 2;
-            } else if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if (o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // ??? except for rdf:type
                 return 1;
             } else {

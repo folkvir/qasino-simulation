@@ -3,7 +3,6 @@ package snob.simulation.snob2;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ResultSet;
 import snob.simulation.snob2.data.IBFStrata;
 
 import java.util.*;
@@ -31,6 +30,7 @@ public class Profile {
         }
         return count;
     }
+
     public int insertTriples(Triple pattern, Iterator<Triple> it, boolean traffic) {
         List<Triple> list = new ArrayList<>();
         List<Triple> ibf = new ArrayList<>();
@@ -42,7 +42,7 @@ public class Profile {
             } else {
                 query.data.get(pattern).add(t);
             }
-            if(!datastore.contains(t)){
+            if (!datastore.contains(t)) {
                 list.add(t);
             }
         }
@@ -146,7 +146,7 @@ public class Profile {
      */
     public int score(Profile p) {
         int score = 0;
-        if(p.query == null) {
+        if (p.query == null) {
             return score;
         } else {
             boolean stop = false;

@@ -5,8 +5,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.impl.StatementImpl;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.sparql.core.BasicPattern;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;

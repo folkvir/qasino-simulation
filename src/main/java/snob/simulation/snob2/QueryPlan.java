@@ -57,7 +57,7 @@ public class QueryPlan {
 
     public ResultSet execute() {
         try {
-            if(results == null) {
+            if (results == null) {
                 results = ResultSetFactory.create(iterator, vars);
             }
             return results;
