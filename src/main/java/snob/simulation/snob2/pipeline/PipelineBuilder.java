@@ -1,5 +1,7 @@
 package snob.simulation.snob2.pipeline;
 
+import com.google.common.collect.Collections2;
+import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
@@ -13,6 +15,7 @@ import org.apache.jena.sparql.algebra.op.OpProject;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 
+import java.rmi.ServerError;
 import java.util.*;
 
 public class PipelineBuilder {
@@ -98,7 +101,12 @@ public class PipelineBuilder {
 
         @Override
         public Op transform(OpBGP opBGP) {
-            List<Triple> list = reordering(opBGP.getPattern().getList());
+            List<Triple> list = null;
+            try {
+                list = reordering(opBGP.getPattern().getList());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             list.forEach(triple -> {
                 System.err.println(triple);
                 triples.add(triple);
@@ -117,38 +125,89 @@ public class PipelineBuilder {
         }
 
         public List<Triple> reordering(List<Triple> opBGPList) {
-            Collections.sort(opBGPList, (o1, o2) -> {
-                int cons = constantOrder(o1, o2);
-                if(cons != 0) return cons;
-                int classic = triplePatternOrder(o1, o2);
-                /*if(classic != 0)*/ return classic;
-                // return joinPatternOrder(o1, o2, opBGPList);
-            });
+            Collections.sort(opBGPList, ((o1, o2) -> {
+                int one = 0, two = 0;
+                // System.err.println(o1 + " _ " + o2);
+                int per1m = joinPatternOrderTer(o1, o2);
+                int per2m = joinPatternOrderTer(o2, o1);
+
+                int c1 = getConstants(o1);
+                int c2 = getConstants(o2);
+
+                int tpo1 = triplePatternOrder(o1, o2);
+                int tpo2 = joinPatternOrderTer(o2, o1);
+
+                one += per1m + c1 + tpo1;
+                two += per2m + c2 + tpo2;
+                return two - one;
+            }));
             return opBGPList;
         }
 
-        private int joinPatternOrderBis(Triple o1, List<Triple> opBGPList) {
-            int count = 0;
-            for (Triple triple : opBGPList) {
-                count += joinPatternOrderTer(o1, triple);
-            }
-            return count;
-        }
+//        public List<Triple> reorderingPerm(List<Triple> opBGPList) throws Exception {
+//            Collection<List<Triple>> permutation = Collections2.permutations(opBGPList);
+//            Object[] arr = permutation.toArray();
+//            int size = permutation.size();
+//            Iterator<List<Triple>> it = permutation.iterator();
+//            int[] scores = new int[size];
+//            int max = 0;
+//            List<Triple> perm = new ArrayList<>();
+//            for (int i = 0; i < size; i++) {
+//                List<Triple> list = it.next();
+//                int listSize = list.size();
+//                int score = 0;
+//                Triple begin = list.get(0);
+//                for(int j = 1; j < listSize; ++j) {
+//                    score += getConstants(list.get(j)) + getPlace(list.get(j)) + joinPatternOrderTer(begin, list.get(j));
+//                    begin = list.get(j);
+//                }
+//                scores[i] = score;
+//                System.err.println("Permutation: " + list.toString() + " (" + score + ")");
+//                if(i == 0) {
+//                    max = i;
+//                    perm = list;
+//                }
+//                if(score > scores[max]) {
+//                    // System.err.println("score= " + scores[i] + " " + list);
+//                    max = i;
+//                    perm = list;
+//                } else if (score == scores[max]) {
+//                    // if the score is the same, order them by
+//                }
+//            }
+//
+////            for (int i = 0; i < scores.length; i++) {
+////                System.err.println("Perm score: " + scores[i]);
+////            }
+////            System.err.println("Best score: " + scores[max]);
+//            System.err.println("Best perm: " +  arr[max]);
+//            List<Triple> result = (List<Triple>)arr[max];
+//            return result;
+//        }
+
         private int joinPatternOrderTer(Triple o1, Triple o2) {
             Var joinKey = computeJoinKey(getVariables(o1), getVariables(o2));
-            if(o1.getPredicate().equals(joinKey) && o2.getObject().equals(joinKey)) {
-                return 1;
-            } else if(o1.getSubject().equals(joinKey) && o2.getPredicate().equals(joinKey)) {
-                return 2;
-            } else if(o1.getSubject().equals(joinKey) && o2.getObject().equals(joinKey)) {
-                return 3;
-            } else if(o1.getObject().equals(joinKey) && o2.getObject().equals(joinKey)) {
-                return 4;
-            } else if(o1.getSubject().equals(joinKey) && o2.getSubject().equals(joinKey)) {
-                return 5;
-            } else if(o1.getPredicate().equals(joinKey) && o2.getPredicate().equals(joinKey)) {
+            // System.err.println("Joinkey: " + joinKey + "_" );
+            if(o1.getPredicate().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
+                // System.err.println("predicate === object");
                 return 6;
+            } else if(o1.getSubject().equals(o2.getPredicate()) && o1.getPredicate().equals(joinKey)) {
+                // System.err.println("subject === predicate");
+                return 5;
+            } else if(o1.getSubject().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
+                // System.err.println("subject === object");
+                return 4;
+            } else if(o1.getObject().equals(o2.getObject()) && o1.getPredicate().equals(joinKey)) {
+                // System.err.println("object === object");
+                return 3;
+            } else if(o1.getSubject().equals(o2.getSubject()) && o1.getPredicate().equals(joinKey)) {
+                // System.err.println("subject === subject");
+                return 2;
+            } else if(o1.getPredicate().equals(o2.getPredicate()) && o1.getPredicate().equals(joinKey)) {
+                // System.err.println("predicate === predicate");
+                return 1;
             } else {
+                // System.err.println("Nothing case? hum... perhaps there is an error in the code...");
                 return 0;
             }
         }
@@ -229,28 +288,28 @@ public class PipelineBuilder {
          * @return
          */
         private int getPlace(Triple o1) throws Exception {
-            if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable() && o1.getPredicate().isURI() && !o1.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
                 // spo
                 return 8;
-            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
                 // s?o
                 return 7;
-            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
                 // ?po
                 return 6;
-            } else if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+            } else if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // sp?
                 return 5;
-            } else if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
+            } else if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
                 // ??o
                 return 4;
-            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // s??
                 return 3;
-            } else if(!o1.getSubject().isVariable() && o1.getPredicate().isVariable() && !o1.getObject().isVariable()) {
+            } else if(o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // ?p?
                 return 2;
-            } else if(!o1.getSubject().isVariable() && !o1.getPredicate().isVariable() && !o1.getObject().isVariable() && !o1.getPredicate().isVariable() && o1.getPredicate().isURI() && o1.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) {
+            } else if(o1.getSubject().isVariable() && o1.getPredicate().isVariable() && o1.getObject().isVariable()) {
                 // ??? except for rdf:type
                 return 1;
             } else {

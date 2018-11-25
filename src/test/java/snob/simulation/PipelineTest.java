@@ -23,14 +23,18 @@ public class PipelineTest {
     @Test
     public void ordering() {
         Profile p = new Profile();
+        p.datastore.update("./datasets/test-peer1.ttl");
         p.update("PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX :     <http://example.org/ns#> \n" +
                 "SELECT * WHERE   {\n" +
                 "  :a ?x :c .\n" +
-                "  ?x :b :c .\n" +
+                // "  ?x :b :c .\n" +
                 "  :a :b ?x .\n" +
                 "}");
-
+        p.execute();
+        p.query.getResults().forEach(sol -> {
+            System.err.println(sol);
+        });
     }
 
     @Test

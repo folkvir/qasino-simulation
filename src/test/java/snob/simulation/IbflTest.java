@@ -46,7 +46,6 @@ public class IbflTest {
      */
     @Test
     public void test2peersStratEstimator() {
-        System.err.println("HEY COUCOU");
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
@@ -95,7 +94,6 @@ public class IbflTest {
 
     @Test
     public void test3peersTrafficNormal() {
-        System.err.println("HEY COUCOU");
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
@@ -138,7 +136,6 @@ public class IbflTest {
 
     @Test
     public void test3peersTrafficMinimized() {
-        System.err.println("HEY COUCOU");
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
@@ -194,7 +191,6 @@ public class IbflTest {
 
     @Test
     public void test1peer(){
-        System.err.println("HEY COUCOU");
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";

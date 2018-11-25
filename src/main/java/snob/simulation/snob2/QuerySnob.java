@@ -98,7 +98,7 @@ public class QuerySnob {
 
 
     public void execute() {
-        System.err.printf("Executing a query ... (%d/%d) %s [", this.getResults().size(), this.cardinality, this.query);
+        System.err.printf("Executing a query ... (%d/%d) %s [executing...", this.getResults().size(), this.cardinality, this.query);
         ResultSet res;
         if(plan.results == null) {
             res = plan.execute();
