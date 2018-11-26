@@ -13,17 +13,22 @@ import java.util.*;
 import static java.lang.System.exit;
 
 public class QuerySnob {
+    // ids
+    private static int queryids = 0;
+    public final int qid = QuerySnob.queryids++;
+
+    // for the class
     public boolean terminated = false;
     public String query;
     public Query realQuery;
     public long cardinality;
     public QueryPlan plan;
     public List<QuerySolution> finalResults = new LinkedList<>();
-
     public List<Triple> patterns = new ArrayList<>();
     public Map<Triple, Set<Triple>> data = new HashMap<>();
     public Map<Triple, IBFStrata> strata = new HashMap<>();
     public Map<Triple, Set<Integer>> alreadySeen = new HashMap<>();
+    // stats
     public int globalseen = 0;
     public int executionNumber = 0;
 
@@ -49,7 +54,7 @@ public class QuerySnob {
     }
 
     public void stop() {
-        System.err.printf("[query] %s is finished. %n", query);
+        System.err.printf("[query-%d] %s is finished. %n", qid, query);
         terminated = true;
     }
 
@@ -99,11 +104,11 @@ public class QuerySnob {
 
 
     public void execute() {
-        System.err.printf("Executing a query ... (%d/%d) %s [ %n ** Executing... %n ", this.getResults().size(), this.cardinality, this.query);
+        System.err.printf("[query-%d] Executing a query ... (%d/%d) %s [ %n ** Executing... %n ", qid, this.getResults().size(), this.cardinality, this.query);
         ResultSet res;
         executionNumber++;
         if (plan.results == null) {
-            System.err.print(" (First execution) ");
+            System.err.printf(" (First execution) ");
             res = plan.execute();
         } else {
             System.err.printf(" (%d-th execution) ", executionNumber);

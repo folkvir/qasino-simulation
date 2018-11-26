@@ -193,7 +193,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      */
     private void exchangeTriplePatterns(Snob remote) {
         if (!this.profile.query.terminated) {
-            System.err.printf("Transferring data from %s to %s...", remote.id, this.id);
+            System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s...", this.id, profile.query.qid, remote.id, this.id);
             Map<Triple, Iterator<Triple>> result = new HashMap<>();
             this.profile.query.patterns.forEach(pattern -> {
                 if (this.traffic) {
