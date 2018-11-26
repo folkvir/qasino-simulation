@@ -31,6 +31,8 @@ public class QuerySnob {
     // stats
     public int globalseen = 0;
     public int executionNumber = 0;
+    public boolean tripleInserted = false;
+    public int numberOfTriplesInserted = 0;
 
     public QuerySnob(JSONObject json) {
         this.cardinality = (long) json.get("card");
@@ -104,25 +106,27 @@ public class QuerySnob {
 
 
     public void execute() {
-        System.err.printf("[query-%d] Executing a query ... (%d/%d) %s [ %n ** Executing... %n ", qid, this.getResults().size(), this.cardinality, this.query);
+        System.err.printf("[query-%d]Executing a query ... (%d/%d) %s [ %n ** Executing... %n ", qid, this.getResults().size(), this.cardinality, this.query);
         ResultSet res;
         executionNumber++;
         if (plan.results == null) {
-            System.err.printf(" (First execution) ");
+            System.err.printf("** (First execution) ");
             res = plan.execute();
         } else {
-            System.err.printf(" (%d-th execution) ", executionNumber);
+            System.err.printf("** (%d-th execution) %n ", executionNumber);
             res = plan.results;
         }
-        if(res.hasNext()) {
+        System.err.printf("** (has new triples? = %b) %n ", tripleInserted);
+        if(tripleInserted && res.hasNext()) {
             System.err.println("** Pipeline has pending results...");
             while (res.hasNext()) {
                 QuerySolution sol = res.next();
                 System.err.printf("** Adding result %s to the static final results set. %n", sol);
                 finalResults.add(sol);
             }
+            tripleInserted = false;
         } else {
-            System.err.println("** Pipeline has no pending result, stop...");
+            System.err.println("** No triple inserted and/or pipeline has no pending result, stop...");
         }
         System.err.println("Final results set, number of results: " + finalResults.size() + " out of: " + cardinality);
         if (finalResults.size() > this.cardinality) {
@@ -130,5 +134,19 @@ public class QuerySnob {
             exit(1);
         }
         System.err.printf("] *end* %n");
+    }
+
+    public void insertTriple(Triple pattern, Triple t) {
+        if(terminated) {
+            throw new Error("query already terminated");
+        } else {
+            if(!plan.patterns.contains(pattern)) {
+                throw new Error("Pattern does not exist in the query.");
+            } else {
+                numberOfTriplesInserted++;
+                tripleInserted = true;
+                plan.insertTriple(pattern, t);
+            }
+        }
     }
 }

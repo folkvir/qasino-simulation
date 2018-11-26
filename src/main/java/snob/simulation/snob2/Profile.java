@@ -37,7 +37,7 @@ public class Profile {
         while (it.hasNext()) {
             Triple t = it.next();
             if (!query.data.get(pattern).contains(t)) {
-                query.plan.insertTriple(pattern, t);
+                query.insertTriple(pattern, t);
                 ibf.add(t);
             } else {
                 query.data.get(pattern).add(t);
@@ -111,7 +111,7 @@ public class Profile {
             List<Triple> list = new ArrayList<>();
             Set<Triple> set = new HashSet<>();
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
-                this.query.plan.insertTriple(pattern, triple);
+                this.query.insertTriple(pattern, triple);
                 list.add(triple);
                 set.add(triple);
             });
