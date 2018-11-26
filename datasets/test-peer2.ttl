@@ -5,4 +5,3 @@
 
 :e ns:p :f.
 :f ns:p :g.
-# :a ns:p :b

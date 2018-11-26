@@ -14,7 +14,7 @@ import static java.lang.System.exit;
 
 public class QuerySnob {
     // ids
-    private static int queryids = 0;
+    private static int queryids = 1;
     public final int qid = QuerySnob.queryids++;
 
     // for the class
@@ -33,6 +33,7 @@ public class QuerySnob {
     public int executionNumber = 0;
     public boolean tripleInserted = false;
     public int numberOfTriplesInserted = 0;
+    public int numberOfTriplesInsertedByround = 0;
 
     public QuerySnob(JSONObject json) {
         this.cardinality = (long) json.get("card");
@@ -116,7 +117,7 @@ public class QuerySnob {
             System.err.printf("** (%d-th execution) %n ", executionNumber);
             res = plan.results;
         }
-        System.err.printf("** (has new triples? = %b) %n ", tripleInserted);
+        System.err.printf("** (has new triples? = %b) (T_N_OF_T_I = %d) (T_N_OF_T_I_B_R = %d) %n ", tripleInserted, numberOfTriplesInserted, numberOfTriplesInsertedByround);
         if(tripleInserted && res.hasNext()) {
             System.err.println("** Pipeline has pending results...");
             while (res.hasNext()) {
@@ -125,6 +126,7 @@ public class QuerySnob {
                 finalResults.add(sol);
             }
             tripleInserted = false;
+            numberOfTriplesInsertedByround = 0;
         } else {
             System.err.println("** No triple inserted and/or pipeline has no pending result, stop...");
         }
@@ -144,6 +146,7 @@ public class QuerySnob {
                 throw new Error("Pattern does not exist in the query.");
             } else {
                 numberOfTriplesInserted++;
+                numberOfTriplesInsertedByround++;
                 tripleInserted = true;
                 plan.insertTriple(pattern, t);
             }
