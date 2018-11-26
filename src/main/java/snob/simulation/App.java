@@ -27,7 +27,7 @@ public class App {
             for (int i : replicate) {
                 for (boolean b : son_activated) {
                     int rpss;
-                    if(b) {
+                    if (b) {
                         rpss = rps_size;
                     } else {
                         rpss = 2 * rps_size;

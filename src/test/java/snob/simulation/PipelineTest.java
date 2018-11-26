@@ -20,6 +20,7 @@ import java.util.Vector;
 import java.util.stream.Stream;
 
 public class PipelineTest {
+    @Ignore
     @Test
     public void ordering() {
         Profile p = new Profile();
@@ -77,6 +78,7 @@ public class PipelineTest {
             e.printStackTrace();
         }
     }
+
     @Ignore
     @Test
     public void testPipelineAgainstJenaOverLinkedmdbDataset() throws ParseException {

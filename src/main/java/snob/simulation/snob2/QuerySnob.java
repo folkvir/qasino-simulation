@@ -111,7 +111,7 @@ public class QuerySnob {
             finalResults.add(sol);
         }
         System.err.println("\n Final results set, number of results: " + finalResults.size() + " out of: " + cardinality);
-        if(finalResults.size() > this.cardinality) {
+        if (finalResults.size() > this.cardinality) {
             System.err.println(new Exception("too much results compared to the cardinality of the query."));
             exit(1);
         }

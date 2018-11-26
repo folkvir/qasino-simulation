@@ -1,13 +1,9 @@
 package snob.simulation;
 
 import com.google.common.hash.HashCode;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.ResultSet;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
 
@@ -54,7 +50,7 @@ public class IbflTest {
         int dtriples = 0;
         Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
-        p1.update(query);
+        p1.update(query, 2);
         Iterator<Triple> it = p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z")));
         while (it.hasNext()) {
             System.err.println("[1] Triple: " + it.next());
@@ -68,7 +64,7 @@ public class IbflTest {
         // init peer 2
         Profile p2 = new Profile();
         p2.datastore.update("./datasets/test-peer2.ttl");
-        p2.update(query);
+        p2.update(query, 1);
 
         // simulate an exchange of triples pattern using the exchange method of strata estimator
         Map<Triple, List<Triple>> m = new HashMap<>();
@@ -101,15 +97,17 @@ public class IbflTest {
         int dtriples = 0;
         Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
-        p1.update(query);
+        p1.update(query, 3);
         // init peer 2
         Profile p2 = new Profile();
         p2.datastore.update("./datasets/test-peer2.ttl");
-        p2.update(query);
+        p2.update(query, 1);
+        p2.execute();
         // init peer 3
         Profile p3 = new Profile();
         p3.datastore.update("./datasets/test-peer3.ttl");
-        p3.update(query);
+        p3.update(query, 1);
+        p3.execute();
 
         // p2 exchange with p3 first
         for (Triple pattern : p2.query.patterns) {
@@ -129,9 +127,8 @@ public class IbflTest {
             System.err.println("Triple in p1: " + triple);
         });
 
-        p1.query.execute();
+        p1.execute();
         Assert.assertEquals(3, p1.query.getResults().size());
-        System.err.println(p1.query.getResults());
     }
 
     @Test
@@ -143,23 +140,19 @@ public class IbflTest {
         int dtriples = 0;
         Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
-        p1.update(query);
+        p1.update(query, 3);
         // init peer 2
         Profile p2 = new Profile();
         p2.datastore.update("./datasets/test-peer2.ttl");
-        p2.update(query);
+        p2.update(query, 1);
         // init peer 3
         Profile p3 = new Profile();
         p3.datastore.update("./datasets/test-peer3.ttl");
-        p3.update(query);
+        p3.update(query, 1);
 
-        ResultSet set = p1.query.plan.execute();
-        int count = 0;
-        while(set.hasNext()){
-            set.next();
-            count++;
-        }
-        Assert.assertEquals(1, count);
+        p1.execute();
+
+        Assert.assertEquals(1, p1.query.getResults().size());
 
         // p2 exchange with p3 first
         for (Triple pattern : p2.query.patterns) {
@@ -179,18 +172,13 @@ public class IbflTest {
             System.err.println("Triple in p1: " + triple);
         });
 
-        while(set.hasNext()){
-            set.next();
-            count++;
-        }
-
         p1.execute();
-        Assert.assertEquals(3, count);
+        Assert.assertEquals(3, p1.query.getResults().size());
         System.err.println(p1.query.getResults());
     }
 
     @Test
-    public void test1peer(){
+    public void test1peer() {
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX : <http://example.org/ns#> \n" +
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
@@ -198,7 +186,7 @@ public class IbflTest {
         Profile p1 = new Profile();
         p1.datastore.update("./datasets/test-peer1.ttl");
         p1.datastore.update("./datasets/test-peer2.ttl");
-        p1.update(query);
+        p1.update(query, 2);
         p1.execute();
         Assert.assertEquals(2, p1.query.getResults().size());
     }
