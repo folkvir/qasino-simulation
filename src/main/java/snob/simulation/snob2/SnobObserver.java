@@ -119,6 +119,7 @@ public class SnobObserver implements ObserverProgram {
 
             String res = currentTick
                     + ", " + observer.size()
+                    + ", " + replicate
                     + ", " + observer.meanPartialViewSize()
                     + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
                     + ", " + ((snob_default.son) ? snob_default.getSonPeers(Integer.MAX_VALUE).size() : 0)
