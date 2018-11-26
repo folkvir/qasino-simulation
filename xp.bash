@@ -8,7 +8,7 @@ JAR="-jar target/snob.jar"
 
 java  ${HEAP} ${JAR} --init
 
-for file in ./configs/generated/*.conf
+for file in ./configs/generated/p*.conf
 do
     if [[ -f $file ]]; then
         F=$(basename "$file")
