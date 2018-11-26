@@ -28,7 +28,7 @@ public class Profile {
         for (Map.Entry<Triple, Iterator<Triple>> entry : its.entrySet()) {
             int c = insertTriples(entry.getKey(), entry.getValue(), traffic);
             count += c;
-            System.err.printf("** %d triples inserted for: %s ", c, entry.getKey().toString());
+            System.err.printf("** %d triples inserted %n", c);
         }
         return count;
     }
@@ -38,7 +38,9 @@ public class Profile {
         List<Triple> ibf = new ArrayList<>();
         while (it.hasNext()) {
             Triple t = it.next();
-            query.insertTriple(pattern, t);
+            if(!query.data.get(pattern).contains(t)) {
+                query.insertTriple(pattern, t);
+            }
             if (!datastore.contains(t)) {
                 list.add(t);
             }

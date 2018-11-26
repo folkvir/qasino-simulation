@@ -193,12 +193,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      */
     private void exchangeTriplePatterns(Snob remote) {
         if (!this.profile.query.terminated) {
-            System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s...", this.id, profile.query.qid, remote.id, this.id);
+            System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
             Map<Triple, Iterator<Triple>> result = new HashMap<>();
             this.profile.query.patterns.forEach(pattern -> {
                 if (this.traffic) {
                     List<Triple> l = this.profile.query.strata.get(pattern).exchange(pattern, remote);
-                    // if(l.size() > 0) System.err.printf("[%s] just receive %d triples from %s...%n", this.id, l.size(), remote.id);
                     result.put(pattern, l.iterator());
                 } else {
                     result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
@@ -210,7 +209,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             });
             int insertedtriples = this.profile.insertTriples(result, traffic);
             tripleResponses += insertedtriples;
-            // System.err.printf("[%s] Inserting %d triples from %s%n ", this.id, insertedtriples, remote.id);
             this.messages++;
 
             // test if the query is terminated or not
