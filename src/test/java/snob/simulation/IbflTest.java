@@ -86,6 +86,9 @@ public class IbflTest {
         System.err.println(p1.query.getResults());
         count = p1.query.getResults().size();
         Assert.assertEquals(2, count);
+
+        p1.execute();
+        Assert.assertEquals(2, count);
     }
 
     @Test

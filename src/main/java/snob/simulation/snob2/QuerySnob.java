@@ -25,6 +25,7 @@ public class QuerySnob {
     public Map<Triple, IBFStrata> strata = new HashMap<>();
     public Map<Triple, Set<Integer>> alreadySeen = new HashMap<>();
     public int globalseen = 0;
+    public int executionNumber = 0;
 
     public QuerySnob(JSONObject json) {
         this.cardinality = (long) json.get("card");
@@ -98,19 +99,27 @@ public class QuerySnob {
 
 
     public void execute() {
-        System.err.printf("Executing a query ... (%d/%d) %s [executing...", this.getResults().size(), this.cardinality, this.query);
+        System.err.printf("Executing a query ... (%d/%d) %s [ %n ** Executing... %n ", this.getResults().size(), this.cardinality, this.query);
         ResultSet res;
+        executionNumber++;
         if (plan.results == null) {
+            System.err.print(" (First execution) ");
             res = plan.execute();
         } else {
+            System.err.printf(" (%d-th execution) ", executionNumber);
             res = plan.results;
         }
-        while (res.hasNext()) {
-            QuerySolution sol = res.next();
-            System.err.printf("%n ** Adding result %s to the static final results set.", sol);
-            finalResults.add(sol);
+        if(res.hasNext()) {
+            System.err.println("** Pipeline has pending results...");
+            while (res.hasNext()) {
+                QuerySolution sol = res.next();
+                System.err.printf("** Adding result %s to the static final results set. %n", sol);
+                finalResults.add(sol);
+            }
+        } else {
+            System.err.println("** Pipeline has no pending result, stop...");
         }
-        System.err.println("\n Final results set, number of results: " + finalResults.size() + " out of: " + cardinality);
+        System.err.println("Final results set, number of results: " + finalResults.size() + " out of: " + cardinality);
         if (finalResults.size() > this.cardinality) {
             System.err.println(new Exception("too much results compared to the cardinality of the query."));
             exit(1);
