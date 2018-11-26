@@ -25,9 +25,9 @@ public class QuerySnob {
     public QueryPlan plan;
     public List<QuerySolution> finalResults = new LinkedList<>();
     public List<Triple> patterns = new ArrayList<>();
-    public Map<Triple, Set<Triple>> data = new HashMap<>();
-    public Map<Triple, IBFStrata> strata = new HashMap<>();
-    public Map<Triple, Set<Integer>> alreadySeen = new HashMap<>();
+    public Map<Triple, Set<Triple>> data = new LinkedHashMap<>();
+    public Map<Triple, IBFStrata> strata = new LinkedHashMap<>();
+    public Map<Triple, Set<Integer>> alreadySeen = new LinkedHashMap<>();
     // stats
     public int globalseen = 0;
     public int executionNumber = 0;
@@ -40,6 +40,11 @@ public class QuerySnob {
         this.query = (String) json.get("query");
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        data = new LinkedHashMap<>();
+        for (Triple pattern : plan.patterns) {
+            data.put(pattern, new LinkedHashSet<>());
+            strata.put(pattern, new IBFStrata());
+        }
     }
 
     public QuerySnob(String query) {
@@ -47,6 +52,11 @@ public class QuerySnob {
         this.query = query;
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        data = new LinkedHashMap<>();
+        for (Triple pattern : plan.patterns) {
+            data.put(pattern, new LinkedHashSet<>());
+            strata.put(pattern, new IBFStrata());
+        }
     }
 
     public QuerySnob(String query, long card) {
@@ -54,6 +64,11 @@ public class QuerySnob {
         this.query = query;
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        data = new LinkedHashMap<>();
+        for (Triple pattern : plan.patterns) {
+            data.put(pattern, new LinkedHashSet<>());
+            strata.put(pattern, new IBFStrata());
+        }
     }
 
     public void stop() {
@@ -145,10 +160,18 @@ public class QuerySnob {
             if(!plan.patterns.contains(pattern)) {
                 throw new Error("Pattern does not exist in the query.");
             } else {
-                numberOfTriplesInserted++;
-                numberOfTriplesInsertedByround++;
-                tripleInserted = true;
-                plan.insertTriple(pattern, t);
+                if(data.get(pattern).contains(t)) {
+                    throw new Error("Triple already inserted.");
+                } else {
+                    numberOfTriplesInserted++;
+                    numberOfTriplesInsertedByround++;
+                    tripleInserted = true;
+                    data.get(pattern).add(t);
+                    plan.insertTriple(pattern, t);
+                    List<Triple> tl = new ArrayList<>();
+                    tl.add(t);
+                    strata.get(pattern).insert(tl);
+                }
             }
         }
     }

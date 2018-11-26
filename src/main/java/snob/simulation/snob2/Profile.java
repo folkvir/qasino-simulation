@@ -26,7 +26,9 @@ public class Profile {
     public int insertTriples(Map<Triple, Iterator<Triple>> its, boolean traffic) {
         int count = 0;
         for (Map.Entry<Triple, Iterator<Triple>> entry : its.entrySet()) {
-            count += insertTriples(entry.getKey(), entry.getValue(), traffic);
+            int c = insertTriples(entry.getKey(), entry.getValue(), traffic);
+            count += c;
+            System.err.printf("** %d triples inserted for: %s ", c, entry.getKey().toString());
         }
         return count;
     }
@@ -36,12 +38,7 @@ public class Profile {
         List<Triple> ibf = new ArrayList<>();
         while (it.hasNext()) {
             Triple t = it.next();
-            if (!query.data.get(pattern).contains(t)) {
-                query.insertTriple(pattern, t);
-                ibf.add(t);
-            } else {
-                query.data.get(pattern).add(t);
-            }
+            query.insertTriple(pattern, t);
             if (!datastore.contains(t)) {
                 list.add(t);
             }
@@ -108,18 +105,7 @@ public class Profile {
         System.err.println("[INIT] Initializing the pipeline...");
         for (Triple pattern : patterns) {
             System.err.printf("[INIT] Inserting triples from %s into the pipeline: ", pattern.toString());
-            List<Triple> list = new ArrayList<>();
-            Set<Triple> set = new HashSet<>();
-            this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> {
-                this.query.insertTriple(pattern, triple);
-                list.add(triple);
-                set.add(triple);
-            });
-            if (!this.query.strata.containsKey(pattern)) {
-                this.query.strata.put(pattern, new IBFStrata());
-            }
-            this.query.strata.get(pattern).insert(list);
-            this.query.data.put(pattern, set);
+            this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> this.query.insertTriple(pattern, triple));
         }
     }
 
