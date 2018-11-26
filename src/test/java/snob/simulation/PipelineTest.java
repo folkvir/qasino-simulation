@@ -57,8 +57,9 @@ public class PipelineTest {
             for (int i = 0; i < jsonArray.size(); i++) {
                 JSONObject j = (JSONObject) jsonArray.get(i);
                 String query = (String) j.get("query");
+                long card = (long) j.get("card");
                 System.out.println(query);
-                p.update(query);
+                p.update(query, card);
                 // execute the pipeline over JENA
                 ResultSet resJena = p.datastore.select(p.query.realQuery);
                 int countJena = 0;
@@ -97,8 +98,9 @@ public class PipelineTest {
             for (int i = 0; i < jsonArray.size(); i++) {
                 JSONObject j = (JSONObject) jsonArray.get(i);
                 String query = (String) j.get("query");
+                long card = (long) j.get("card");
                 System.out.println(query);
-                p.update(query);
+                p.update(query, card);
                 // execute the pipeline over JENA
                 ResultSet resJena = p.datastore.select(p.query.realQuery);
                 int countJena = 0;

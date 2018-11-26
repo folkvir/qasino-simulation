@@ -142,6 +142,7 @@ public class IBFStrata {
                     us = this.ibf;
                 } else {
                     // hum hum too large? directly send triples....
+                    System.err.printf("hum hum too large? directly send triples....");
                     // perhaps ibf1M but seems to big
                     estimateErrored++;
                     // directly return, one roundtrip

@@ -10,6 +10,8 @@ import snob.simulation.snob2.data.IBFStrata;
 
 import java.util.*;
 
+import static java.lang.System.exit;
+
 public class QuerySnob {
     public boolean terminated = false;
     public String query;
@@ -104,7 +106,14 @@ public class QuerySnob {
             res = plan.results;
         }
         while (res.hasNext()) {
-            finalResults.add(res.next());
+            QuerySolution sol = res.next();
+            System.err.printf("%n ** Adding result %s to the static final results set.", sol);
+            finalResults.add(sol);
+        }
+        System.err.println("\n Final results set, number of results: " + finalResults.size() + " out of: " + cardinality);
+        if(finalResults.size() > this.cardinality) {
+            System.err.println(new Exception("too much results compared to the cardinality of the query."));
+            exit(1);
         }
         System.err.printf("] *end* %n");
     }

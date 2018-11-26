@@ -217,7 +217,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             if (this.profile.query.globalseen == Network.size()) {
                 this.profile.query.stop();
             }
-            System.err.printf(" *end* %n");
+            System.err.printf(" *end* (%d triples)%n", insertedtriples);
         }
     }
 
