@@ -181,6 +181,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
             }
             profile.execute();
+            // test if the query is terminated or not
+            if (this.profile.query.globalseen == Network.size()) {
+                this.profile.query.stop();
+            }
         }
     }
 
@@ -192,31 +196,24 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * @param remote
      */
     private void exchangeTriplePatterns(Snob remote) {
-        if (!this.profile.query.terminated) {
-            System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
-            Map<Triple, Iterator<Triple>> result = new HashMap<>();
-            this.profile.query.patterns.forEach(pattern -> {
-                if (this.traffic) {
-                    List<Triple> l = this.profile.query.strata.get(pattern).exchange(pattern, remote);
-                    result.put(pattern, l.iterator());
-                } else {
-                    result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
-                }
-                this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
-                if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
-                    this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
-                }
-            });
-            int insertedtriples = this.profile.insertTriples(result, traffic);
-            tripleResponses += insertedtriples;
-            this.messages++;
-
-            // test if the query is terminated or not
-            if (this.profile.query.globalseen == Network.size()) {
-                this.profile.query.stop();
+        System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
+        Map<Triple, Iterator<Triple>> result = new HashMap<>();
+        this.profile.query.patterns.forEach(pattern -> {
+            if (this.traffic) {
+                List<Triple> l = this.profile.query.strata.get(pattern).exchange(pattern, remote);
+                result.put(pattern, l.iterator());
+            } else {
+                result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
             }
-            System.err.printf(" *end* (%d triples)%n", insertedtriples);
-        }
+            this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
+            if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+                this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
+            }
+        });
+        int insertedtriples = this.profile.insertTriples(result, traffic);
+        tripleResponses += insertedtriples;
+        this.messages++;
+        System.err.printf(" *end* (%d triples)%n", insertedtriples);
     }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {

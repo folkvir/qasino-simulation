@@ -154,24 +154,20 @@ public class QuerySnob {
     }
 
     public void insertTriple(Triple pattern, Triple t) {
-        if(terminated) {
-            throw new Error("query already terminated");
+        if(!plan.patterns.contains(pattern)) {
+            throw new Error("Pattern does not exist in the query.");
         } else {
-            if(!plan.patterns.contains(pattern)) {
-                throw new Error("Pattern does not exist in the query.");
+            if(data.get(pattern).contains(t)) {
+                throw new Error("Triple already inserted.");
             } else {
-                if(data.get(pattern).contains(t)) {
-                    throw new Error("Triple already inserted.");
-                } else {
-                    numberOfTriplesInserted++;
-                    numberOfTriplesInsertedByround++;
-                    tripleInserted = true;
-                    data.get(pattern).add(t);
-                    plan.insertTriple(pattern, t);
-                    List<Triple> tl = new ArrayList<>();
-                    tl.add(t);
-                    strata.get(pattern).insert(tl);
-                }
+                numberOfTriplesInserted++;
+                numberOfTriplesInsertedByround++;
+                tripleInserted = true;
+                data.get(pattern).add(t);
+                plan.insertTriple(pattern, t);
+                List<Triple> tl = new ArrayList<>();
+                tl.add(t);
+                strata.get(pattern).insert(tl);
             }
         }
     }
