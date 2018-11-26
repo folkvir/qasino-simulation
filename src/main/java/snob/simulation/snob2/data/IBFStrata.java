@@ -1,6 +1,7 @@
 package snob.simulation.snob2.data;
 
 import com.github.jsonldjava.shaded.com.google.common.primitives.Ints;
+import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import org.apache.jena.graph.Triple;
 import snob.simulation.snob2.Profile;
@@ -94,30 +95,31 @@ public class IBFStrata {
             if (!visited.containsKey(id)) {
                 visited.put(id, id);
                 System.err.printf("No common pattern, getting all triples matching the pattern ");
-                // get all triples matching the triple pattern on the remote site
-                Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
-                List<Triple> result = new ArrayList<>();
-                List<Triple> finalresult = new ArrayList<>();
-                // for all triple, create the List of triple and check if contained in the ibf that A send to us.
-                while (it.hasNext()) {
-                    Triple triple = it.next();
-                    result.add(triple);
-                    if (!this.ibf.contains(this.hash(triple))) {
-                        finalresult.add(triple);
-                    }
-                }
-                System.err.printf(" *end* %n");
-                // if size == 0 return an emtpty list
-                if (result.size() == 0) return Collections.emptyList();
-                // this.count is send to B with the estimator and the IBF of B
-                if (result.size() > this.count * 2) {
-                    // the remote peer have 2 times more result than us, it is most likely he has interesting triples.
-                    estimateErrored++;
-                    return result;
-                } else {
-                    // send only missing triples, perhaps, a lot of false positives
-                    return finalresult;
-                }
+                return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
+//                // get all triples matching the triple pattern on the remote site
+//                Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
+//                List<Triple> result = new ArrayList<>();
+//                List<Triple> finalresult = new ArrayList<>();
+//                // for all triple, create the List of triple and check if contained in the ibf that A send to us.
+//                while (it.hasNext()) {
+//                    Triple triple = it.next();
+//                    result.add(triple);
+//                    if (!this.ibf.contains(this.hash(triple))) {
+//                        finalresult.add(triple);
+//                    }
+//                }
+//                System.err.printf(" *end* %n");
+//                // if size == 0 return an emtpty list
+//                if (result.size() == 0) return Collections.emptyList();
+//                // this.count is send to B with the estimator and the IBF of B
+//                if (result.size() > this.count * 2) {
+//                    // the remote peer have 2 times more result than us, it is most likely he has interesting triples.
+//                    estimateErrored++;
+//                    return result;
+//                } else {
+//                    // send only missing triples, perhaps, a lot of false positives
+//                    return finalresult;
+//                }
             } else {
                 // System.err.println("[IBF-yes] Returning an empty list.");
                 return Collections.emptyList();
@@ -147,23 +149,23 @@ public class IBFStrata {
                     estimateErrored++;
                     // directly return, one roundtrip
                     // on remote
-                    return remoteIbfstrata.data.values().parallelStream().collect(Collectors.toList());
+                    return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
                 }
                 Cell[] cells = us.subtract(result.getCells()).clone();
                 List<Integer>[] difference = us.decode(cells);
                 if (difference == null) {
                     // estimateErrored++;
                     System.err.printf("Cant make a difference, send directly triples...");
-                    List<Triple> finalresult = new ArrayList<>();
-                    // send only missing triples.
-                    // perhaps a lot of false positives here?
-                    remoteIbfstrata.data.values().parallelStream().forEach(triple -> {
-                        if (!this.ibf.contains(this.hash(triple))) {
-                            finalresult.add(triple);
-                        }
-                    });
-                    System.err.printf(" *end* %n");
-                    return finalresult;
+//                    List<Triple> finalresult = new ArrayList<>();
+//                    // send only missing triples.
+//                    // perhaps a lot of false positives here?
+//                    remoteIbfstrata.data.values().parallelStream().forEach(triple -> {
+//                        if (!this.ibf.contains(this.hash(triple))) {
+//                            finalresult.add(triple);
+//                        }
+//                    });
+//                    System.err.printf(" *end* %n");
+                    return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
                 } else {
                     Iterator<Integer> miss = difference[1].iterator();
                     // all triples in additionnal need to be ask from the remote
