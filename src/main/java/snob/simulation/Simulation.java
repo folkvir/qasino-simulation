@@ -73,11 +73,12 @@ public class Simulation {
                 // System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
             }
             double H = harmonic(size);
-            double approximationHarmonic = ((size * H) / (q * (krps + kson))) + Math.log(size);
-            double qapproximate = (size * H) / (q * q);
+
+            double approximationHarmonic = ((size * H) / (q * (krps + kson)));
             // double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
             meanQ = meanQ / sample;
-            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, qapproximate);
+            double ratio = meanQ / approximationHarmonic;
+            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, ratio);
             System.out.printf(res);
         }
     }
@@ -115,7 +116,7 @@ public class Simulation {
         // all peers seen for each peers.
         private Map<Integer, LinkedHashSet<Integer>> seen;
         // store all rounds corresponding to a q when a q has seen every peer
-        private Map<Integer, Integer> seenqfinished;
+        private Map<Integer, Integer> seenallfinished;
         // store the round where peer i saw every peer in the network
         private Map<Integer, Integer> seenfinished;
         // store each q for each peer, q in {q; 1}, 2 values
@@ -134,7 +135,7 @@ public class Simulation {
             this.seen = new LinkedHashMap<>();
 
             this.seenfinished = new LinkedHashMap<>();
-            this.seenqfinished = new LinkedHashMap<>();
+            this.seenallfinished = new LinkedHashMap<>();
 
             if (rounds == -1) {
                 this.rounds = Integer.MAX_VALUE;
