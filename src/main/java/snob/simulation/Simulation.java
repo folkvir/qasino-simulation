@@ -74,9 +74,10 @@ public class Simulation {
             }
             double H = harmonic(size);
             double approximationHarmonic = ((size * H) / (q * (krps + kson))) + Math.log(size);
-            double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
+            double qapproximate = (size * H) / (q * q);
+            // double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
             meanQ = meanQ / sample;
-            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, approximationDev);
+            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, qapproximate);
             System.out.printf(res);
         }
     }

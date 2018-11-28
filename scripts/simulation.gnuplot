@@ -5,7 +5,6 @@ set style fill solid
 
 set xrange [0:100]
 
-set ylabel 'Average number of round to find Q peers'
 set xlabel 'Number of Q'
 
 
@@ -13,4 +12,14 @@ set xlabel 'Number of Q'
 FILES = system("ls ../savedresults/simulation/*-sort.log")
 
 set output "../savedresults/simulation.png"
-plot for [d in FILES] '< sort -nk1 $d' u 1:6 pt 1 title system("basename ".d)
+set multiplot layout 1, 3
+
+set ylabel 'Rounds to find Q peers (average)'
+plot for [d in FILES] d u 5:6 pt 1 notitle
+
+set ylabel 'Q find all peers (approximation baseline)'
+plot for [d in FILES] d u 5:7 pt 1 notitle
+
+set ylabel 'Q find all Q (approximation baseline)'
+plot for [d in FILES] d u 5:7 pt 1 title system("basename ".d)
+unset multiplot
