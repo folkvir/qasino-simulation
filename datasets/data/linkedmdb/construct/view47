@@ -1,4 +1,0 @@
-CONSTRUCT 
-  { ?x1 <http://purl.org/dc/terms/title> ?x2 .}
-WHERE
-  { ?x1 <http://purl.org/dc/terms/title> ?x2 }

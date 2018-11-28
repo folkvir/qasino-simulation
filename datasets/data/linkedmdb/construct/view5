@@ -1,4 +1,0 @@
-CONSTRUCT 
-  { ?x1 <http://xmlns.com/foaf/0.1/page> ?x4 .}
-WHERE
-  { ?x1 <http://xmlns.com/foaf/0.1/page> ?x4 }

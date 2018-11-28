@@ -7,9 +7,7 @@ const shell = require('shelljs')
 const config = {
   server: 'http://localhost:5678',
   datasets: [
-    { name: 'diseasome', prefix: '/diseasome', dir: "./diseasome", queries: 'queries.json' },
-    { name: 'geocoordinates', prefix: '/geocoordinates', dir: "./geocoordinates", queries: 'queries.json' },
-    { name: 'linkedmdb', prefix: '/linkedmdb', dir: "./linkedmdb", queries: 'queries.json' }
+    { name: 'diseasome', prefix: '/diseasome', dir: "./diseasome", queries: 'queries.json' }
   ]
 }
 
