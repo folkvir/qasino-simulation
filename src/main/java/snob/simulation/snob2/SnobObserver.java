@@ -23,8 +23,6 @@ import java.util.stream.Stream;
 import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
-    private int qlimit; // limit of queries loaded in the network
-    private int dlimit; // limit of fragments loaded in the network
     private int replicate;
 
     //    private int pid;
@@ -32,13 +30,8 @@ public class SnobObserver implements ObserverProgram {
     public SnobObserver(String prefix) {
         System.err.println("Initializing: " + prefix);
         try {
-            // this.pid = Configuration.lookupPid(Configuration.getString(prefix + ".snob"));
-            this.qlimit = Configuration.getInt(prefix + ".qlimit", -1);
-            System.err.println("Setting the query limit to: " + this.qlimit);
             this.replicate = Configuration.getInt(prefix + ".replicate", 50);
             System.err.println("Setting the replicate factor to (%): " + this.replicate);
-            this.dlimit = Configuration.getInt(prefix + ".dlimit", -1);
-            System.err.println("Setting the fragments limit to: " + this.dlimit);
         } catch (Exception e) {
             System.err.println("Cant find any query limit: setting value to unlimited: " + e);
         }
@@ -152,16 +145,8 @@ public class SnobObserver implements ObserverProgram {
         String diseasome = System.getProperty("user.dir") + "/datasets/data/diseasome/fragments/";
         System.err.println(System.getProperty("user.dir"));
         String diseasomeQuery = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries_jena_generated.json";
-        String linkedmdb = System.getProperty("user.dir") + "/datasets/data/linkedmdb/fragments/";
-        String linkedmdbQuery = System.getProperty("user.dir") + "/datasets/data/linkedmdb/queries/queries_jena_generated.json";
-
         Vector filenames = new Vector();
         try (Stream<Path> paths = Files.walk(Paths.get(diseasome))) {
-            paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
-        } catch (IOException e) {
-            System.err.println(e.toString());
-        }
-        try (Stream<Path> paths = Files.walk(Paths.get(linkedmdb))) {
             paths.filter(Files::isRegularFile).forEach((fileName) -> filenames.add(fileName));
         } catch (IOException e) {
             System.err.println(e.toString());
@@ -175,8 +160,7 @@ public class SnobObserver implements ObserverProgram {
         }
         int pickedElement = 0;
         int peersPicked = 0;
-        this.dlimit = (this.dlimit == -1) ? filenames.size() : this.dlimit;
-        while (pickedElement < this.dlimit && pickedElement < filenames.size()) {
+        while (pickedElement < filenames.size() && pickedElement < filenames.size()) {
             System.err.println("Loading data into peer:" + peersPicked);
             System.err.println(filenames.get(pickedElement).toString());
             peers.get(peersPicked).profile.datastore.update(filenames.get(pickedElement).toString());
@@ -188,7 +172,6 @@ public class SnobObserver implements ObserverProgram {
         // diseasome queries
         JSONParser parser = new JSONParser();
         Vector<JSONObject> queriesDiseasome = new Vector();
-        Vector<JSONObject> queriesLinkedmdb = new Vector();
         try (Reader is = new FileReader(diseasomeQuery)) {
             JSONArray jsonArray = (JSONArray) parser.parse(is);
             jsonArray.stream().forEach((q) -> {
@@ -199,62 +182,21 @@ public class SnobObserver implements ObserverProgram {
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
-        // linkedmdb queries
-        try (Reader is = new FileReader(linkedmdbQuery)) {
-            JSONArray jsonArray = (JSONArray) parser.parse(is);
-            jsonArray.stream().forEach((q) -> {
-                JSONObject j = (JSONObject) q;
-                queriesLinkedmdb.add(j);
-            });
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
 
         // create a vector containing all queries where queries are inserted one after the other respectively from each dataset
         Vector<JSONObject> finalQueries = new Vector();
-        int j = 0;
         for (int i = 0; i < queriesDiseasome.size(); i++) {
             finalQueries.add(queriesDiseasome.get(i));
-            if (j < queriesLinkedmdb.size()) {
-                finalQueries.add(queriesLinkedmdb.get(j));
-            }
-            j++;
         }
 
-        // now check the replicate factor and replicate the first query in this vector
-        JSONObject queryToreplicate = finalQueries.get(0);
+        // now check the replicate factor and replicate a random query.
+        JSONObject queryToreplicate = finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
         double numberOfReplicatedQueries = Math.floor(peers.size() * replicate / 100);
-        System.err.printf("Replicating %f times the query: %s", numberOfReplicatedQueries, queryToreplicate.get("query").toString());
+
         for (int i = 0; i < numberOfReplicatedQueries; ++i) {
-            finalQueries.set(i, (JSONObject) queryToreplicate.clone());
-        }
-
-
-        // set queries on each peer
-        int pickedQuery = 0;
-        peersPicked = 0;
-        List<JSONObject> queries = new ArrayList<>();
-        for (int i = 0; i < peers.size(); ++i) {
-            queries.add(finalQueries.get(i));
-        }
-
-        // shuffle queries =)
-        Collections.shuffle(queries);
-        int max = 0;
-        if (qlimit == -1) {
-            max = peers.size();
-        } else {
-            max = qlimit;
-        }
-        for (int i = 0; i < networksize; ++i) {
             Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
-            snob.profile.qlimit = max;
             snob.profile.replicate = this.replicate;
-            if (max != 0) {
-                JSONObject query = queries.get(i);
-                snob.profile.update((String) query.get("query"), (long) query.get("card"));
-                max--;
-            }
+            snob.profile.update((String) queryToreplicate.get("query"), (long) queryToreplicate.get("card"));
         }
     }
 
