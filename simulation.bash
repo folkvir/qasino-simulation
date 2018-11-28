@@ -1,27 +1,23 @@
 #!/usr/bin/env bash
 
 SIZE=1000
-SAMPLE=10
+SAMPLE=100
 K=6
 SON=0
 
 mkdir -p ./results/simulation
 
-java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > "./results/simulation/simk-${K}-son-${SON}-size-${SIZE}-sample${SAMPLE}.log"
+run() {
+    SON=$1
+    OUTPUT="./results/simulation/sim-k-${K}-son-${SON}-size-${SIZE}-sample${SAMPLE}.log"
+    java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > $OUTPUT
+    sort -nk1 $OUTPUT > "${OUTPUT}-sort.log"
+}
 
-SON=1
-java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > "./results/simulation/simk-${K}-son-${SON}-ize-${SIZE}-sample${SAMPLE}.log"
-
-SON=2
-java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > "./results/simulation/simk-${K}-son-${SON}-size-${SIZE}-sample${SAMPLE}.log"
-
-SON=3
-java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > "./results/simulation/simk-${K}-son-${SON}-size-${SIZE}-sample${SAMPLE}.log"
-
-SON=4
-java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > "./results/simulation/simk-${K}-son-${SON}-size-${SIZE}-sample${SAMPLE}.log"
-
-SON=5
-java -cp target/classes/ snob.simulation.Simulation $SIZE $SAMPLE $K $SON > "./results/simulation/sim-k-${K}-son-${SON}-size-${SIZE}-sample${SAMPLE}.log"
+run 1
+run 2
+run 3
+run 4
+run 5
 
 wait

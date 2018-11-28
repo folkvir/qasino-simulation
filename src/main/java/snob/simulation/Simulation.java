@@ -30,9 +30,14 @@ public class Simulation {
 
         int krps = max - kson; //2* (int) Math.floor(Math.log(size));
 
-        System.err.println("Simulating...");
-        System.err.println("K(rps)= " + krps);
-        System.err.println("K(son)= " + kson);
+        System.err.println("=> Simulating...");
+        System.err.println("** K(rps + son)= " + max);
+        System.err.println("** K(rps)= " + krps);
+        System.err.println("** K(son)= " + kson);
+        System.err.println("** Sample= " + sample);
+        System.err.println("** Size= " + size);
+        System.err.println("** Qs point= " + nqs);
+
         int r = 0;
         for (int q : qs) {
             r++;
