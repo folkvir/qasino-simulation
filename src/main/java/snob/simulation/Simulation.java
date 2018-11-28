@@ -67,7 +67,8 @@ public class Simulation {
                 meanQ += s.getMeanQ();
                 // System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
             }
-            double approximationHarmonic = ((size * harmonic(size)) / (q * (krps + kson))) + Math.log(size);
+            double H = harmonic(size);
+            double approximationHarmonic = ((size * H) / (q * (krps + kson))) + Math.log(size);
             double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
             meanQ = meanQ / sample;
             String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, approximationDev);
@@ -80,7 +81,6 @@ public class Simulation {
         for (int i = 1; i <= n; i++) {
             res += 1.0 / i;
         }
-        System.err.printf("Harmonic(%d) = %f%n", n, res);
         return res;
     }
 
