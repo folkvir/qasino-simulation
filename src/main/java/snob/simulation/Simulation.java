@@ -19,13 +19,13 @@ public class Simulation {
             kson = Integer.valueOf(args[3]);
         } else {
             size = 1000;
-            sample = 10 * 1000;
+            sample = 100;
             max = (int) Math.floor(Math.log(size)) + 1; // log(size)
             kson = 0; // only rps;
         }
         // set the different q points for a given size of the network
         for (int i = 0; i < nqs; ++i) {
-            qs[i] = (int) Math.floor(size / +1);
+            qs[i] = (int) Math.floor(size / (i+1));
         }
 
         int krps = max - kson; //2* (int) Math.floor(Math.log(size));
@@ -65,7 +65,7 @@ public class Simulation {
                 Sim s = new Sim(size, krps, kson, -1, q, true);
                 s.start();
                 meanQ += s.getMeanQ();
-                System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
+                // System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
             }
             double approximationHarmonic = ((size * harmonic(size)) / (q * (krps + kson))) + Math.log(size);
             double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
