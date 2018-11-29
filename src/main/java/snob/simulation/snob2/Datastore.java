@@ -43,7 +43,7 @@ public class Datastore {
 //    }
 
     public void update(String filename) {
-        System.err.println("Updating the datastore with the following filename: " + filename);
+        // System.err.println("Updating the datastore with the following filename: " + filename);
         // this.dataset.begin(ReadWrite.WRITE);
         try {
             RDFParser.create()

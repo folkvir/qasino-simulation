@@ -12,16 +12,23 @@ import java.nio.file.Paths;
 public class App {
     public static void main(String[] args) throws IOException {
         if (args.length > 0 && args[0].equals("--init")) {
-            int peers = 200;
-            int cycles = 2000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
-            int[] replicate = {0, 25, 50, 75, 100};
+            int peers = 1000;
+            int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
+
+            int points = 100;
+            int[] replicate = new int[points + 1];
+            replicate[0] = 0;
+            for(int i = 1; i<=points; ++i) {
+                replicate[i] = (int) Math.floor(peers / (i));
+            }
+
             int delta_rps = 1;
             int delta_son = 1;
             int rps_size = 5;
             int son_size = 4;
             int qlimit = -1; // unlimited
             int dlimit = -1; // unlimited
-            boolean[] son_activated = {false, true};
+            boolean[] son_activated = {false};
             boolean[] trafficMin = {true};
             // firstly do it with only the rps
             for (int i : replicate) {

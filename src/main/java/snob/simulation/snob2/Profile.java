@@ -3,7 +3,6 @@ package snob.simulation.snob2;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import snob.simulation.snob2.data.IBFStrata;
 
 import java.util.*;
 
@@ -28,7 +27,7 @@ public class Profile {
         for (Map.Entry<Triple, Iterator<Triple>> entry : its.entrySet()) {
             int c = insertTriples(entry.getKey(), entry.getValue(), traffic);
             count += c;
-            System.err.printf("** %d triples inserted %n", c);
+            // System.err.printf("** %d triples inserted %n", c);
         }
         return count;
     }
@@ -60,7 +59,7 @@ public class Profile {
             this.reset();
             has_query = true;
             this.query = new QuerySnob(query);
-            System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
+            // System.err.printf("[update-string] Updating the profile a query expecting %d result(s) %n", this.query.cardinality);
             this.query.patterns = this.query.plan.patterns;
             init(this.query.patterns);
         } catch (Exception e) {
@@ -88,7 +87,7 @@ public class Profile {
             this.reset();
             this.has_query = true;
             this.query = new QuerySnob(query, card);
-            System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
+            // System.err.printf("[update-string-card] Updating the profile with a query expecting %d result(s) %n", this.query.cardinality);
             this.query.patterns = this.query.plan.patterns;
             this.init(this.query.patterns);
         } catch (Exception e) {
@@ -104,9 +103,9 @@ public class Profile {
      * @param patterns
      */
     private void init(List<Triple> patterns) {
-        System.err.println("[INIT] Initializing the pipeline...");
+        // System.err.println("[INIT] Initializing the pipeline...");
         for (Triple pattern : patterns) {
-            System.err.printf("[INIT] Inserting triples from %s into the pipeline: ", pattern.toString());
+            // System.err.printf("[INIT] Inserting triples from %s into the pipeline: ", pattern.toString());
             this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> this.query.insertTriple(pattern, triple));
         }
     }

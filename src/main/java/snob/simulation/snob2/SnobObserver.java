@@ -24,14 +24,19 @@ import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
     private int replicate;
+    private int queries;
+    private boolean initialized = false;
+    private final int begin = 10;
+    private Map<Integer, Integer> seenfinished = new LinkedHashMap<>();
+    private int firstq = -1;
 
     //    private int pid;
 //    private static final String PAR_PROTOCOL = "protocol";
     public SnobObserver(String prefix) {
-        System.err.println("Initializing: " + prefix);
+        // System.err.println("Initializing: " + prefix);
         try {
             this.replicate = Configuration.getInt(prefix + ".replicate", 50);
-            System.err.println("Setting the replicate factor to (%): " + this.replicate);
+            // System.err.println("Setting the replicate factor to (%): " + this.replicate);
         } catch (Exception e) {
             System.err.println("Cant find any query limit: setting value to unlimited: " + e);
         }
@@ -39,10 +44,14 @@ public class SnobObserver implements ObserverProgram {
 
     @Override
     public void tick(long currentTick, DictGraph observer) {
-        if (currentTick == 0) {
+        if (currentTick == begin) {
             init(observer);
+            initialized = true;
+            Snob.start = true;
         } else {
-            observe(currentTick, observer);
+            System.err.println("Snob(0) rps size: " + ((Snob) observer.nodes.get(Network.get(0).getID()).pss).getPeers(Integer.MAX_VALUE).size());
+            System.err.println("Snob(0) fullmesh size: " + ((Snob) observer.nodes.get(Network.get(0).getID()).pss).fullmesh.size());
+            if(initialized) observe(currentTick, observer);
         }
     }
 
@@ -66,56 +75,71 @@ public class SnobObserver implements ObserverProgram {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 messages += snob.messages;
                 triplesback += snob.tripleResponses;
-                peerSeenMean += snob.profile.query.globalseen;
-                if (snob.profile.query.globalseen >= networksize) {
-                    peerHigherThanPeers++;
-                }
+                if(snob.profile.has_query) {
+                    peerSeenMean += snob.profile.query.globalseen;
+                    if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
+                        if(firstq == -1) firstq = (int) currentTick - begin;
+                        seenfinished.put(snob.id, (int) currentTick - begin);
+                    }
+                    Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
+                    while (it.hasNext()) {
+                        estimateErrores += it.next().estimateErrored;
+                    }
 
-                Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
-                while (it.hasNext()) {
-                    estimateErrores += it.next().estimateErrored;
-                }
-
-                QuerySnob query = snob.profile.query;
-                if (query != null) {
-                    List<QuerySolution> res = query.getResults();
-                    int cpt = res.size();
-                    // System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.query.globalseen);
-                    totalreceivedresults += cpt;
-                    totalcardinality += query.cardinality;
-                    if (cpt > query.cardinality) {
-                        throw new Exception("pipeline " + query.query + " gives more results than expected...");
-                    } else if (cpt == 0 && query.cardinality == 0) {
-                        completeness += 100;
-                    } else if (cpt == 0 && query.cardinality > 0) {
-                        completeness += 0;
-                    } else if (cpt > 0 && query.cardinality > 0) {
-                        completeness += (cpt / query.cardinality) * 100;
-                    } else {
-                        throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
+                    QuerySnob query = snob.profile.query;
+                    if (query != null) {
+                        List<QuerySolution> res = query.getResults();
+                        int cpt = res.size();
+                        // System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.query.globalseen);
+                        totalreceivedresults += cpt;
+                        totalcardinality += query.cardinality;
+                        if (cpt > query.cardinality) {
+                            throw new Exception("pipeline " + query.query + " gives more results than expected...");
+                        } else if (cpt == 0 && query.cardinality == 0) {
+                            completeness += 100;
+                        } else if (cpt == 0 && query.cardinality > 0) {
+                            completeness += 0;
+                        } else if (cpt > 0 && query.cardinality > 0) {
+                            completeness += (cpt / query.cardinality) * 100;
+                        } else {
+                            throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
+                        }
                     }
                 }
             }
 
             if (totalcardinality == 0) {
-                System.err.println("totalcardinality=0");
                 completenessinresults = 0;
             } else {
                 completenessinresults = (totalreceivedresults) / (totalcardinality) * 100;
             }
-            triplebackmean = triplesback / snob_default.profile.qlimit;
-            completeness = completeness / snob_default.profile.qlimit;
-            peerSeenMean = peerSeenMean / snob_default.profile.qlimit;
-            System.err.println("Global Completeness in the network: " + completeness + "% (" + snob_default.profile.qlimit + "," + networksize + ")");
+
+
+            triplebackmean = triplesback / this.queries;
+            if(completeness == 0) {
+                completeness = 0;
+            } else {
+                completeness = completeness / this.queries;
+            }
+            peerSeenMean = peerSeenMean / this.queries;
+
+            System.err.println("Global Completeness in the network: " + completeness + "% (" + this.queries + "," + networksize + ")");
             System.err.println("Global Completeness (in results) in the network: " + completenessinresults + "% (" + totalreceivedresults + "," + totalcardinality + ")");
             System.err.println("Number of messages in the network: " + messages);
 
-            String res = currentTick
+            double meanQN = 0;
+            for(Map.Entry<Integer, Integer> entry: seenfinished.entrySet()) {
+                meanQN += entry.getValue();
+            }
+            if(meanQN != 0) meanQN = meanQN / seenfinished.size();
+
+            String res = currentTick - begin
                     + ", " + observer.size()
-                    + ", " + replicate
+                    + ", " + this.queries
                     + ", " + observer.meanPartialViewSize()
                     + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
-                    + ", " + ((snob_default.son) ? snob_default.getSonPeers(Integer.MAX_VALUE).size() : 0)
+                    + ", " + ((snob_default.son) ? snob_default.fullmesh.size() : 0)
+                    // + ", " + ((snob_default.son) ? snob_default.getSonPeers(Integer.MAX_VALUE).size() : 0)
                     + ", " + completeness
                     + ", " + messages
                     + ", " + totalreceivedresults
@@ -125,11 +149,16 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + triplebackmean
                     + ", " + estimateErrores
                     + ", " + peerSeenMean
-                    + ", " + peerHigherThanPeers;
+                    + ", " + seenfinished.size()
+                    + ", " + meanQN
+                    + ", " + firstq;
             System.out.println(res);
             System.err.println(res);
 
-            if (peerHigherThanPeers == Network.size()) {
+            if (seenfinished.size() == this.queries) {
+                seenfinished.forEach((k, v) -> {
+                    System.err.println(k + "_ " + v);
+                });
                 exit(0);
             }
         } catch (Exception e) {
@@ -161,8 +190,8 @@ public class SnobObserver implements ObserverProgram {
         int pickedElement = 0;
         int peersPicked = 0;
         while (pickedElement < filenames.size() && pickedElement < filenames.size()) {
-            System.err.println("Loading data into peer:" + peersPicked);
-            System.err.println(filenames.get(pickedElement).toString());
+            // System.err.println("Loading data into peer:" + peersPicked);
+            // System.err.println(filenames.get(pickedElement).toString());
             peers.get(peersPicked).profile.datastore.update(filenames.get(pickedElement).toString());
             peersPicked++;
             if (peersPicked > peers.size() - 1) peersPicked = 0;
@@ -190,12 +219,12 @@ public class SnobObserver implements ObserverProgram {
         }
 
         // now check the replicate factor and replicate a random query.
-        JSONObject queryToreplicate = finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
-        double numberOfReplicatedQueries = Math.floor(peers.size() * replicate / 100);
-
+        JSONObject queryToreplicate = finalQueries.get(0); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
+        int numberOfReplicatedQueries = (int) Math.floor(peers.size() * replicate / 100);
+        this.queries = numberOfReplicatedQueries;
         for (int i = 0; i < numberOfReplicatedQueries; ++i) {
             Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
-            snob.profile.replicate = this.replicate;
+            snob.profile.replicate = numberOfReplicatedQueries;
             snob.profile.update((String) queryToreplicate.get("query"), (long) queryToreplicate.get("card"));
         }
     }

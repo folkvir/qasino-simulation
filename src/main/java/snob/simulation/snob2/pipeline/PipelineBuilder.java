@@ -106,7 +106,7 @@ public class PipelineBuilder {
                 e.printStackTrace();
             }
             list.forEach(triple -> {
-                System.err.println(triple);
+                // System.err.println(triple);
                 triples.add(triple);
                 if (pipeline == null) {
                     AppendableSource source = new AppendableSource(triple, getVariables(triple));

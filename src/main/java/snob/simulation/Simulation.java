@@ -4,9 +4,6 @@ import java.util.*;
 
 public class Simulation {
     public static void main(String[] args) {
-        int nqs = 100; // number of q points
-        int[] qs = new int[nqs];
-
         int size = 0;
         int sample = 0; //10 * 1000;
         int max = (int) Math.floor(Math.log(size)) + 1;
@@ -20,13 +17,18 @@ public class Simulation {
         } else {
             size = 1000;
             sample = 100;
-            max = (int) Math.floor(Math.log(size)) + 1; // log(size)
+            max = 1; // (int) Math.floor(Math.log(size)) + 1; // log(size)
             kson = 0; // only rps;
         }
+        int nqs = 100; // number of q points
+        int[] qs = new int[nqs];
         // set the different q points for a given size of the network
         for (int i = 0; i < nqs; ++i) {
             qs[i] = (int) Math.floor(size / (i+1));
         }
+//        int nqs = 1;
+//        int[] qs = new int[1];
+//        qs[0] = 25;
 
         int krps = max - kson; //2* (int) Math.floor(Math.log(size));
 
@@ -66,10 +68,12 @@ public class Simulation {
         @Override
         public void run() {
             double meanQ = 0;
+            double meanQall = 0;
             for (int i = 0; i < sample; i++) {
                 Sim s = new Sim(size, krps, kson, -1, q, true);
                 s.start();
                 meanQ += s.getMeanQ();
+                meanQall += s.getMeanQAll();
                 // System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
             }
             double H = harmonic(size);
@@ -77,8 +81,10 @@ public class Simulation {
             double approximationHarmonic = ((size * H) / (q * (krps + kson)));
             // double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
             meanQ = meanQ / sample;
-            double ratio = meanQ / approximationHarmonic;
-            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, ratio);
+            meanQall = meanQall / sample;
+            double ratioQ = meanQ / approximationHarmonic;
+            double ratioQAll = meanQall / approximationHarmonic;
+            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, meanQall, approximationHarmonic, ratioQ, ratioQAll);
             System.out.printf(res);
         }
     }
@@ -113,12 +119,14 @@ public class Simulation {
         private int pq = 0;
         // pull or push method on the overlay
         private boolean pull = true;
-        // all peers seen for each peers.
+        // all q peers seen for each peer.
         private Map<Integer, LinkedHashSet<Integer>> seen;
-        // store all rounds corresponding to a q when a q has seen every peer
-        private Map<Integer, Integer> seenallfinished;
-        // store the round where peer i saw every peer in the network
+        // all q peers seen for each peer.
+        private Map<Integer, LinkedHashSet<Integer>> seenall;
+        // store the round where peer q saw every q in the network
         private Map<Integer, Integer> seenfinished;
+        // store the round where peer q saw every peer in the network
+        private Map<Integer, Integer> seenallfinished;
         // store each q for each peer, q in {q; 1}, 2 values
         private int[] peers;
 
@@ -133,6 +141,7 @@ public class Simulation {
             this.rps = new LinkedHashMap<>();
             this.son = new LinkedHashMap<>();
             this.seen = new LinkedHashMap<>();
+            this.seenall = new LinkedHashMap<>();
 
             this.seenfinished = new LinkedHashMap<>();
             this.seenallfinished = new LinkedHashMap<>();
@@ -150,6 +159,8 @@ public class Simulation {
                 son.put(i, new LinkedHashSet<>());
                 seen.put(i, new LinkedHashSet<>());
                 seen.get(i).add(i);
+                seenall.put(i, new LinkedHashSet<>());
+                seenall.get(i).add(i);
             }
 
             int choosen = 0;
@@ -182,8 +193,9 @@ public class Simulation {
                 currentRound = i;
                 shuffle();
                 computeSeen();
-                if (seenfinished.size() == pq) {
+                if (seenallfinished.size() == pq && seenfinished.size() == pq) { // finished when all q have seen all peers in the network
                     stop = true;
+                    // System.err.printf("** qq=%.2f qn=%.2f %n", getMeanQ(), getMeanQAll());
                 }
                 ++i;
             }
@@ -198,12 +210,20 @@ public class Simulation {
             }
             return sum / pq;
         }
+        public double getMeanQAll() {
+            int sum = 0;
+            for (int i = 0; i < size; i++) {
+                if (peers[i] == q) {
+                    sum += seenallfinished.get(i);
+                }
+            }
+            return sum / pq;
+        }
 
         private void computeSeen() {
             // System.err.printf("Merging the set of %d with neighbours. %n", k);
             for (int i = 0; i < size; i++) {
-                if (!seenfinished.containsKey(i)) {
-
+                if (!seenfinished.containsKey(i) || !seenallfinished.containsKey(i)) {
                     if (pull) {
                         Object[] arr = rps.get(i).toArray();
                         Object[] arr_son = son.get(i).toArray();
@@ -219,31 +239,36 @@ public class Simulation {
                             }
                         }
                     } else {
-
+                        // put here the behavior for push
                     }
-                    // System.err.println(seen.get(i));
-                    if (peers[i] == pq && seen.get(i).size() == pq) {
-//                        System.out.printf("[query-%d]finished. q=%d |rps|=%d |son|=%d round=%d %n",
+                    if (!seenfinished.containsKey(i) && peers[i] == pq && seen.get(i).size() == pq) {
+//                        System.out.printf("[query-%d] meet all q q=%d |rps|=%d |son|=%d round=%d %n",
 //                                i, peers[i],
 //                                krps, kson,
 //                                currentRound);
                         seenfinished.put(i, currentRound);
                     }
+                    if (!seenallfinished.containsKey(i) && peers[i] == pq && seenall.get(i).size() == size) {
+//                        System.out.printf("[query-%d] meet all peers. q=%d |rps|=%d |son|=%d round=%d %n",
+//                                i, peers[i],
+//                                krps, kson,
+//                                currentRound);
+                        seenallfinished.put(i, currentRound);
+                    }
                 }
             }
         }
 
-        private LinkedHashSet<Integer> update(int toUpdate, int newPeer, int q) {
-            LinkedHashSet<Integer> updates = new LinkedHashSet<>();
+        private void update(int toUpdate, int newPeer, int q) {
             if (q == peers[newPeer] && q != 1) {
-                seen.get(newPeer).forEach(p -> {
-                    if (!seen.get(toUpdate).contains(p)) updates.add(p);
-                    seen.get(toUpdate).add(p);
-                });
-                if (!seen.get(toUpdate).contains(newPeer)) updates.add(newPeer);
+                // System.err.println(pq + "_" + currentRound + "_" + seenfinished.containsKey(toUpdate) + "__" + seenallfinished.containsKey(toUpdate));
+                for (Integer peer : seen.get(newPeer)) {
+                    if(peers[peer] == q) seen.get(toUpdate).add(peer);
+                }
+                seenall.get(toUpdate).addAll(seenall.get(newPeer));
                 seen.get(toUpdate).add(newPeer);
             }
-            return updates;
+            seenall.get(toUpdate).add(newPeer);
         }
 
         private void shuffle() {

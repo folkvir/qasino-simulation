@@ -3,23 +3,20 @@ set datafile separator ","
 set terminal png size 800,600
 set style fill solid
 
-set xrange [0:100]
-
-
 FILES = system("ls ../savedresults/simulation/sim*-sort-c5.log")
 
 set output "../savedresults/simulation.png"
-#set multiplot layout 3, 1
 
-set xlabel 'Average number of rounds to find all Q'
-set ylabel 'Number of similar queries'
-plot for [d in FILES] d u 6:5 pt 1 notitle
+set xlabel 'Number of Q'
+set ylabel 'Number of rounds for Q to find Q'
+plot for [d in FILES] d u 5:6 pt 1 notitle
 
 set output "../savedresults/simulation-baseline-q-all.png"
-set ylabel 'Q find all peers (approximation baseline)'
-plot for [d in FILES] d u 7:5 pt 1 notitle
+set xlabel 'Number of Q'
+set ylabel 'Number of rounds to find for to Q to find all (approximation)'
+plot for [d in FILES] d u 5:7 pt 1 notitle
 
 set output "../savedresults/simulation-baseline-q-all-q.png"
-set ylabel 'Q find all Q (approximation baseline)'
-plot for [d in FILES] d u 8:5 pt 1 title system("basename ".d)
-#unset multiplot
+set xlabel 'Number of Q'
+set ylabel 'Ratio'
+plot for [d in FILES] d u 5:8 pt 1 title system("basename ".d)

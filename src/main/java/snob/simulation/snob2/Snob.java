@@ -12,10 +12,13 @@ import snob.simulation.snob2.messages.SnobMessage;
 
 import java.util.*;
 
+import static java.lang.System.exit;
+
 /**
  * The Snob protocol
  */
 public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
+    public static boolean start = false;
     // #A the names of the parameters in the configuration file of peersim
     private static final String PAR_C = "c"; // max partial view size
     private static final String PAR_L = "l"; // shuffle size
@@ -42,6 +45,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     // instrumentations
     public int messages = 0;
     public long tripleResponses = 0;
+    public Set<Node> fullmesh = new LinkedHashSet<Node>();
 
     /**
      * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
@@ -63,11 +67,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
         try {
             this.profile = new Profile();
-            System.err.println("Creating the profile...");
+            // System.err.println("Creating the profile...");
         } catch (Exception e) {
             System.err.println(e);
         }
-        System.err.printf("[%d/%d] Snob peer initialized. %n", id, Network.size());
+        // System.err.printf("[%d/%d] Snob peer initialized. %n", id, Network.size());
     }
 
     /**
@@ -143,38 +147,79 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
 
         // do the periodic shuffling for the Semantic Overlay if enabled
-        if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
-            this.sonPartialView.incrementAge();
-            Node qSon = this.sonPartialView.getOldest();
-            Snob qSonSnob = (Snob) qSon.getProtocol(ARandomPeerSamplingProtocol.pid);
-            if (qSonSnob.isUp() && !this.pFail(null)) {
-                // #A if the chosen peer is alive, initiate the exchange
-                List<Node> sample = this.sonPartialView.getSample(this, qSon,
-                        true);
-                sample.add(this.node);
-                IMessage received = qSonSnob.onPeriodicCallSon(this.node, new SnobMessage(sample));
-                List<Node> samplePrime = (List<Node>) received.getPayload();
-                this.sonPartialView.mergeSample(this, qSon, samplePrime, sample, true);
-            } else {
-                // #B if the chosen peer is dead, remove it from the view
-                this.sonPartialView.removeNode(qSon);
-            }
+        if (start &&  Snob.son && this.isUp()) {
+            // list the rps, check for Snob that are not in our fullmesh son, add it
+            List<Node> rps = this.getPeers(Integer.MAX_VALUE);
+            rps.forEach(peer -> {
+                if(!fullmesh.contains(peer)){
+                    Snob remote = ((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
+                    if(remote.profile.has_query && this.profile.has_query && this.profile.query.query.equals(remote.profile.query.query)) {
+                        // System.err.println("Size before: " + remote.fullmesh.size() + "_" + fullmesh.size());
+                        int globalsize = remote.fullmesh.size() + fullmesh.size();
+                        if(globalsize == 0) {
+                            globalsize = 2;
+                        }
+                        for (Node node : fullmesh) {
+                            for (Node fullmesh1 : remote.fullmesh) {
+                                ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(fullmesh1);
+                                ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(node);
+                            }
+                        }
+                        // for all neighbours, connect neighbours to the remote one
+                        for (Node node : fullmesh) {
+                            ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(remote.node);
+                            remote.fullmesh.add(node);
+                        }
+                        // for all neighbours of the remote peer, connect them to us
+                        for (Node fullmesh1 : remote.fullmesh) {
+                            ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(this.node);
+                            this.fullmesh.add(fullmesh1);
+                        }
+                        remote.fullmesh.add(this.node);
+                        this.fullmesh.add(remote.node);
+                        // System.err.println("Size after: " + remote.fullmesh.size() + "_" + fullmesh.size());
+                        if(remote.fullmesh.size() != fullmesh.size()) {
+                            exit(1);
+                        }
+                    }
+                }
+            });
+//            this.sonPartialView.incrementAge();
+//            Node qSon = this.sonPartialView.getOldest();
+//            Snob qSonSnob = (Snob) qSon.getProtocol(ARandomPeerSamplingProtocol.pid);
+//            if (qSonSnob.isUp() && !this.pFail(null)) {
+//                // #A if the chosen peer is alive, initiate the exchange
+//                List<Node> sample = this.sonPartialView.getSample(this, qSon,
+//                        true);
+//                sample.add(this.node);
+//                IMessage received = qSonSnob.onPeriodicCallSon(this.node, new SnobMessage(sample));
+//                List<Node> samplePrime = (List<Node>) received.getPayload();
+//                this.sonPartialView.mergeSample(this, qSon, samplePrime, sample, true);
+//            } else {
+//                // #B if the chosen peer is dead, remove it from the view
+//                this.sonPartialView.removeNode(qSon);
+//            }
         }
 
         // -------- QUERY EXECUTION MODEL -------
-        if (profile.has_query && !profile.query.terminated) {
+        if (start && profile.has_query && !profile.query.terminated) {
             // 1 - send tpqs to neighbours and receive responses
-            List<Node> rps_neigh = this.getPeers(1000000);
+            List<Node> rps_neigh = this.getPeers(Integer.MAX_VALUE);
             for (Node node_rps : rps_neigh) {
                 this.exchangeTriplePatterns((Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid));
             }
-            if (Snob.son && this.isUp() && this.sonPartialView.size() > 0) {
-                List<Node> son_neigh = this.getSonPeers(1000000);
-                for (Node node_son : son_neigh) {
-                    if(!rps_neigh.contains(node_son)) {
-                        this.exchangeTriplePatterns((Snob) node_son.getProtocol(ARandomPeerSamplingProtocol.pid));
+            if (Snob.son && this.isUp()) {
+                fullmesh.forEach(peer -> {
+                    if(!rps_neigh.contains(peer)) {
+                        this.exchangeTriplePatterns((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
                     }
-                }
+                });
+//                List<Node> son_neigh = this.getSonPeers(Integer.MAX_VALUE);
+//                for (Node node_son : son_neigh) {
+//                    if(!rps_neigh.contains(node_son)) {
+//                        this.exchangeTriplePatterns((Snob) node_son.getProtocol(ARandomPeerSamplingProtocol.pid));
+//                    }
+//                }
             }
             profile.execute();
             // test if the query is terminated or not
@@ -192,7 +237,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * @param remote
      */
     private void exchangeTriplePatterns(Snob remote) {
-        System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
+        // System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         this.profile.query.patterns.forEach(pattern -> {
             if (this.traffic) {
@@ -209,7 +254,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         int insertedtriples = this.profile.insertTriples(result, traffic);
         tripleResponses += insertedtriples;
         this.messages++;
-        System.err.printf(" *end* (%d triples)%n", insertedtriples);
+        // System.err.printf(" *end* (%d triples)%n", insertedtriples);
     }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {

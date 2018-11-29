@@ -38,6 +38,7 @@ public class PipelineTest {
         });
     }
 
+    @Ignore
     @Test
     public void testPipelineAgainstJenaOverDiseasomeDataset() throws ParseException {
         Profile p = new Profile();
