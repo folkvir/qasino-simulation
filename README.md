@@ -4,7 +4,7 @@ Snob v2, Traffic reduced (IBFL), Incremental evaluation (Iterators), Termination
 Support for only SELECT (DISTINCT) conjunctive queries without filter only:
 - Projection
 - Selection
-- And JOIN (Symmetric Hash Join)
+- And Join (Symmetric Hash Join)
 
 ## Build and run
 
@@ -23,15 +23,4 @@ bash install.bash
 bash xp.bash # or nohup bash xp.bash > xp.log &
 ```
 
-### Run the experiment in parallel
-```bash
-bash install.bash
-bash xp.bash --parallel # or nohup bash xp.bash --parallel > xp.log &
-```
-
 ## Results
-
-```bash
-mvn clean package shade:shade && java -Xms4g -jar target/snob.jar --config test.conf > tmp.log 
-sed '1,3d' tmp.log > tmpfile; mv tmpfile result.log
-```
