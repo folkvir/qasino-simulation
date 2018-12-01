@@ -86,7 +86,7 @@ public class CyclonPartialView extends AAgingPartialView {
                 }
                 // #B if it existed, keep the old age
                 if (found) {
-                    this.ages.add((Integer) removedAge.get(i));
+                    this.ages.add(removedAge.get(i));
                 } else {
                     // #C otherwise, it's a brand new one
                     this.ages.add(new Integer(0));

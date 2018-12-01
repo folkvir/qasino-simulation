@@ -60,7 +60,7 @@ public class PipelineTest {
                 JSONObject j = (JSONObject) jsonArray.get(i);
                 String query = (String) j.get("query");
                 long card = (long) j.get("card");
-                System.out.println(query);
+                System.err.println(query);
                 p.update(query, card);
                 // execute the pipeline over JENA
                 ResultSet resJena = p.datastore.select(p.query.realQuery);
@@ -69,10 +69,10 @@ public class PipelineTest {
                     resJena.next();
                     countJena++;
                 }
-                System.out.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
+                System.err.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
                 // execute the pipeline over the pipeline
                 p.execute();
-                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, p.query.getResults().size());
+                System.err.printf("[Q-%d] Pipeline result has %d results. %n", i, p.query.getResults().size());
                 Assert.assertEquals(p.query.getResults().size(), countJena);
             }
         } catch (IOException | ParseException e) {
@@ -102,7 +102,7 @@ public class PipelineTest {
                 JSONObject j = (JSONObject) jsonArray.get(i);
                 String query = (String) j.get("query");
                 long card = (long) j.get("card");
-                System.out.println(query);
+                System.err.println(query);
                 p.update(query, card);
                 // execute the pipeline over JENA
                 ResultSet resJena = p.datastore.select(p.query.realQuery);
@@ -111,10 +111,10 @@ public class PipelineTest {
                     resJena.next();
                     countJena++;
                 }
-                System.out.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
+                System.err.printf("[Q-%d] JENA result has %d results. %n", i, countJena);
                 // execute the pipeline over the pipeline
                 p.execute();
-                System.out.printf("[Q-%d] Pipeline result has %d results. %n", i, p.query.getResults().size());
+                System.err.printf("[Q-%d] Pipeline result has %d results. %n", i, p.query.getResults().size());
                 Assert.assertEquals(p.query.getResults().size(), countJena);
             }
         } catch (IOException | ParseException e) {

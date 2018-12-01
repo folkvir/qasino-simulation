@@ -1,6 +1,6 @@
 package snob.simulation.snob2.data.Strata;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 public class Cell {
     private int count;
@@ -20,14 +20,8 @@ public class Cell {
     }
 
     public boolean isPure() {
-        try {
-            if ((count == -1 || count == 1)
-                    && (IBF.genIdHash(String.valueOf(idSum).getBytes("UTF-8")) == hashSum))
-                return true;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        return false;
+        return (count == -1 || count == 1)
+                && (IBF.genIdHash(String.valueOf(idSum).getBytes(StandardCharsets.UTF_8)) == hashSum);
     }
 
     public int getCount() {

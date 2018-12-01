@@ -18,7 +18,6 @@ import static java.lang.System.exit;
  * The Snob protocol
  */
 public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
-    public static boolean start = false;
     // #A the names of the parameters in the configuration file of peersim
     private static final String PAR_C = "c"; // max partial view size
     private static final String PAR_L = "l"; // shuffle size
@@ -26,6 +25,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     private static final String PAR_SON_L = "sonl"; // shuffle size on the son
     private static final String PAR_SON = "son"; // enable son or not
     private static final String PAR_TRAFFIC = "traffic"; // minimization of the traffic
+    public static boolean start = false;
     // #B the values from the configuration file of peersim
     public static int c;
     public static int l;
@@ -125,6 +125,81 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
+        periodicRandomGraphCall();
+    }
+
+    public void periodicRandomGraphCall() {
+        if (this.isUp()) {
+            this.partialView.clear();
+            List<Node> rps = new LinkedList<>();
+            while (rps.size() != c) {
+                int rn = (int) Math.floor(Math.random() * Network.size());
+                Node randomNode = Network.get(rn);
+                if (!rps.contains(randomNode) && !randomNode.equals(this.node)) {
+                    rps.add(randomNode);
+                    this.partialView.addNeighbor(randomNode);
+                }
+            }
+            // son
+            constructFullmesh(rps);
+            // -------- QUERY EXECUTION MODEL -------
+            if (start && profile.has_query && !profile.query.terminated) {
+                // 1 - send tpqs to neighbours and receive responses
+                List<Node> rps_neigh = rps;
+                for (Node node_rps : rps_neigh) {
+                    this.exchangeTriplePatterns((Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid));
+                }
+                if (Snob.son && this.isUp()) {
+                    fullmesh.forEach(peer -> {
+                        if (!rps_neigh.contains(peer)) {
+                            this.exchangeTriplePatterns((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
+                        }
+                    });
+                }
+                profile.execute();
+                // test if the query is terminated or not
+                if (this.profile.query.globalseen == Network.size()) {
+                    this.profile.query.stop();
+                }
+            }
+        }
+    }
+
+    public void constructFullmesh(List<Node> rps) {
+        rps.forEach(peer -> {
+            if (!fullmesh.contains(peer)) {
+                Snob remote = ((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
+                if (remote.profile.has_query && this.profile.has_query && this.profile.query.query.equals(remote.profile.query.query)) {
+                    // System.err.println("Size before: " + remote.fullmesh.size() + "_" + fullmesh.size());
+                    for (Node node : fullmesh) {
+                        for (Node fullmesh1 : remote.fullmesh) {
+                            ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(fullmesh1);
+                            ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(node);
+                        }
+                    }
+                    // for all neighbours, connect neighbours to the remote one
+                    for (Node node : fullmesh) {
+                        ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(remote.node);
+                        remote.fullmesh.add(node);
+                    }
+                    // for all neighbours of the remote peer, connect them to us
+                    for (Node fullmesh1 : remote.fullmesh) {
+                        ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(this.node);
+                        this.fullmesh.add(fullmesh1);
+                    }
+                    remote.fullmesh.add(this.node);
+                    this.fullmesh.add(remote.node);
+                    this.sonPartialView.addNeighbor(this.node);
+                    // System.err.println("Size after: " + remote.fullmesh.size() + "_" + fullmesh.size());
+                    if (remote.fullmesh.size() != fullmesh.size()) {
+                        exit(1);
+                    }
+                }
+            }
+        });
+    }
+
+    public void periodicCyclonCall() {
         messages = 0;
         tripleResponses = 0;
         // do the periodic shuffling of the rps
@@ -147,43 +222,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
 
         // do the periodic shuffling for the Semantic Overlay if enabled
-        if (start &&  Snob.son && this.isUp()) {
+        if (start && Snob.son && this.isUp()) {
             // list the rps, check for Snob that are not in our fullmesh son, add it
             List<Node> rps = this.getPeers(Integer.MAX_VALUE);
-            rps.forEach(peer -> {
-                if(!fullmesh.contains(peer)){
-                    Snob remote = ((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
-                    if(remote.profile.has_query && this.profile.has_query && this.profile.query.query.equals(remote.profile.query.query)) {
-                        // System.err.println("Size before: " + remote.fullmesh.size() + "_" + fullmesh.size());
-                        int globalsize = remote.fullmesh.size() + fullmesh.size();
-                        if(globalsize == 0) {
-                            globalsize = 2;
-                        }
-                        for (Node node : fullmesh) {
-                            for (Node fullmesh1 : remote.fullmesh) {
-                                ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(fullmesh1);
-                                ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(node);
-                            }
-                        }
-                        // for all neighbours, connect neighbours to the remote one
-                        for (Node node : fullmesh) {
-                            ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(remote.node);
-                            remote.fullmesh.add(node);
-                        }
-                        // for all neighbours of the remote peer, connect them to us
-                        for (Node fullmesh1 : remote.fullmesh) {
-                            ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(this.node);
-                            this.fullmesh.add(fullmesh1);
-                        }
-                        remote.fullmesh.add(this.node);
-                        this.fullmesh.add(remote.node);
-                        // System.err.println("Size after: " + remote.fullmesh.size() + "_" + fullmesh.size());
-                        if(remote.fullmesh.size() != fullmesh.size()) {
-                            exit(1);
-                        }
-                    }
-                }
-            });
+            constructFullmesh(rps);
 //            this.sonPartialView.incrementAge();
 //            Node qSon = this.sonPartialView.getOldest();
 //            Snob qSonSnob = (Snob) qSon.getProtocol(ARandomPeerSamplingProtocol.pid);
@@ -200,7 +242,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 //                this.sonPartialView.removeNode(qSon);
 //            }
         }
-
         // -------- QUERY EXECUTION MODEL -------
         if (start && profile.has_query && !profile.query.terminated) {
             // 1 - send tpqs to neighbours and receive responses
@@ -210,16 +251,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             }
             if (Snob.son && this.isUp()) {
                 fullmesh.forEach(peer -> {
-                    if(!rps_neigh.contains(peer)) {
+                    if (!rps_neigh.contains(peer)) {
                         this.exchangeTriplePatterns((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
                     }
                 });
-//                List<Node> son_neigh = this.getSonPeers(Integer.MAX_VALUE);
-//                for (Node node_son : son_neigh) {
-//                    if(!rps_neigh.contains(node_son)) {
-//                        this.exchangeTriplePatterns((Snob) node_son.getProtocol(ARandomPeerSamplingProtocol.pid));
-//                    }
-//                }
             }
             profile.execute();
             // test if the query is terminated or not
@@ -240,7 +275,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         // System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
         Map<Triple, Iterator<Triple>> result = new HashMap<>();
         this.profile.query.patterns.forEach(pattern -> {
-            if (this.traffic) {
+            if (traffic) {
                 List<Triple> l = this.profile.query.strata.get(pattern).exchange(pattern, remote);
                 result.put(pattern, l.iterator());
             } else {
@@ -252,6 +287,13 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             }
         });
         int insertedtriples = this.profile.insertTriples(result, traffic);
+        if (insertedtriples > 0 && Snob.son && fullmesh.size() > 0) {
+            // share knowledge into the full mesh network
+            fullmesh.forEach(node -> {
+                this.messages++;
+                ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).profile.insertTriples(result, traffic);
+            });
+        }
         tripleResponses += insertedtriples;
         this.messages++;
         // System.err.printf(" *end* (%d triples)%n", insertedtriples);

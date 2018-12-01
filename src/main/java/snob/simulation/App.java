@@ -18,14 +18,14 @@ public class App {
             int points = 100;
             int[] replicate = new int[points + 1];
             replicate[0] = 0;
-            for(int i = 1; i<=points; ++i) {
+            for (int i = 1; i <= points; ++i) {
                 replicate[i] = (int) Math.floor(peers / (i));
             }
 
             int delta_rps = 1;
             int delta_son = 1;
-            int rps_size = 5;
-            int son_size = 4;
+            int rps_size = 10;
+            int son_size = 5; // not effect if the fullmesh is active.
             int qlimit = -1; // unlimited
             int dlimit = -1; // unlimited
             boolean[] son_activated = {false};
@@ -42,7 +42,7 @@ public class App {
                     for (boolean traffic : trafficMin) {
                         // create a file
                         // first copy the template
-                        System.out.println("Copying template to config...");
+                        System.err.println("Copying template to config...");
                         String configName = "p" + peers
                                 + "-son" + b
                                 + "-rep" + i
@@ -50,13 +50,13 @@ public class App {
                                 + "-config.conf";
                         String pathTemplate = System.getProperty("user.dir") + "/configs/template.conf";
                         String pathConfig = System.getProperty("user.dir") + "/configs/generated/" + configName;
-                        System.out.println("Template location: " + pathTemplate);
-                        System.out.println("Config location: " + pathConfig);
+                        System.err.println("Template location: " + pathTemplate);
+                        System.err.println("Config location: " + pathConfig);
                         File in = new File(pathTemplate);
                         File out = new File(pathConfig);
                         out.createNewFile();
                         copyFileUsingStream(in, out);
-                        System.out.println("Replacing config vars to their values...");
+                        System.err.println("Replacing config vars to their values...");
                         replace(pathConfig, "\\$son_activated\\$", String.valueOf(b));
                         replace(pathConfig, "\\$traffic\\$", String.valueOf(traffic));
                         replace(pathConfig, "\\$size\\$", String.valueOf(peers));
@@ -69,7 +69,7 @@ public class App {
                         replace(pathConfig, "\\$qlimit\\$", String.valueOf(qlimit));
                         replace(pathConfig, "\\$dlimit\\$", String.valueOf(dlimit));
                         replace(pathConfig, "\\\\$", String.valueOf(dlimit));
-                        System.out.printf("Executing: peers=%d cycles=%d rps_size=%d son_size=%d rps_delta=%d son_delta=%d replica=%d traffic=%b %n",
+                        System.err.printf("Executing: peers=%d cycles=%d rps_size=%d son_size=%d rps_delta=%d son_delta=%d replica=%d traffic=%b %n",
                                 peers, cycles, rps_size, son_size,
                                 delta_rps, delta_rps, i, traffic);
                     }
@@ -116,15 +116,9 @@ public class App {
 
     private static void executeConfig(String config, String output) {
         try {
-            // Store console print stream.
-            PrintStream ps_console = System.out;
-            System.setOut(outputFile(output));
             String[] arguments = {config};
-            // load the class
             Simulator sim = new Simulator();
-            sim.main(arguments);
-            // set to console print
-            System.setOut(ps_console);
+            Simulator.main(arguments);
         } catch (Exception e) {
             e.printStackTrace();
         }

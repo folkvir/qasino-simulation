@@ -30,7 +30,7 @@ public class DuplicatesCountProgram implements ObserverProgram {
             totalSize += v.MaxSize;
 
         }
-        System.out.println(observer.size() + " " + (total / this.maxPerc.size()) +
+        System.err.println(observer.size() + " " + (total / this.maxPerc.size()) +
                 " " + totalMax / this.maxPerc.size() +
                 "/" + totalSize / this.maxPerc.size() + " " +
                 " ~" + this.maxPerc.get(0).MeanPartialViewSize +

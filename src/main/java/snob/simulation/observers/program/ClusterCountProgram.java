@@ -31,7 +31,7 @@ public class ClusterCountProgram implements ObserverProgram {
                 countDown = COUNTDOWN;
                 prevSize = observer.size();
                 DictGraph.ClusterResult r = observer.countClusters();
-                System.out.println(r.count + " " + r.deadLinks + " " + r.maxClusterSize);
+                System.err.println(r.count + " " + r.deadLinks + " " + r.maxClusterSize);
             }
             countDown--;
         }

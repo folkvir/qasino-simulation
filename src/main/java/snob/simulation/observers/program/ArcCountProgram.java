@@ -23,7 +23,7 @@ public class ArcCountProgram implements ObserverProgram {
             System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()), imp));
             System.out.println("#=================END===================");
         }*/
-        System.out.println(observer.countArcs() + " " + observer.size());
+        System.err.println(observer.countArcs() + " " + observer.size());
     }
 
     /**

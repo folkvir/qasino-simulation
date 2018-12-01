@@ -54,24 +54,24 @@ public class TestClassicJoin {
         sources.get(triples.get(1)).append(b4);
         sources.get(triples.get(1)).append(b5);
 
-        System.out.println("1st execution");
+        System.err.println("1st execution");
 
         try {
             while (iterator.hasNext()) {
-                System.out.println(iterator.next());
+                System.err.println(iterator.next());
             }
         } catch (NoSuchElementException e) {
 
         }
 
-        System.out.println("-------");
-        System.out.println("Re-executing");
+        System.err.println("-------");
+        System.err.println("Re-executing");
 
         sources.get(triples.get(0)).append(b6);
 
         try {
             while (iterator.hasNext()) {
-                System.out.println(iterator.next());
+                System.err.println(iterator.next());
             }
         } catch (NoSuchElementException e) {
 

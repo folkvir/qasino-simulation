@@ -9,9 +9,8 @@ import snob.simulation.observers.ObserverProgram;
 public class DebugProgram implements ObserverProgram {
 
     public void tick(long currentTick, DictGraph observer) {
-        System.out.println("qq");
         if (currentTick > 0) {
-            System.out.println(observer.countArcs());
+            System.err.println(observer.countArcs());
         }
     }
 

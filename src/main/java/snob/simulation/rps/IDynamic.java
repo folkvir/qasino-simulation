@@ -10,13 +10,13 @@ public interface IDynamic {
      *
      * @return true if the peer is alive, false otherwise
      */
-    public boolean isUp();
+    boolean isUp();
 
     /**
      * Checks if the peer crashed/left
      *
      * @return true if the peer crashed/left, false otherwise
      */
-    public boolean isDown();
+    boolean isDown();
 
 }

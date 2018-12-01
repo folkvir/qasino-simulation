@@ -37,11 +37,11 @@ public class TestCartesianProduct {
         sources.get(triples.get(1)).append(b3);
         sources.get(triples.get(1)).append(b4);
 
-        System.out.println("1st execution");
+        System.err.println("1st execution");
 
         try {
             while (iterator.hasNext()) {
-                System.out.println(iterator.next());
+                System.err.println(iterator.next());
             }
         } catch (NoSuchElementException e) {
 

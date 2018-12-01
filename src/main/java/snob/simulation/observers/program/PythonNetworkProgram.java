@@ -23,9 +23,9 @@ public class PythonNetworkProgram implements ObserverProgram {
         if (CommonState.getTime() > 100 && CommonState.getTime() % step == 0) {
             boolean imp = this.isFirst;
             this.isFirst = false;
-            System.out.println("#=================START=================== step:" + CommonState.getTime());
-            System.out.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()), imp));
-            System.out.println("#=================END===================");
+            System.err.println("#=================START=================== step:" + CommonState.getTime());
+            System.err.println(observer.networkxDigraph(DictGraph.NetworkX.Connectedness, "g" + (CommonState.getTime()), imp));
+            System.err.println("#=================END===================");
         }
 
     }

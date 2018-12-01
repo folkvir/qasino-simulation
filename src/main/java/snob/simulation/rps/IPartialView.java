@@ -15,7 +15,7 @@ public interface IPartialView {
      *
      * @return the reference to the list of neighbors
      */
-    public List<Node> getPeers();
+    List<Node> getPeers();
 
     /**
      * Get a list of k neighbors. If the partial view is not big enough, it
@@ -24,7 +24,7 @@ public interface IPartialView {
      * @param k the number of requested neighbors
      * @return a new instance of the list of nodes
      */
-    public List<Node> getPeers(int k);
+    List<Node> getPeers(int k);
 
     /**
      * Remove an occurrence of the peer from the neighborhood, if multiple
@@ -33,7 +33,7 @@ public interface IPartialView {
      * @param peer the peer to remove
      * @return true if the peer has been removed, false otherwise
      */
-    public boolean removeNode(Node peer);
+    boolean removeNode(Node peer);
 
     /**
      * Add the neighbor to the partial view
@@ -41,7 +41,7 @@ public interface IPartialView {
      * @param peer the peer to add
      * @return true if the peer has been added, false otherwise
      */
-    public boolean addNeighbor(Node peer);
+    boolean addNeighbor(Node peer);
 
     /**
      * Check if the partial view contains a peer
@@ -49,19 +49,19 @@ public interface IPartialView {
      * @param peer the peer to search
      * @return true if the partial view contains the peer, false otherwise
      */
-    public boolean contains(Node peer);
+    boolean contains(Node peer);
 
     /**
      * Getter of the size of the partial view
      *
      * @return the size of the partial view
      */
-    public int size();
+    int size();
 
     /**
      * Remove all the elements contained in the partial view
      */
-    public void clear();
+    void clear();
 
     /**
      * Get the index in the partial view of the neighbor in argument. If
@@ -71,6 +71,6 @@ public interface IPartialView {
      * @param neighbor the neighbor to search
      * @return the first index of the neighbor, -1 if not found
      */
-    public int getIndex(Node neighbor);
+    int getIndex(Node neighbor);
 
 }

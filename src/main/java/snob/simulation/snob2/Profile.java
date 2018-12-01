@@ -4,7 +4,10 @@ package snob.simulation.snob2;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class Profile {
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
@@ -37,7 +40,7 @@ public class Profile {
         List<Triple> ibf = new ArrayList<>();
         while (it.hasNext()) {
             Triple t = it.next();
-            if(!query.data.get(pattern).contains(t)) {
+            if (!query.data.get(pattern).contains(t)) {
                 query.insertTriple(pattern, t);
             }
             if (!datastore.contains(t)) {

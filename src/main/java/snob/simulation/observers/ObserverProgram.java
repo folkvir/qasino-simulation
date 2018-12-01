@@ -5,8 +5,8 @@ package snob.simulation.observers;
  */
 public interface ObserverProgram {
 
-    public void tick(long currentTick, DictGraph observer);
+    void tick(long currentTick, DictGraph observer);
 
-    public void onLastTick(DictGraph observer);
+    void onLastTick(DictGraph observer);
 
 }

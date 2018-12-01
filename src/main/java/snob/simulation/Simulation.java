@@ -1,6 +1,9 @@
 package snob.simulation;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.lang.System.exit;
 
 public class Simulation {
     public static void main(String[] args) {
@@ -16,19 +19,20 @@ public class Simulation {
             kson = Integer.valueOf(args[3]);
         } else {
             size = 1000;
-            sample = 100;
-            max = 1; // (int) Math.floor(Math.log(size)) + 1; // log(size)
+            sample = 1;
+            max = 10; // (int) Math.floor(Math.log(size)) + 1; // log(size)
             kson = 0; // only rps;
         }
-        int nqs = 100; // number of q points
-        int[] qs = new int[nqs];
-        // set the different q points for a given size of the network
-        for (int i = 0; i < nqs; ++i) {
-            qs[i] = (int) Math.floor(size / (i+1));
-        }
-//        int nqs = 1;
-//        int[] qs = new int[1];
-//        qs[0] = 25;
+//        int nqs = 100; // number of q points
+//        int[] qs = new int[nqs];
+//        // set the different q points for a given size of the network
+//        for (int i = 0; i < nqs; ++i) {
+//            qs[i] = (int) Math.floor(size / (i+1));
+//        }
+        int start = 1;
+        int nqs = 1;
+        int[] qs = new int[1];
+        qs[0] = 10;
 
         int krps = max - kson; //2* (int) Math.floor(Math.log(size));
 
@@ -43,49 +47,9 @@ public class Simulation {
         int r = 0;
         for (int q : qs) {
             r++;
-            Run run = new Run(sample, size, krps, kson, q, r);
+            Run run = new Run(sample, size, krps, kson, q, r, start);
             Thread t = new Thread(run);
             t.start();
-        }
-    }
-
-    public static class Run implements Runnable {
-        private final int sample;
-        private final int size;
-        private final int krps;
-        private final int kson;
-        private final int q;
-        private final int r;
-
-        Run(int sample, int size, int krps, int kson, int q, int r) {
-            this.sample = sample;
-            this.size = size;
-            this.krps = krps;
-            this.kson = kson;
-            this.q = q;
-            this.r = r;
-        }
-        @Override
-        public void run() {
-            double meanQ = 0;
-            double meanQall = 0;
-            for (int i = 0; i < sample; i++) {
-                Sim s = new Sim(size, krps, kson, -1, q, true);
-                s.start();
-                meanQ += s.getMeanQ();
-                meanQall += s.getMeanQAll();
-                // System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
-            }
-            double H = harmonic(size);
-
-            double approximationHarmonic = ((size * H) / (q * (krps + kson)));
-            // double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
-            meanQ = meanQ / sample;
-            meanQall = meanQall / sample;
-            double ratioQ = meanQ / approximationHarmonic;
-            double ratioQAll = meanQall / approximationHarmonic;
-            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, meanQall, approximationHarmonic, ratioQ, ratioQAll);
-            System.out.printf(res);
         }
     }
 
@@ -97,12 +61,55 @@ public class Simulation {
         return res;
     }
 
+    public static class Run implements Runnable {
+        private final int sample;
+        private final int size;
+        private final int krps;
+        private final int kson;
+        private final int q;
+        private final int r;
+        private final int start;
+
+        Run(int sample, int size, int krps, int kson, int q, int r, int start) {
+            this.start = start;
+            this.sample = sample;
+            this.size = size;
+            this.krps = krps;
+            this.kson = kson;
+            this.q = q;
+            this.r = r;
+        }
+
+        @Override
+        public void run() {
+            double meanQ = 0;
+            for (int i = 0; i < sample; i++) {
+                Sim s = new Sim(size, krps, kson, -1, q, true, start);
+                s.start();
+                meanQ += s.finish;
+                // System.err.printf("s=%d q=%d, mean=%f %n", i, q, meanQ / (i + 1));
+            }
+            double H = harmonic(size);
+
+            double approximationHarmonic = ((size * H) / (q * krps));
+            // double approximationDev = ((size * Math.log((size)) + 0.5772156649 * size + 1 / 2) / (q * (krps + kson))) + Math.log(size);
+            meanQ = meanQ / sample;
+            double ratioQ = meanQ / approximationHarmonic;
+            double maxApproximation = approximationHarmonic * 2.5;
+            double other = approximationHarmonic / ((2.0 * krps) / (size - 1.0));
+            String res = String.format(Locale.US, "%d, %d, %d, %d, %d, %.2f, %.2f, %.2f, %.2f, %.2f %n", r, size, krps, kson, q, meanQ, approximationHarmonic, ratioQ, maxApproximation, other);
+            System.out.printf(res);
+        }
+    }
 
     private static class Sim {
         // store the neighborhood of each peer in the rps
         public Map<Integer, LinkedHashSet<Integer>> rps;
+        public Map<Integer, Map<Integer, Integer>> rpsclock = new LinkedHashMap<>();
         // store the neighborhood of each peer in the son
         public Map<Integer, LinkedHashSet<Integer>> son;
+        // finish is equal to round when a q has discover all peers in the network.
+        public int finish = -1;
         // size of the network
         private int size;
         // size of the rps view
@@ -115,22 +122,21 @@ public class Simulation {
         private int currentRound = 0;
         // number of replicated query
         private int q = 1;
-        // number of replicated query, if q == -1, pq = size
-        private int pq = 0;
         // pull or push method on the overlay
         private boolean pull = true;
         // all q peers seen for each peer.
         private Map<Integer, LinkedHashSet<Integer>> seen;
-        // all q peers seen for each peer.
-        private Map<Integer, LinkedHashSet<Integer>> seenall;
-        // store the round where peer q saw every q in the network
-        private Map<Integer, Integer> seenfinished;
-        // store the round where peer q saw every peer in the network
-        private Map<Integer, Integer> seenallfinished;
         // store each q for each peer, q in {q; 1}, 2 values
         private int[] peers;
+        // start after 'start' rounds
+        private int start;
+        private boolean started = false;
+        private List<Integer> qs = new LinkedList<>();
+        // number of pick per round
+        private int pick = 1;
 
-        Sim(int n, int krps, int kson, int rounds, int q, boolean pull) {
+        Sim(int n, int krps, int kson, int rounds, int q, boolean pull, int start) {
+            this.start = start;
             this.pull = pull;
             this.size = n;
             this.q = q;
@@ -138,45 +144,84 @@ public class Simulation {
             this.kson = kson;
             this.rounds = rounds;
             this.peers = new int[n];
+            this.start = start;
             this.rps = new LinkedHashMap<>();
             this.son = new LinkedHashMap<>();
             this.seen = new LinkedHashMap<>();
-            this.seenall = new LinkedHashMap<>();
-
-            this.seenfinished = new LinkedHashMap<>();
-            this.seenallfinished = new LinkedHashMap<>();
 
             if (rounds == -1) {
                 this.rounds = Integer.MAX_VALUE;
             }
 
-            for (int i = 0; i < size; i++) {
+            LinkedHashSet<Integer> connected = new LinkedHashSet<>();
+            rps.put(0, new LinkedHashSet<>());
+            rpsclock.put(0, new LinkedHashMap<>());
+            son.put(0, new LinkedHashSet<>());
+            seen.put(0, new LinkedHashSet<>());
+            seen.get(0).add(0);
+
+            rps.put(1, new LinkedHashSet<>());
+            rpsclock.put(1, new LinkedHashMap<>());
+            son.put(1, new LinkedHashSet<>());
+            seen.put(1, new LinkedHashSet<>());
+            seen.get(1).add(1);
+
+            rps.get(0).add(1);
+            initclocks(0);
+            rpsclock.get(0).put(1, 1);
+            rps.get(1).add(0);
+            initclocks(1);
+            rpsclock.get(1).put(0, 1);
+            connected.add(0);
+            connected.add(1);
+
+            for (int i = 2; i < size; i++) {
                 rps.put(i, new LinkedHashSet<>());
-                while (rps.get(i).size() != 1) {
-                    int rn = (int) Math.floor(Math.random() * size);
-                    if (rn != i && !rps.get(i).contains(rn)) rps.get(i).add(rn);
-                }
+                rpsclock.put(i, new LinkedHashMap<>());
                 son.put(i, new LinkedHashSet<>());
                 seen.put(i, new LinkedHashSet<>());
                 seen.get(i).add(i);
-                seenall.put(i, new LinkedHashSet<>());
-                seenall.get(i).add(i);
-            }
-
-            int choosen = 0;
-            if (q == 1) {
-                pq = size;
-                for (int i = 0; i < size; i++) {
-                    peers[i] = 1;
-                }
-            } else {
-                pq = q;
-                for (int i = 0; i < size; i++) {
-                    if (i < q) {
-                        peers[i] = q;
-                    } else {
-                        peers[i] = 1;
+                initclocks(i);
+                boolean stop = false;
+                while (!stop && rps.get(i).size() != krps) {
+                    int rn = (int) Math.floor(Math.random() * connected.size());
+                    if (!rps.get(i).contains(rn)) {
+                        rps.get(i).add(rn);
+                        rpsclock.get(i).put(i, 1);
                     }
+                    if (rps.get(i).size() >= connected.size()) stop = true;
+                }
+                connected.add(i);
+                System.err.println("Local Clustering coefficient: " + localClusteringCoefficient(i));
+            }
+            // fill 0 and 1
+            while (rps.get(0).size() < krps) {
+                int rn = (int) Math.floor(Math.random() * size);
+                if (rn != 0 && rn != 1 && !rps.get(0).contains(rn)) {
+                    rps.get(0).add(rn);
+                    rpsclock.get(0).put(rn, 1);
+                }
+                if (rn != 0 && rn != 1 && !rps.get(1).contains(rn)) {
+                    rps.get(1).add(rn);
+                    rpsclock.get(1).put(rn, 1);
+                }
+            }
+            // pick = (int) Math.floor(size / idealClusteringCoefficient());
+            System.err.println("Global Clustering coefficient: " + globalClusteringCoefficient() + " (ideal: " + idealClusteringCoefficient() + ")");
+            System.err.printf("** [*] Warming up the network (%d rounds)...%n", start);
+            System.err.println(rps);
+            shuffle();
+            System.err.println(pick);
+            // exit(1);
+        }
+
+        public void initclocks(int peer) {
+            for (int i = 0; i < size; i++) {
+                if (!rpsclock.containsKey(peer)) {
+                    rpsclock.put(peer, new LinkedHashMap<>());
+                }
+                if (!rpsclock.get(peer).containsKey(i)) {
+                    rpsclock.get(peer).put(i, 0);
                 }
             }
         }
@@ -189,133 +234,250 @@ public class Simulation {
             // System.out.printf("Starting with N=%d q=%d |rps|=%d |son|=%d rounds=%d %n", size, q, krps, kson, rounds);
             boolean stop = false;
             int i = 0;
+            int step = 10;
             while (!stop && i < rounds) {
                 currentRound = i;
-                shuffle();
-                computeSeen();
-                if (seenallfinished.size() == pq && seenfinished.size() == pq) { // finished when all q have seen all peers in the network
-                    stop = true;
-                    // System.err.printf("** qq=%.2f qn=%.2f %n", getMeanQ(), getMeanQAll());
-                }
                 ++i;
+                shuffle();
+                if (currentRound == start) {
+                    System.err.printf("** [*] Put %d queries randomly in the network... %n", q);
+                    while (qs.size() != q) {
+                        int rn = (int) Math.floor(Math.random() * size);
+                        if (!qs.contains(rn)) {
+                            qs.add(rn);
+                            peers[rn] = q;
+                        }
+                    }
+                    System.err.println("** [*] Starting the measure...");
+                    started = true;
+                }
+                if (started) {
+                    if (i % pick == 0) {
+                        computeSeen();
+                        if (finish != -1) { // finished when all q have seen all peers in the network
+                            System.err.printf("** [*] Finished (%d) on a total of %d %n", finish, currentRound);
+                            stop = true;
+                        }
+                    }
+                }
             }
         }
 
-        public double getMeanQ() {
-            int sum = 0;
-            for (int i = 0; i < size; i++) {
-                if (peers[i] == q) {
-                    sum += seenfinished.get(i);
-                }
-            }
-            return sum / pq;
+        private double idealClusteringCoefficient() {
+            return 2.0 * krps / (size - 1.0);
         }
-        public double getMeanQAll() {
-            int sum = 0;
-            for (int i = 0; i < size; i++) {
-                if (peers[i] == q) {
-                    sum += seenallfinished.get(i);
+
+        private double globalClusteringCoefficient() {
+            double mean = 0;
+            for (Map.Entry<Integer, LinkedHashSet<Integer>> entry : rps.entrySet()) {
+                mean += localClusteringCoefficient(entry.getKey());
+            }
+            return mean / rps.size();
+        }
+
+        private double localClusteringCoefficient(int id) {
+            List<Integer> neighbors = this.rps.get(id).parallelStream().collect(Collectors.toList());
+            if (neighbors.size() == 0) return 0;
+            double possible = neighbors.size() * (neighbors.size() - 1);
+            if (possible == 0) return 0;
+            double actual = 0;
+            for (int a : neighbors) {
+                for (int b : neighbors) {
+                    if (a != b) {
+                        if (hasDirectedConnection(a, b)) {
+                            actual += 1;
+                        }
+                    }
                 }
             }
-            return sum / pq;
+            return actual / possible;
+        }
+
+        private boolean hasDirectedConnection(int a, int b) {
+            return this.rps.get(a).parallelStream().collect(Collectors.toList()).contains(b);
         }
 
         private void computeSeen() {
-            // System.err.printf("Merging the set of %d with neighbours. %n", k);
-            for (int i = 0; i < size; i++) {
-                if (!seenfinished.containsKey(i) || !seenallfinished.containsKey(i)) {
-                    if (pull) {
-                        Object[] arr = rps.get(i).toArray();
-                        Object[] arr_son = son.get(i).toArray();
-                        int q = (int) peers[i];
-                        for (int i1 = 0; i1 < arr.length; i1++) {
-                            int id = (int) arr[i1];
-                            update(i, id, q);
+            for (Integer qpeer : qs) {
+                if (pull) {
+//                    int k = (int) Math.floor(Math.random() * rps.get(qpeer).size());
+//                    List<Integer> qpeerlist = rps.get(qpeer).parallelStream().collect(Collectors.toList());
+//                    seen.get(qpeer).add(qpeerlist.get(k));
+                    for (Integer neigh : rps.get(qpeer)) {
+                        if (qs.contains(neigh)) {
+                            // merge view
+                            seen.get(qpeer).addAll(seen.get(neigh));
                         }
-                        if (kson > 0) {
-                            for (int i1 = 0; i1 < arr_son.length; i1++) {
-                                int id = (int) arr_son[i1];
-                                update(i, id, q);
-                            }
-                        }
-                    } else {
-                        // put here the behavior for push
+                        // otherwise always add only neigh
+                        seen.get(qpeer).add(neigh);
                     }
-                    if (!seenfinished.containsKey(i) && peers[i] == pq && seen.get(i).size() == pq) {
-//                        System.out.printf("[query-%d] meet all q q=%d |rps|=%d |son|=%d round=%d %n",
-//                                i, peers[i],
-//                                krps, kson,
-//                                currentRound);
-                        seenfinished.put(i, currentRound);
-                    }
-                    if (!seenallfinished.containsKey(i) && peers[i] == pq && seenall.get(i).size() == size) {
-//                        System.out.printf("[query-%d] meet all peers. q=%d |rps|=%d |son|=%d round=%d %n",
-//                                i, peers[i],
-//                                krps, kson,
-//                                currentRound);
-                        seenallfinished.put(i, currentRound);
-                    }
+                    System.err.println(seen.get(qpeer).size());
+                }
+                if (finish == -1 && seen.get(qpeer).size() >= size) {
+                    System.err.printf("[query-%d] meet all peers q=%d |rps|=%d |son|=%d round=%d %n",
+                            qpeer, peers[qpeer],
+                            krps, kson,
+                            (currentRound - start) / pick);
+                    finish = (currentRound - start) / pick;
                 }
             }
-        }
-
-        private void update(int toUpdate, int newPeer, int q) {
-            if (q == peers[newPeer] && q != 1) {
-                // System.err.println(pq + "_" + currentRound + "_" + seenfinished.containsKey(toUpdate) + "__" + seenallfinished.containsKey(toUpdate));
-                for (Integer peer : seen.get(newPeer)) {
-                    if(peers[peer] == q) seen.get(toUpdate).add(peer);
-                }
-                seenall.get(toUpdate).addAll(seenall.get(newPeer));
-                seen.get(toUpdate).add(newPeer);
-            }
-            seenall.get(toUpdate).add(newPeer);
         }
 
         private void shuffle() {
-            // System.err.println("shuffle" + krps + "_" + kson + "_");
-            for (int i = 0; i < size; i++) {
-                // LinkedHashSet<Integer> newRpsPeers
-                rps.get(i).clear();
-                Random rnd = new Random();
-                // fill the rps view of i
-                while (rps.get(i).size() != krps) {
-                    int rn = rnd.nextInt(size);
-                    if (!rps.get(i).contains(rn) && rn != i) {
-                        rps.get(i).add(rn);
-                    }
-                }
-                if (kson > 0) {
-                    // first check if we have different q in our son's view, remove them
-                    List<Integer> toRemove = new ArrayList<>();
-                    for (Integer peer : son.get(i)) {
-                        if (peers[i] != peers[peer]) toRemove.add(peer);
-                    }
-                    if (toRemove.size() > 0) {
-                        for (Integer peer : toRemove) {
-                            son.get(i).remove(peer);
-                        }
-                    }
-                    //  When the rps meet someone with q == peers[i], keep him in the view.
-                    if (son.get(i).size() < kson) {
-                        // first fill it with common entries matching q == peers[i]
-                        for (Integer peer : rps.get(i)) {
-                            if (!son.get(i).contains(peer) && peers[i] == peers[peer] && son.get(i).size() != kson) {
-                                // System.err.println("adding a compon entry");
-                                son.get(i).add(peer);
-                            }
-                        }
-                        if (son.get(i).size() < kson) {
-                            while (son.get(i).size() != kson) {
-                                int rn = rnd.nextInt(size);
-                                if (!son.get(i).contains(rn) && rn != i) {
-                                    son.get(i).add(rn);
-                                }
-                            }
-                        }
-                    }
+            System.err.printf("[%d]Shuffling...%n", currentRound);
+            rps.forEach((id, view) -> {
+                exchangeRps(id);
+            });
+            // System.err.println("Global Clustering coefficient: " + globalClusteringCoefficient() + " (ideal: " + idealClusteringCoefficient() + ")");
+        }
+
+        public void increment(int peer) {
+            rpsclock.get(peer).forEach((neighbor, clock) -> {
+                rpsclock.get(peer).put(neighbor, clock++);
+            });
+        }
+
+        public int getOldest(int peer) throws Exception {
+            if (rpsclock.get(peer).size() == 0) throw new Exception("rpsclock of a peer cannot be zero at this point");
+            int oldest = -1;
+            int clock = -1;
+            for (Map.Entry entry : rpsclock.get(peer).entrySet()) {
+                // System.err.println("["+ peer +"]entry: " + entry.getKey() + "_" + entry.getValue());
+                if ((int) entry.getValue() >= clock) {
+                    oldest = (int) entry.getKey();
+                    clock = (int) entry.getValue();
                 }
             }
-            // System.err.printf("*end%n");
+            return oldest;
+        }
+
+        private void exchangeRps(int i) {
+            if (rps.get(i).size() > 0) {
+                int ex = (int) Math.floor(krps / 2);
+                // increment the pv
+                // increment(i);
+                // get sample of size ex
+                List<Integer> sample = rps.get(i).parallelStream().collect(Collectors.toList());
+                while (sample.contains(i)) {
+                    sample.remove(Integer.valueOf(i));
+                }
+                int neighbor = 0;
+                try {
+                    neighbor = sample.get((int) Math.floor(Math.random() * sample.size())); //getOldest(i);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    exit(1);
+                }
+                // System.err.println("oldest:" + neighbor);
+                // sample.add(i);
+                // randomly remove extra entry
+                while (sample.contains(neighbor)) {
+                    // System.err.println("rep" + sample.size());
+                    sample.remove(Integer.valueOf(neighbor));
+                    // sample.remove(neighbor)
+                    sample.add(i);
+                }
+                while (sample.size() > ex && sample.size() != 0) {
+                    // System.err.println("rem");
+                    int rn = (int) Math.floor(Math.random() * sample.size());
+                    sample.remove(rn);
+                }
+
+                // before merging we quickly select a random subset of no more ex peers from neighbor
+                List<Integer> sampleNeighbour = rps.get(neighbor).parallelStream().collect(Collectors.toList());
+                while (sampleNeighbour.contains(i)) {
+                    // System.err.println("rep2");
+                    sampleNeighbour.remove(Integer.valueOf(i));
+                    sampleNeighbour.add(neighbor);
+                }
+                while (sampleNeighbour.size() > ex && sampleNeighbour.size() != 0) {
+                    // System.err.println("rem2");
+                    int rn = (int) Math.floor(Math.random() * sampleNeighbour.size());
+                    sampleNeighbour.remove(rn);
+                }
+
+
+                // merge our sample with neighbor's view
+                for (Integer peer : sample) {
+                    if (!rps.get(neighbor).contains(peer)) {
+                        if (rps.get(neighbor).size() >= krps) {
+                            // remove one random entry
+                            List<Integer> sneigh = rps.get(neighbor).parallelStream().collect(Collectors.toList());
+                            int rn = (int) Math.floor(Math.random() * sneigh.size());
+                            if (rps.get(neighbor).remove(sneigh.get(rn))) {
+                                // add the new one
+                                rps.get(neighbor).add(peer);
+                                // rpsclock.get(neighbor).put(peer, rpsclock.get(neighbor).get(peer) + 1);
+                            }
+                        } else if (rps.get(i).size() < krps) {
+                            rps.get(i).add(peer);
+                            // rpsclock.get(i).put(peer, rpsclock.get(i).get(peer) + 1);
+                        } else {
+                            // do nothing
+                        }
+                    }
+                }
+
+                for (Integer peerneigh : sampleNeighbour) {
+                    if (!rps.get(i).contains(peerneigh)) {
+                        if (rps.get(i).size() >= krps) {
+                            // remove one random entry
+                            List<Integer> sneigh = rps.get(neighbor).parallelStream().collect(Collectors.toList());
+                            int rn = (int) Math.floor(Math.random() * sneigh.size());
+                            if (rps.get(i).remove(sneigh.get(rn))) {
+                                // add the new one
+                                rps.get(i).add(peerneigh);
+                                // rpsclock.get(neighbor).put(peerneigh, rpsclock.get(neighbor).get(peerneigh) + 1);
+                            }
+                        } else if (rps.get(i).size() < krps) {
+                            rps.get(i).add(peerneigh);
+                            // rpsclock.get(i).put(peerneigh, rpsclock.get(i).get(peerneigh) + 1);
+                        } else {
+                            // do nothing
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private void exchangeSon(int i) {
+            List<Integer> rpslist = rps.get(i).parallelStream().collect(Collectors.toList());
+            for (Integer rpspeer : rpslist) {
+                if (peers[rpspeer] == peers[i] && peers[i] == this.q) {
+                    // System.err.println(son.get(i).contains(i));
+                    // it is a peer that process the same query than us. keep in the fullmesh son
+                    for (Integer node : son.get(i)) {
+                        for (Integer remote : son.get(rpspeer)) {
+                            son.get(node).add(remote);
+                            son.get(remote).add(node);
+
+                            // remove our self from our view
+                            son.get(node).remove(node);
+                            son.get(remote).remove(remote);
+                        }
+                    }
+                    // for all neighbours, connect neighbours to the remote one
+                    for (Integer node : son.get(i)) {
+                        son.get(node).add(rpspeer);
+                        son.get(rpspeer).add(node);
+                        // remove our self from our view
+                        son.get(node).remove(node);
+                        son.get(rpspeer).remove(rpspeer);
+                    }
+                    // for all neighbours of the remote peer, connect them to us
+                    for (Integer remote : son.get(rpspeer)) {
+                        son.get(remote).add(i);
+                        son.get(i).add(remote);
+                        // remove our self from our view
+                        son.get(i).remove(i);
+                        son.get(remote).remove(remote);
+                    }
+                    son.get(rpspeer).add(i);
+                    son.get(i).add(rpspeer);
+                    // System.err.println("found a same peer" + son.get(i).size() + "_" + son.get(rpspeer).size());
+                }
+            }
         }
     }
 }

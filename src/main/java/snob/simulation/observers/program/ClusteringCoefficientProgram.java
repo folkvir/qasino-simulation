@@ -9,7 +9,7 @@ import snob.simulation.observers.ObserverProgram;
 public class ClusteringCoefficientProgram implements ObserverProgram {
 
     public void tick(long currentTick, DictGraph observer) {
-        System.out.println(observer.meanPartialViewSize() + " " + observer.meanClusterCoefficient());
+        System.err.println(observer.meanPartialViewSize() + " " + observer.meanClusterCoefficient());
     }
 
     public void onLastTick(DictGraph observer) {

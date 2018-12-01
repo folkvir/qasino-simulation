@@ -22,7 +22,7 @@ public class IbflTest {
         String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         HashCode xse = murmur3_128().hashBytes(xs.getBytes());
         HashCode xse2 = murmur3_128().hashBytes(xs.getBytes());
-        System.out.printf("Hash Murmur Length: %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
+        System.err.printf("Hash Murmur Length: %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
 
@@ -32,7 +32,7 @@ public class IbflTest {
         String xs2 = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
         HashCode xse = crc32().hashBytes(xs.getBytes());
         HashCode xse2 = crc32().hashBytes(xs.getBytes());
-        System.out.printf("Checksum Length : %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
+        System.err.printf("Checksum Length : %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
 

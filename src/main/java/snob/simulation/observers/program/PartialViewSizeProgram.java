@@ -9,7 +9,7 @@ import snob.simulation.observers.ObserverProgram;
 public class PartialViewSizeProgram implements ObserverProgram {
 
     public void tick(long currentTick, DictGraph observer) {
-        System.out.println(observer.meanPartialViewSize());
+        System.err.println(observer.meanPartialViewSize());
     }
 
     public void onLastTick(DictGraph observer) {

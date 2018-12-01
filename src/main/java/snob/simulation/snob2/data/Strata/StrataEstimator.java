@@ -1,6 +1,6 @@
 package snob.simulation.snob2.data.Strata;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class StrataEstimator {
@@ -41,11 +41,7 @@ public class StrataEstimator {
 
     public int trailingZeros(int num) {
         int res = 0;
-        try {
-            res = Integer.numberOfTrailingZeros(IBF.genHash(String.valueOf(num).getBytes("UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        res = Integer.numberOfTrailingZeros(IBF.genHash(String.valueOf(num).getBytes(StandardCharsets.UTF_8)));
         return res;
     }
 

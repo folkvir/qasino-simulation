@@ -11,5 +11,5 @@ public interface IMessage {
      *
      * @return an Object which must be carefully cast afterwards
      */
-    public Object getPayload();
+    Object getPayload();
 }

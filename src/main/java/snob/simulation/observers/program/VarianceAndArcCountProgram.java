@@ -22,7 +22,7 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
             lastCountTemp = observer.countArcs();
         }
         // Cyclon cyc = (Cyclon) observer.nodes.get(Network.get(0).getID()).pss;
-        System.out.println(observer.countArcs() + " "
+        System.err.println(observer.countArcs() + " "
                 + observer.variancePartialView() + " "
                 + observer.meanPartialViewSize() + " " + observer.size() + " "
                 + firstVar + " " + lastCount + " " /*+ cyc.getPeers(100000).size()*/);
@@ -30,6 +30,6 @@ public class VarianceAndArcCountProgram implements ObserverProgram {
     }
 
     public void onLastTick(DictGraph observer) {
-        System.out.println("LAST");
+        System.err.println("LAST");
     }
 }

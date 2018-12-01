@@ -133,7 +133,7 @@ public class QuerySnob {
             res = plan.results;
         }
         // System.err.printf("** (has new triples? = %b) (T_N_OF_T_I = %d) (T_N_OF_T_I_B_R = %d) %n ", tripleInserted, numberOfTriplesInserted, numberOfTriplesInsertedByround);
-        if(tripleInserted && res.hasNext()) {
+        if (tripleInserted && res.hasNext()) {
             // System.err.println("** Pipeline has pending results...");
             while (res.hasNext()) {
                 QuerySolution sol = res.next();
@@ -154,10 +154,10 @@ public class QuerySnob {
     }
 
     public void insertTriple(Triple pattern, Triple t) {
-        if(!plan.patterns.contains(pattern)) {
+        if (!plan.patterns.contains(pattern)) {
             throw new Error("Pattern does not exist in the query.");
         } else {
-            if(data.get(pattern).contains(t)) {
+            if (data.get(pattern).contains(t)) {
                 throw new Error("Triple already inserted.");
             } else {
                 numberOfTriplesInserted++;

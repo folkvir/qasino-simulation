@@ -23,10 +23,10 @@ import java.util.stream.Stream;
 import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
+    private final int begin = 0;
     private int replicate;
     private int queries;
     private boolean initialized = false;
-    private final int begin = 10;
     private Map<Integer, Integer> seenfinished = new LinkedHashMap<>();
     private int firstq = -1;
 
@@ -49,9 +49,9 @@ public class SnobObserver implements ObserverProgram {
             initialized = true;
             Snob.start = true;
         } else {
-            System.err.println("Snob(0) rps size: " + ((Snob) observer.nodes.get(Network.get(0).getID()).pss).getPeers(Integer.MAX_VALUE).size());
+            System.err.println("Snob(0) rps size: " + observer.nodes.get(Network.get(0).getID()).pss.getPeers(Integer.MAX_VALUE).size());
             System.err.println("Snob(0) fullmesh size: " + ((Snob) observer.nodes.get(Network.get(0).getID()).pss).fullmesh.size());
-            if(initialized) observe(currentTick, observer);
+            if (initialized) observe(currentTick, observer);
         }
     }
 
@@ -69,16 +69,15 @@ public class SnobObserver implements ObserverProgram {
             double triplebackmean = 0;
             int estimateErrores = 0;
             double peerSeenMean = 0;
-            int peerHigherThanPeers = 0;
             System.err.println("Network size: " + networksize);
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 messages += snob.messages;
                 triplesback += snob.tripleResponses;
-                if(snob.profile.has_query) {
+                if (snob.profile.has_query) {
                     peerSeenMean += snob.profile.query.globalseen;
                     if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
-                        if(firstq == -1) firstq = (int) currentTick - begin;
+                        if (firstq == -1) firstq = (int) currentTick - begin;
                         seenfinished.put(snob.id, (int) currentTick - begin);
                     }
                     Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
@@ -116,7 +115,7 @@ public class SnobObserver implements ObserverProgram {
 
 
             triplebackmean = triplesback / this.queries;
-            if(completeness == 0) {
+            if (completeness == 0) {
                 completeness = 0;
             } else {
                 completeness = completeness / this.queries;
@@ -128,18 +127,18 @@ public class SnobObserver implements ObserverProgram {
             System.err.println("Number of messages in the network: " + messages);
 
             double meanQN = 0;
-            for(Map.Entry<Integer, Integer> entry: seenfinished.entrySet()) {
+            for (Map.Entry<Integer, Integer> entry : seenfinished.entrySet()) {
                 meanQN += entry.getValue();
             }
-            if(meanQN != 0) meanQN = meanQN / seenfinished.size();
+            if (meanQN != 0) meanQN = meanQN / seenfinished.size();
 
-            String res = currentTick - begin
-                    + ", " + observer.size()
+            double approximation = Network.size() * Math.log(Network.size()) / this.queries;
+            double ratio = meanQN / approximation;
+            String res = observer.size()
                     + ", " + this.queries
-                    + ", " + observer.meanPartialViewSize()
-                    + ", " + snob_default.getPeers(Integer.MAX_VALUE).size()
-                    + ", " + ((snob_default.son) ? snob_default.fullmesh.size() : 0)
-                    // + ", " + ((snob_default.son) ? snob_default.getSonPeers(Integer.MAX_VALUE).size() : 0)
+                    + ", " + Snob.c
+                    + ", " + snob_default.fullmesh.size()
+                    + ", " + observer.meanClusterCoefficient()
                     + ", " + completeness
                     + ", " + messages
                     + ", " + totalreceivedresults
@@ -147,18 +146,16 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + completenessinresults
                     + ", " + triplesback
                     + ", " + triplebackmean
-                    + ", " + estimateErrores
                     + ", " + peerSeenMean
                     + ", " + seenfinished.size()
                     + ", " + meanQN
-                    + ", " + firstq;
-            System.out.println(res);
+                    + ", " + firstq
+                    + ", " + approximation
+                    + ", " + ratio;
             System.err.println(res);
 
-            if (seenfinished.size() == this.queries) {
-                seenfinished.forEach((k, v) -> {
-                    System.err.println(k + "_ " + v);
-                });
+            if (firstq != -1) {
+                System.out.println(res);
                 exit(0);
             }
         } catch (Exception e) {
@@ -190,8 +187,6 @@ public class SnobObserver implements ObserverProgram {
         int pickedElement = 0;
         int peersPicked = 0;
         while (pickedElement < filenames.size() && pickedElement < filenames.size()) {
-            // System.err.println("Loading data into peer:" + peersPicked);
-            // System.err.println(filenames.get(pickedElement).toString());
             peers.get(peersPicked).profile.datastore.update(filenames.get(pickedElement).toString());
             peersPicked++;
             if (peersPicked > peers.size() - 1) peersPicked = 0;
@@ -221,9 +216,18 @@ public class SnobObserver implements ObserverProgram {
         // now check the replicate factor and replicate a random query.
         JSONObject queryToreplicate = finalQueries.get(0); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
         int numberOfReplicatedQueries = (int) Math.floor(peers.size() * replicate / 100);
+
+        // pick peer that will receive queries
+        List<Snob> nodes = new ArrayList<>();
+        while (nodes.size() != numberOfReplicatedQueries) {
+            int rn = (int) Math.floor(Math.random() * Network.size());
+            Snob n = (Snob) observer.nodes.get(Network.get(rn).getID()).pss;
+            if (!nodes.contains(n)) nodes.add(n);
+        }
+
         this.queries = numberOfReplicatedQueries;
-        for (int i = 0; i < numberOfReplicatedQueries; ++i) {
-            Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
+        for (int i = 0; i < nodes.size(); ++i) {
+            Snob snob = nodes.get(i);
             snob.profile.replicate = numberOfReplicatedQueries;
             snob.profile.update((String) queryToreplicate.get("query"), (long) queryToreplicate.get("card"));
         }
