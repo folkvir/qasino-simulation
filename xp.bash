@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#bash install.bash
+bash install.bash
 HEAP="-Xms20g" # 50go per job
 
 JAR="-jar target/snob.jar"
