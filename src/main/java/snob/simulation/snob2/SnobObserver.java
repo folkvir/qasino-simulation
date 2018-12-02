@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
-    private final int begin = 0;
+    private final int begin = 1;
     private int replicate;
     private int queries;
     private boolean initialized = false;
@@ -52,13 +52,12 @@ public class SnobObserver implements ObserverProgram {
             initialized = true;
             Snob.start = true;
         } else {
-            System.err.println("Snob(0) rps size: " + observer.nodes.get(Network.get(0).getID()).pss.getPeers(Integer.MAX_VALUE).size());
-            System.err.println("Snob(0) fullmesh size: " + ((Snob) observer.nodes.get(Network.get(0).getID()).pss).fullmesh.size());
             if (initialized) observe(currentTick, observer);
         }
     }
 
     public void observe(long currentTick, DictGraph observer) {
+        int current = (int) currentTick - begin - 1;
         // hack to get the proper pid.... fix it for a proper version
         int networksize = Network.size();
         try {
@@ -81,12 +80,12 @@ public class SnobObserver implements ObserverProgram {
                     peerSeenMean += snob.profile.query.globalseen;
                     if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
                         if (firstq == -1) {
-                            firstq = (int) currentTick - begin;
+                            firstq = current;
                             firstqcompleteness = snob.profile.query.getResults().size() / snob.profile.query.cardinality * 100;
                             firstqmessages = snob.messages;
                             firstqtriplesback = snob.tripleResponses;
                         }
-                        seenfinished.put(snob.id, (int) currentTick - begin);
+                        seenfinished.put(snob.id, current);
                     }
                     Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
                     while (it.hasNext()) {
@@ -140,7 +139,7 @@ public class SnobObserver implements ObserverProgram {
             }
             if (meanQN != 0) meanQN = meanQN / seenfinished.size();
 
-            double approximation = Network.size() * Math.log(Network.size()) / (this.queries * Snob.c);
+            double approximation = Math.floor(Network.size() * Math.log(Network.size()) / (this.queries * Snob.c)) + 1;
             double ratio = meanQN / approximation;
             String res = observer.size()
                     + ", " + this.queries
