@@ -12,14 +12,9 @@ import java.nio.file.Paths;
 public class App {
     public static void main(String[] args) throws IOException {
         if (args.length > 0 && args[0].equals("--init")) {
-            int peers = 1000;
+            int peers = 100;
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
-
-            int points = 10;
-            int[] replicate = new int[points];
-            for (int i = 0; i < points; ++i) {
-                replicate[i] = (int) Math.floor(peers / (i + 1));
-            }
+            int[] replicate = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
 
             int delta_rps = 1;
             int delta_son = 1;
