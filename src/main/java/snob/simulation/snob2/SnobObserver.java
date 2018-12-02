@@ -29,6 +29,9 @@ public class SnobObserver implements ObserverProgram {
     private boolean initialized = false;
     private Map<Integer, Integer> seenfinished = new LinkedHashMap<>();
     private int firstq = -1;
+    private double firstqcompleteness = 0;
+    private int firstqmessages = 0;
+    private long firstqtriplesback = 0;
 
     //    private int pid;
 //    private static final String PAR_PROTOCOL = "protocol";
@@ -77,7 +80,12 @@ public class SnobObserver implements ObserverProgram {
                 if (snob.profile.has_query) {
                     peerSeenMean += snob.profile.query.globalseen;
                     if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
-                        if (firstq == -1) firstq = (int) currentTick - begin;
+                        if (firstq == -1) {
+                            firstq = (int) currentTick - begin;
+                            firstqcompleteness = snob.profile.query.getResults().size() / snob.profile.query.cardinality * 100;
+                            firstqmessages = snob.messages;
+                            firstqtriplesback = snob.tripleResponses;
+                        }
                         seenfinished.put(snob.id, (int) currentTick - begin);
                     }
                     Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
@@ -150,6 +158,9 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + seenfinished.size()
                     + ", " + meanQN
                     + ", " + firstq
+                    + ", " + firstqcompleteness
+                    + ", " + firstqmessages
+                    + ", " + firstqtriplesback
                     + ", " + approximation
                     + ", " + ratio;
             System.err.println(res);

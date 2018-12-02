@@ -286,15 +286,17 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
             }
         });
-        int insertedtriples = this.profile.insertTriples(result, traffic);
-        if (insertedtriples > 0 && Snob.son && fullmesh.size() > 0) {
+        int receivedTriples = this.profile.insertTriples(result, traffic);
+        // on updates and if fullmesh is activated
+        if (receivedTriples > 0 && Snob.son && fullmesh.size() > 0) {
             // share knowledge into the full mesh network
             fullmesh.forEach(node -> {
                 this.messages++;
+                ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).tripleResponses += receivedTriples;
                 ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).profile.insertTriples(result, traffic);
             });
         }
-        tripleResponses += insertedtriples;
+        tripleResponses += receivedTriples;
         this.messages++;
         // System.err.printf(" *end* (%d triples)%n", insertedtriples);
     }

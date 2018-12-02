@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-bash install.bash
-HEAP="-Xms50g" # 50go per job
+#bash install.bash
+HEAP="-Xms20g" # 50go per job
 
 JAR="-jar target/snob.jar"
-SAMPLE=100
+SAMPLE=2
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     DIRNAME=`date | md5sum`
@@ -16,14 +16,17 @@ mkdir -p $DIR
 
 java  ${HEAP} ${JAR} --init
 
+executions=()
+executionsResults=()
+
 execute() {
     for i in $(seq 1 $SAMPLE); do
         CONFIG=$1
         RESULT="${DIR}/${CONFIG}.log"
-        RESULTTMP="${DIR}/${CONFIG}-tmp.log"
-        java  ${HEAP} ${JAR} --config $CONFIG > $RESULTTMP
-        sed -i '1,3d' $RESULTTMP
-        cat $RESULTTMP >> $RESULT
+        RESULTTMP="${RESULT}-${i}-tmp.log"
+        java  ${HEAP} ${JAR} --config "${CONFIG}" > "${RESULTTMP}" &
+        executions[$i]=$!
+        executionsResults[$i]="${RESULT}"
     done
 }
 
@@ -32,6 +35,20 @@ do
     if [[ -f $file ]]; then
         execute $(basename "$file")
     fi
+done
+
+i=$(( 1 ))
+for pid in ${executions[*]}; do
+    wait $pid
+    echo "Reading file number ${i}"
+    RESULT="${executionsResults[$i]}"
+    RESULTTMP="${RESULT}-${i}-tmp.log"
+    echo "Reading result from: " $RESULTTMP
+    sed -i -e '1,3d' "${RESULTTMP}"
+    echo "Writing result into: " $RESULT
+    cat "${RESULTTMP}" >> "${RESULT}"
+    rm -rf "${RESULTTMP}-e" "${RESULTTMP}"
+    i=$(( i+1 ))
 done
 
 echo "Experiment finished."
