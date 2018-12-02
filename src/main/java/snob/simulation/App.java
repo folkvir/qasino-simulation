@@ -16,7 +16,7 @@ public class App {
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
 
             int points = 100;
-            int[] replicate = new int[points + 1];
+            int[] replicate = new int[points];
             for (int i = 1; i <= points; ++i) {
                 replicate[i] = (int) Math.floor(peers / (i));
             }
