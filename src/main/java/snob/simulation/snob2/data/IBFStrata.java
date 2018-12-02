@@ -89,9 +89,7 @@ public class IBFStrata {
     public List<Triple> _exchange(Triple pattern, Profile remote, int id) {
         // System.err.printf("[IBF]  Exchanging (tp, Estimator, IBF, count) with peer number %d...%n", id);
         // simulate the exchange
-        IBFStrata remoteIbfstrata = remote.query.strata.get(pattern);
-
-        if (remoteIbfstrata == null) {
+        if (remote.has_query && remote.query.strata.get(pattern) == null) {
             if (!visited.containsKey(id)) {
                 visited.put(id, id);
                 System.err.printf("No common pattern, getting all triples matching the pattern ");
@@ -125,6 +123,7 @@ public class IBFStrata {
                 return Collections.emptyList();
             }
         } else {
+            IBFStrata remoteIbfstrata = remote.query.strata.get(pattern);
             StrataEstimator remoteStrata = remoteIbfstrata.estimator;
             // System.err.println("[IBF-yes] Compute the set difference size estimation...");
             int diffSize = remoteStrata.decode(this.estimator);
