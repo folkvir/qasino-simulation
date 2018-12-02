@@ -4,7 +4,13 @@ HEAP="-Xms50g" # 50go per job
 
 JAR="-jar target/snob.jar"
 SAMPLE=100
-DIRNAME=`date | md5`
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    DIRNAME=`date | md5sum`
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    DIRNAME=`date | md5`
+fi
+
 DIR="./results/${DIRNAME}"
 mkdir -p $DIR
 
