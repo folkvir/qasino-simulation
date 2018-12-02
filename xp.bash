@@ -3,7 +3,7 @@ bash install.bash
 HEAP="-Xms20g" # 50go per job
 
 JAR="-jar target/snob.jar"
-SAMPLE=2
+SAMPLE=100
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     DIRNAME=`date | md5sum`
@@ -22,8 +22,9 @@ executionsResults=()
 execute() {
     for i in $(seq 1 $SAMPLE); do
         CONFIG=$1
-        RESULT="${DIR}/${CONFIG}.log"
-        RESULTTMP="${RESULT}-${i}-tmp.log"
+        RESULT="${DIR}/${CONFIG}"
+        RESULTTMP="${DIR}/${CONFIG}-${i}-tmp.log"
+        touch "${RESULTTMP}"
         java  ${HEAP} ${JAR} --config "${CONFIG}" > "${RESULTTMP}" &
         executions[$i]=$!
         executionsResults[$i]="${RESULT}"
@@ -46,7 +47,7 @@ for pid in ${executions[*]}; do
     echo "Reading result from: " $RESULTTMP
     sed -i -e '1,3d' "${RESULTTMP}"
     echo "Writing result into: " $RESULT
-    cat "${RESULTTMP}" >> "${RESULT}"
+    cat "${RESULTTMP}" >> "${RESULT}-result.txt"
     rm -rf "${RESULTTMP}-e" "${RESULTTMP}"
     i=$(( i+1 ))
 done
