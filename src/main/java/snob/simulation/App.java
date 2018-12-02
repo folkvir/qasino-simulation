@@ -17,7 +17,6 @@ public class App {
 
             int points = 100;
             int[] replicate = new int[points + 1];
-            replicate[0] = 0;
             for (int i = 1; i <= points; ++i) {
                 replicate[i] = (int) Math.floor(peers / (i));
             }
@@ -33,12 +32,6 @@ public class App {
             // firstly do it with only the rps
             for (int i : replicate) {
                 for (boolean b : son_activated) {
-                    int rpss;
-                    if (b) {
-                        rpss = rps_size;
-                    } else {
-                        rpss = 2 * rps_size;
-                    }
                     for (boolean traffic : trafficMin) {
                         // create a file
                         // first copy the template
@@ -61,7 +54,7 @@ public class App {
                         replace(pathConfig, "\\$traffic\\$", String.valueOf(traffic));
                         replace(pathConfig, "\\$size\\$", String.valueOf(peers));
                         replace(pathConfig, "\\$cycle\\$", String.valueOf(cycles));
-                        replace(pathConfig, "\\$rps_size\\$", String.valueOf(rpss));
+                        replace(pathConfig, "\\$rps_size\\$", String.valueOf(rps_size));
                         replace(pathConfig, "\\$son_size\\$", String.valueOf(son_size));
                         replace(pathConfig, "\\$rps_delta\\$", String.valueOf(delta_rps));
                         replace(pathConfig, "\\$son_delta\\$", String.valueOf(delta_son));
@@ -76,8 +69,7 @@ public class App {
                 }
             }
         } else if (args.length > 0 && args[0].equals("--config")) {
-            String[] config = {"./configs/generated/" + args[1], "./results/" + args[1] + "-output.txt"};
-            executeConfig(config[0], config[1]);
+            executeConfig("./configs/generated/" + args[1]);
         }
     }
 
@@ -114,7 +106,7 @@ public class App {
         return new PrintStream(new FileOutputStream(name));
     }
 
-    private static void executeConfig(String config, String output) {
+    private static void executeConfig(String config) {
         try {
             String[] arguments = {config};
             Simulator sim = new Simulator();
