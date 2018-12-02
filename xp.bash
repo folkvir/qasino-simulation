@@ -3,7 +3,7 @@ bash install.bash
 # HEAP="-Xms20g" # 50go per job
 
 JAR="-jar target/snob.jar"
-SAMPLE=100
+SAMPLE=10000
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     DIRNAME=`date | md5sum | cut -d' ' -f1`
