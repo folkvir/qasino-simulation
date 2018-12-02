@@ -6,7 +6,7 @@ JAR="-jar target/snob.jar"
 SAMPLE=100
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    DIRNAME=`date | md5sum`
+    DIRNAME=`date | md5sum | cut -d' ' -f1`
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     DIRNAME=`date | md5`
 fi
@@ -47,7 +47,7 @@ for pid in ${executions[*]}; do
     echo "Reading result from: " $RESULTTMP
     sed -i -e '1,3d' "${RESULTTMP}"
     echo "Writing result into: " $RESULT
-    cat "${RESULTTMP}" >> "${RESULT}-result.txt"
+    cat "${RESULTTMP}" >> "${RESULT}"
     rm -rf "${RESULTTMP}-e" "${RESULTTMP}"
     i=$(( i+1 ))
 done
