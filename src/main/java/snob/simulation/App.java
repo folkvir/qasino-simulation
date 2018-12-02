@@ -27,7 +27,7 @@ public class App {
             int son_size = 5; // not effect if the fullmesh is active.
             int qlimit = -1; // unlimited
             int dlimit = -1; // unlimited
-            boolean[] son_activated = {false};
+            boolean[] son_activated = {true};
             boolean[] trafficMin = {true};
             // firstly do it with only the rps
             for (int i : replicate) {
