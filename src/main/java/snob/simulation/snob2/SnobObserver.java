@@ -215,7 +215,7 @@ public class SnobObserver implements ObserverProgram {
 
         // now check the replicate factor and replicate a random query.
         JSONObject queryToreplicate = finalQueries.get(0); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
-        int numberOfReplicatedQueries = (int) Math.floor(peers.size() * replicate / 100);
+        int numberOfReplicatedQueries = this.replicate;
 
         // pick peer that will receive queries
         List<Snob> nodes = new ArrayList<>();
