@@ -92,7 +92,7 @@ public class IBFStrata {
         if (!remote.has_query || (remote.has_query && remote.query.strata.get(pattern) == null)) {
             if (!visited.containsKey(id)) {
                 visited.put(id, id);
-                System.err.printf("No common pattern, getting all triples matching the pattern ");
+                // System.err.printf("No common pattern, getting all triples matching the pattern ");
                 return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
 //                // get all triples matching the triple pattern on the remote site
 //                Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
