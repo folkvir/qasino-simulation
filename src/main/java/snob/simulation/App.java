@@ -17,8 +17,8 @@ public class App {
 
             int points = 100;
             int[] replicate = new int[points];
-            for (int i = 1; i <= points; ++i) {
-                replicate[i] = (int) Math.floor(peers / (i));
+            for (int i = 0; i < points; ++i) {
+                replicate[i] = (int) Math.floor(peers / (i + 1));
             }
 
             int delta_rps = 1;
