@@ -1,31 +1,25 @@
 #!/usr/bin/env bash
+## USE THIS FILE: bash mean.bash ../results/100samples/p*
+
 FILES=( "$@" )
 
-DATAS=()
-d=0
-
-readfile() {
-    FILE=$1
-    DATA=()
-    i=0
-    while IFS='' read -r line || [[ -n "$line" ]]; do
-        DATA[i]=$line
-        i=$i+1
-    done < "$FILE"
-#    for row in "${DATA[@]}"; do
-#        echo $row
-#    done
-    DATAS[d]=$DATA
-    d=$d+1
+mean() {
+    echo $(LC_NUMERIC=en_US.UTF-8 awk -F ',' "{ total += \$$1 } END { print total/NR }" $2)
 }
+OUTPUT=$(dirname $1)"/mean.txt"
+rm -rf "${OUTPUT}"
+echo "Writing results in: " $OUTPUT
 
 for file in "${FILES[@]}"; do
     echo "Parsing..." $file
-    readfile $file
+    NF=`awk -F ',' 'END { print NF }' $file`
+    RES=""
+    for i in $(seq 1 $NF); do
+        MEAN=$(mean $i $file)
+        RES=$RES$MEAN", "
+    done
+    echo $RES >> "${OUTPUT}"
 done
 
-for datas in "${DATAS[@]}"; do
-    for d in "${datas[@]}"; do
-        echo $d
-    done
-done
+sort -nk2 "${OUTPUT}" > "${OUTPUT}-tmp"; mv "${OUTPUT}-tmp" "${OUTPUT}"
+

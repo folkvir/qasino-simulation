@@ -57,7 +57,7 @@ public class SnobObserver implements ObserverProgram {
     }
 
     public void observe(long currentTick, DictGraph observer) {
-        int current = (int) currentTick - begin - 1;
+        int current = (int) currentTick - begin;
         // hack to get the proper pid.... fix it for a proper version
         int networksize = Network.size();
         try {
