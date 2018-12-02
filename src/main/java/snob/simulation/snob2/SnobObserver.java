@@ -140,7 +140,7 @@ public class SnobObserver implements ObserverProgram {
             }
             if (meanQN != 0) meanQN = meanQN / seenfinished.size();
 
-            double approximation = Network.size() * Math.log(Network.size()) / this.queries;
+            double approximation = Network.size() * Math.log(Network.size()) / (this.queries * Snob.c);
             double ratio = meanQN / approximation;
             String res = observer.size()
                     + ", " + this.queries
