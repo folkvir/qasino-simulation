@@ -22,7 +22,8 @@ execute() {
         RESULT="${DIR}/${CONFIG}.log"
         RESULTTMP="${DIR}/${CONFIG}-tmp.log"
         java  ${HEAP} ${JAR} --config $CONFIG > $RESULTTMP
-        sed '1,3d' $RESULTTMP >> $RESULT
+        sed -i '1,3d' $RESULTTMP
+        cat $RESULTTMP >> $RESULT
     done
 }
 
