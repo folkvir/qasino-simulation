@@ -1,5 +1,6 @@
 package snob.simulation.snob2;
 
+import com.google.common.collect.Lists;
 import org.apache.jena.graph.Triple;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -8,6 +9,9 @@ import peersim.core.Node;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
+import snob.simulation.snob2.data.IBFStrata;
+import snob.simulation.snob2.data.Strata.Cell;
+import snob.simulation.snob2.data.Strata.StrataEstimator;
 import snob.simulation.snob2.messages.SnobMessage;
 
 import java.util.*;
@@ -44,6 +48,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public String prefix;
     // instrumentations
     public int messages = 0;
+    public int messagesFullmesh = 0;
     public long tripleResponses = 0;
     public Set<Node> fullmesh = new LinkedHashSet<Node>();
 
@@ -149,13 +154,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 for (Node node_rps : rps_neigh) {
                     this.exchangeTriplePatterns((Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid));
                 }
-                if (Snob.son && this.isUp()) {
-                    fullmesh.forEach(peer -> {
-                        if (!rps_neigh.contains(peer)) {
-                            this.exchangeTriplePatterns((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
-                        }
-                    });
-                }
                 profile.execute();
                 // test if the query is terminated or not
                 if (this.profile.query.globalseen == Network.size()) {
@@ -189,7 +187,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                     }
                     remote.fullmesh.add(this.node);
                     this.fullmesh.add(remote.node);
-                    this.sonPartialView.addNeighbor(this.node);
+                    if (Snob.son) this.sonPartialView.addNeighbor(this.node);
                     // System.err.println("Size after: " + remote.fullmesh.size() + "_" + fullmesh.size());
                     if (remote.fullmesh.size() != fullmesh.size()) {
                         exit(1);
@@ -273,33 +271,155 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      */
     private void exchangeTriplePatterns(Snob remote) {
         // System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
-        Map<Triple, Iterator<Triple>> result = new HashMap<>();
         this.profile.query.patterns.forEach(pattern -> {
             if (traffic) {
-                List<Triple> l = this.profile.query.strata.get(pattern).exchange(pattern, remote);
-                result.put(pattern, l.iterator());
+                exchangeTriplesFromPatternUsingIbf(remote, pattern, true);
             } else {
-                result.put(pattern, remote.profile.datastore.getTriplesMatchingTriplePattern(pattern));
+                this.messages++;
+                Iterator<Triple> it = remote.profile.datastore.getTriplesMatchingTriplePattern(pattern);
+                tripleResponses += this.profile.insertTriples(pattern, it, false);
+                if (Snob.son) {
+                    this.shareTriples(Lists.newArrayList(it), pattern);
+                }
             }
             this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
             if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
                 this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
             }
         });
-        int receivedTriples = this.profile.insertTriples(result, traffic);
-        // on updates and if fullmesh is activated
-        if (receivedTriples > 0 && Snob.son && fullmesh.size() > 0) {
-            // share knowledge into the full mesh network
-            fullmesh.forEach(node -> {
-                this.messages++;
-                ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).tripleResponses += receivedTriples;
-                ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).profile.insertTriples(result, traffic);
-            });
-        }
-        tripleResponses += receivedTriples;
-        this.messages++;
-        // System.err.printf(" *end* (%d triples)%n", insertedtriples);
     }
+
+    public void shareTriples(List<Triple> list, Triple pattern) {
+        if (this.isUp && Snob.son) {
+            // System.err.println("share triples");
+            if (list.size() != 0) {
+                // System.err.println("We have " + list.size() + "triples to share.");
+                // share knowledge into the full mesh network
+                fullmesh.forEach(node -> {
+                    this.messagesFullmesh++;
+                    this.messages++;
+                    Snob remote = (Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid);
+                    IBFStrata localibf = IBFStrata.createIBFFromTriples(list);
+                    // directly send the ibf
+                    // once receive proceed to the set difference.
+                    IBFStrata remoteibf = remote.profile.query.strata.get(pattern);
+                    Cell[] cells = remoteibf.ibf.subtract(localibf.ibf.getCells()).clone();
+                    List<Integer>[] difference = remoteibf.ibf.decode(cells);
+                    if (difference == null) {
+                        // means that we cannot make the difference
+                        // send a message to get all triples matching the pattern.
+                        this.messagesFullmesh++;
+                        remote.tripleResponses += remote.profile.insertTriples(pattern, list.iterator(), true);
+                    } else {
+                        this.messagesFullmesh++;
+                        this.messages++;
+                        // send the missing keys to the remote pair. Answer with missing triples
+                        List<Integer> plus = difference[0];
+                        Iterator<Integer> miss = difference[1].iterator();
+                        List<Triple> triples = new LinkedList<>();
+                        while (miss.hasNext()) {
+                            int hash = miss.next();
+                            triples.add(localibf.data.get(hash));
+                        }
+                        remote.tripleResponses += this.profile.insertTriples(pattern, triples.iterator(), true);
+                    }
+                });
+            }
+        }
+    }
+
+    public void exchangeTriplesFromPatternUsingIbf(Snob remote, Triple pattern, boolean traffic) {
+        // System.err.println("exchange using ibf");
+        IBFStrata localibf = this.profile.query.strata.get(pattern);
+        this.messages++;
+        // send the ibf to remote peer with the pattern
+        if (!remote.profile.has_query || (remote.profile.has_query && !remote.profile.query.patterns.contains(pattern))) {
+            // System.err.println("[traffic:true] No tpq.");
+            // if remote does not have a query, get triple pattern, get ibf on this triple pattern, set reconciliation.
+            Iterator<Triple> it = remote.profile.datastore.getTriplesMatchingTriplePattern(pattern);
+            List<Triple> res = new LinkedList<>();
+            while (it.hasNext()) {
+                res.add(it.next());
+            }
+            if (res.size() == 0) {
+                // send back an empty list.
+                this.tripleResponses += 0;
+            } else {
+                IBFStrata remoteIbf = IBFStrata.createIBFFromTriples(res);
+                StrataEstimator localstrat = localibf.getEstimator();
+                int diffSize = remoteIbf.getEstimator().decode(localstrat);
+                if (diffSize == 0) {
+                    // return empty list, nothing to do.
+                    return;
+                }
+                if (diffSize * 2 > IBFStrata.ibfSize) {
+                    // directly send triples, because too big.
+                    this.tripleResponses += this.profile.insertTriples(pattern, it, true);
+                    shareTriples(res, pattern);
+                } else {
+                    // (from the remote) send the ibf to us
+                    // once receive proceed to the set difference.
+                    Cell[] cells = localibf.ibf.subtract(remoteIbf.ibf.getCells()).clone();
+                    List<Integer>[] difference = localibf.ibf.decode(cells);
+                    if (difference == null) {
+                        // means that we cannot make the difference
+                        // send a message to get all triples matching the pattern.
+                        this.messages++;
+                        this.tripleResponses += this.profile.insertTriples(pattern, it, true);
+                        shareTriples(res, pattern);
+                    } else {
+                        this.messages++;
+                        // send the missing keys to the remote pair. Answer with missing triples
+                        Iterator<Integer> miss = difference[1].iterator();
+                        List<Triple> triples = new LinkedList<>();
+                        while (miss.hasNext()) {
+                            int hash = miss.next();
+                            triples.add(remoteIbf.data.get(hash));
+                        }
+                        this.tripleResponses += this.profile.insertTriples(pattern, triples.iterator(), true);
+                        shareTriples(res, pattern);
+                    }
+                }
+            }
+        } else {
+            // System.err.println("[traffic:true] yes tpq.");
+            // the remote peer has the pattern
+            IBFStrata remoteIbf = remote.profile.query.strata.get(pattern);
+            StrataEstimator localstrat = localibf.getEstimator();
+            int diffSize = remoteIbf.getEstimator().decode(localstrat);
+            List<Triple> data = remoteIbf.getTriples();
+            if (diffSize * 2 > IBFStrata.ibfSize) {
+                // directly send triples, because too big.
+
+                this.tripleResponses += this.profile.insertTriples(pattern, data.iterator(), true);
+                shareTriples(data, pattern);
+            } else {
+                // (from the remote) send the ibf to us
+                // once receive proceed to the set difference.
+                Cell[] cells = localibf.ibf.subtract(remoteIbf.ibf.getCells()).clone();
+                List<Integer>[] difference = localibf.ibf.decode(cells);
+                if (difference == null) {
+                    // means that we cannot make the difference
+                    // send a message to get all triples matching the pattern.
+                    this.messages++;
+                    this.tripleResponses += this.profile.insertTriples(pattern, data.iterator(), true);
+                    shareTriples(data, pattern);
+                } else {
+                    this.messages++;
+                    // send the missing keys to the remote pair. Answer with missing triples
+                    Iterator<Integer> miss = difference[1].iterator();
+                    List<Triple> triples = new LinkedList<>();
+                    while (miss.hasNext()) {
+                        int hash = miss.next();
+                        triples.add(remoteIbf.data.get(hash));
+                    }
+                    this.tripleResponses += this.profile.insertTriples(pattern, triples.iterator(), true);
+                    shareTriples(triples, pattern);
+                }
+            }
+        }
+    }
+
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {
         List<Node> samplePrime = this.partialView.getSample(this.node, origin,

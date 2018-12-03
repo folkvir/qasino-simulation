@@ -1,12 +1,8 @@
 package snob.simulation.snob2.data;
 
 import com.github.jsonldjava.shaded.com.google.common.primitives.Ints;
-import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 import org.apache.jena.graph.Triple;
-import snob.simulation.snob2.Profile;
-import snob.simulation.snob2.Snob;
-import snob.simulation.snob2.data.Strata.Cell;
 import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
 
@@ -14,17 +10,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class IBFStrata {
-    public static final int ibfSize = 10000;
-    public int constant = 2; // 1.5 -> 2 (-_-)"
+    public static final int ibfSize = 1000;
+    public final int constant = 2; // 1.5 -> 2 (-_-)"
     public IBF ibf = new IBF(ibfSize); // 2*5000 diff
-    public int estimateErrored = 0; // number of times the estimation return an estimation larger than 100k
     public int count = 0;
-    public Map<Integer, Integer> visited = new HashMap<>();
-    public Map<Integer, Triple> data = new HashMap<>();
-    private StrataEstimator estimator = new StrataEstimator(128);
+    public Map<Integer, Integer> visited = new LinkedHashMap<>();
+    public Map<Integer, Triple> data = new LinkedHashMap<>();
+    private StrataEstimator estimator = new StrataEstimator(32);
+
+    public static IBFStrata createIBFFromTriples(List<Triple> list) {
+        IBFStrata ib = new IBFStrata();
+        ib.insert(list);
+        return ib;
+    }
 
     public StrataEstimator getEstimator() {
         return estimator;
+    }
+
+    public List<Triple> getTriples() {
+        List<Triple> toreturn = new LinkedList<>();
+        for (Map.Entry<Integer, Triple> entry : data.entrySet()) toreturn.add(entry.getValue());
+        return toreturn;
     }
 
     public IBF[] insert(List<Triple> triples) {
@@ -62,123 +69,6 @@ public class IBFStrata {
     }
 
     public int hash(Triple triple) {
-        return Hashing.murmur3_128().hashBytes(triple.toString().getBytes()).asInt(); // match the 32
+        return Hashing.murmur3_32().hashBytes(triple.toString().getBytes()).asInt(); // match the 32
     }
-
-    /**
-     * The exchange is as follow:
-     * 1) A send its Estimator and its IBF for a given triple pattern to B
-     * 2) If B has a common triple pattern, B compute the difference size using estimator and send to A an IBF based on
-     * its values
-     * 2.1) A receives the IBF and make the set difference, ask to B for missing triples with a list of hashes.
-     * 2.2) B answers with a list of triples from the list of hashes.
-     * 3) Or instead of 2), If B don't have a common triple pattern, compute the triple pattern and check for the size of
-     * both sets. If the set of B is twice the size of the set of A, directly send triples, otherwise check for membership
-     * and send only triples not in the set of A
-     * Finally, only a maximum of 2 rounds (4*l, l is the latency) and a minimum of 2 rounds (2l) is necessary for exchanging data.
-     * Basically, Estimator(A)[pattern] + IBF(A)[pattern] + count[pattern] is sent to B
-     *
-     * @param pattern
-     * @param snob
-     * @return
-     */
-    public List<Triple> exchange(Triple pattern, Snob snob) {
-        return _exchange(pattern, snob.profile, snob.id);
-    }
-
-    public List<Triple> _exchange(Triple pattern, Profile remote, int id) {
-        // System.err.printf("[IBF]  Exchanging (tp, Estimator, IBF, count) with peer number %d...%n", id);
-        // simulate the exchange
-        if (!remote.has_query || (remote.has_query && remote.query.strata.get(pattern) == null)) {
-            if (!visited.containsKey(id)) {
-                visited.put(id, id);
-                // System.err.printf("No common pattern, getting all triples matching the pattern ");
-                return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
-//                // get all triples matching the triple pattern on the remote site
-//                Iterator<Triple> it = remote.datastore.getTriplesMatchingTriplePattern(pattern);
-//                List<Triple> result = new ArrayList<>();
-//                List<Triple> finalresult = new ArrayList<>();
-//                // for all triple, create the List of triple and check if contained in the ibf that A send to us.
-//                while (it.hasNext()) {
-//                    Triple triple = it.next();
-//                    result.add(triple);
-//                    if (!this.ibf.contains(this.hash(triple))) {
-//                        finalresult.add(triple);
-//                    }
-//                }
-//                System.err.printf(" *end* %n");
-//                // if size == 0 return an emtpty list
-//                if (result.size() == 0) return Collections.emptyList();
-//                // this.count is send to B with the estimator and the IBF of B
-//                if (result.size() > this.count * 2) {
-//                    // the remote peer have 2 times more result than us, it is most likely he has interesting triples.
-//                    estimateErrored++;
-//                    return result;
-//                } else {
-//                    // send only missing triples, perhaps, a lot of false positives
-//                    return finalresult;
-//                }
-            } else {
-                // System.err.println("[IBF-yes] Returning an empty list.");
-                return Collections.emptyList();
-            }
-        } else {
-            IBFStrata remoteIbfstrata = remote.query.strata.get(pattern);
-            StrataEstimator remoteStrata = remoteIbfstrata.estimator;
-            // System.err.println("[IBF-yes] Compute the set difference size estimation...");
-            int diffSize = remoteStrata.decode(this.estimator);
-
-            if (diffSize == 0) {
-                // System.err.println("[IBF-yes] Returning an empty list.");
-                return Collections.emptyList();
-            } else {
-                // create the IBF of size diffSize with triple from the remote peer
-                IBF result;
-                IBF us;
-
-                // System.err.println("[IBF-yes] Difference size estimation is: |A-B| + |B-A| = " + (diffSize));
-                if ((2 * diffSize) < ibfSize) {
-                    // put it in the ibf100
-                    result = remoteIbfstrata.ibf;
-                    us = this.ibf;
-                } else {
-                    // hum hum too large? directly send triples....
-                    System.err.printf("hum hum too large? directly send triples....");
-                    // perhaps ibf1M but seems to big
-                    estimateErrored++;
-                    // directly return, one roundtrip
-                    // on remote
-                    return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
-                }
-                Cell[] cells = us.subtract(result.getCells()).clone();
-                List<Integer>[] difference = us.decode(cells);
-                if (difference == null) {
-                    // estimateErrored++;
-                    System.err.printf("Cant make a difference, send directly triples...");
-//                    List<Triple> finalresult = new ArrayList<>();
-//                    // send only missing triples.
-//                    // perhaps a lot of false positives here?
-//                    remoteIbfstrata.data.values().parallelStream().forEach(triple -> {
-//                        if (!this.ibf.contains(this.hash(triple))) {
-//                            finalresult.add(triple);
-//                        }
-//                    });
-//                    System.err.printf(" *end* %n");
-                    return Lists.newArrayList(remote.datastore.getTriplesMatchingTriplePattern(pattern));
-                } else {
-                    Iterator<Integer> miss = difference[1].iterator();
-                    // all triples in additionnal need to be ask from the remote
-                    // so simulate the second round trip
-                    List<Triple> triples = new ArrayList<>();
-                    while (miss.hasNext()) {
-                        int hash = miss.next();
-                        // System.err.println("[IBF-yes] Missing triples: " + remoteIbfstrata.data.get(hash).toString());
-                        triples.add(remoteIbfstrata.data.get(hash));
-                    }
-                    return triples;
-                }
-            }
-        }
-    } // end exchange
-
 }

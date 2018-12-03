@@ -9,7 +9,6 @@ import peersim.config.Configuration;
 import peersim.core.Network;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
-import snob.simulation.snob2.data.IBFStrata;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
-    private final int begin = 1;
+    private final int begin = 0;
     private int replicate;
     private int queries;
     private boolean initialized = false;
@@ -33,8 +32,6 @@ public class SnobObserver implements ObserverProgram {
     private int firstqmessages = 0;
     private long firstqtriplesback = 0;
 
-    //    private int pid;
-//    private static final String PAR_PROTOCOL = "protocol";
     public SnobObserver(String prefix) {
         // System.err.println("Initializing: " + prefix);
         try {
@@ -65,12 +62,16 @@ public class SnobObserver implements ObserverProgram {
             long completeness = 0;
             double completenessinresults;
             long messages = 0;
+            long firstqmessagesfullmesh = 0;
             double totalreceivedresults = 0;
             double totalcardinality = 0;
             int triplesback = 0;
             double triplebackmean = 0;
-            int estimateErrores = 0;
             double peerSeenMean = 0;
+            int firstqrpssize = 0;
+            int firstqfullmeshsize = 0;
+            int firstqnbtpqs = 0;
+
             System.err.println("Network size: " + networksize);
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
@@ -81,15 +82,15 @@ public class SnobObserver implements ObserverProgram {
                     if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
                         if (firstq == -1) {
                             firstq = current;
+                            firstqrpssize = snob.getPeers(Integer.MAX_VALUE).size();
+                            firstqfullmeshsize = snob.fullmesh.size();
                             firstqcompleteness = snob.profile.query.getResults().size() / snob.profile.query.cardinality * 100;
                             firstqmessages = snob.messages;
                             firstqtriplesback = snob.tripleResponses;
+                            firstqmessagesfullmesh = snob.messagesFullmesh;
+                            firstqnbtpqs = snob.profile.query.patterns.size();
                         }
                         seenfinished.put(snob.id, current);
-                    }
-                    Iterator<IBFStrata> it = snob.profile.query.strata.values().iterator();
-                    while (it.hasNext()) {
-                        estimateErrores += it.next().estimateErrored;
                     }
 
                     QuerySnob query = snob.profile.query;
@@ -131,7 +132,6 @@ public class SnobObserver implements ObserverProgram {
 
             System.err.println("Global Completeness in the network: " + completeness + "% (" + this.queries + "," + networksize + ")");
             System.err.println("Global Completeness (in results) in the network: " + completenessinresults + "% (" + totalreceivedresults + "," + totalcardinality + ")");
-            System.err.println("Number of messages in the network: " + messages);
 
             double meanQN = 0;
             for (Map.Entry<Integer, Integer> entry : seenfinished.entrySet()) {
@@ -141,30 +141,43 @@ public class SnobObserver implements ObserverProgram {
 
             double approximation = Math.floor(Network.size() * Math.log(Network.size()) / (this.queries * Snob.c)) + 1;
             double ratio = meanQN / approximation;
-            String res = observer.size()
-                    + ", " + this.queries
-                    + ", " + Snob.c
-                    + ", " + snob_default.fullmesh.size()
-                    + ", " + observer.meanClusterCoefficient()
-                    + ", " + completeness
-                    + ", " + messages
-                    + ", " + totalreceivedresults
-                    + ", " + totalcardinality
-                    + ", " + completenessinresults
-                    + ", " + triplesback
-                    + ", " + triplebackmean
-                    + ", " + peerSeenMean
-                    + ", " + seenfinished.size()
-                    + ", " + meanQN
-                    + ", " + firstq
-                    + ", " + firstqcompleteness
-                    + ", " + firstqmessages
-                    + ", " + firstqtriplesback
-                    + ", " + approximation
-                    + ", " + ratio;
-            System.err.println(res);
+
 
             if (firstq != -1) {
+                double minmessages = firstqnbtpqs * (firstq - 1) * firstqrpssize;
+                double maxmessages = 0;
+                if (Snob.son) {
+                    if (Snob.traffic) {
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * (2 * firstqrpssize * (this.queries - 1)));
+                    } else {
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * (firstqrpssize * (this.queries - 1)));
+                    }
+                } else {
+                    if (Snob.traffic) {
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * 2 * firstqrpssize);
+                    } else {
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * firstqrpssize);
+                    }
+                }
+                System.err.println("Max allowed number of messages for firstq = " + maxmessages);
+                double meanmessages = firstqmessages;
+                System.err.println("Mean number of messages =" + meanmessages);
+
+                String res = observer.size()
+                        + ", " + this.queries
+                        + ", " + firstqrpssize
+                        + ", " + firstqfullmeshsize
+                        + ", " + observer.meanClusterCoefficient()
+                        + ", " + firstq
+                        + ", " + firstqcompleteness
+                        + ", " + firstqmessages
+                        + ", " + maxmessages
+                        + ", " + minmessages
+                        + ", " + firstqmessagesfullmesh
+                        + ", " + meanmessages
+                        + ", " + firstqtriplesback
+                        + ", " + approximation
+                        + ", " + ratio;
                 System.out.println(res);
                 exit(0);
             }
@@ -224,7 +237,7 @@ public class SnobObserver implements ObserverProgram {
         }
 
         // now check the replicate factor and replicate a random query.
-        JSONObject queryToreplicate = finalQueries.get(0); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
+        JSONObject queryToreplicate = finalQueries.get(73); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
         int numberOfReplicatedQueries = this.replicate;
 
         // pick peer that will receive queries

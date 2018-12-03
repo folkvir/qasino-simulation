@@ -12,9 +12,9 @@ import java.nio.file.Paths;
 public class App {
     public static void main(String[] args) throws IOException {
         if (args.length > 0 && args[0].equals("--init")) {
-            int peers = 100;
+            int peers = 1000;
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
-            int[] replicate = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+            int[] replicate = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500, 1000};
 
             int delta_rps = 1;
             int delta_son = 1;
@@ -22,8 +22,8 @@ public class App {
             int son_size = 5; // not effect if the fullmesh is active.
             int qlimit = -1; // unlimited
             int dlimit = -1; // unlimited
-            boolean[] son_activated = {true};
-            boolean[] trafficMin = {true};
+            boolean[] son_activated = {true, false};
+            boolean[] trafficMin = {true, false};
             // firstly do it with only the rps
             for (int i : replicate) {
                 for (boolean b : son_activated) {
@@ -38,7 +38,7 @@ public class App {
                                 + "-config.conf";
                         String pathTemplate = System.getProperty("user.dir") + "/configs/template.conf";
                         String pathConfig = System.getProperty("user.dir") + "/configs/generated/" + configName;
-                        System.err.println("Template location: " + pathTemplate);
+                        //System.err.println("Template location: " + pathTemplate);
                         System.err.println("Config location: " + pathConfig);
                         File in = new File(pathTemplate);
                         File out = new File(pathConfig);
@@ -57,9 +57,6 @@ public class App {
                         replace(pathConfig, "\\$qlimit\\$", String.valueOf(qlimit));
                         replace(pathConfig, "\\$dlimit\\$", String.valueOf(dlimit));
                         replace(pathConfig, "\\\\$", String.valueOf(dlimit));
-                        System.err.printf("Executing: peers=%d cycles=%d rps_size=%d son_size=%d rps_delta=%d son_delta=%d replica=%d traffic=%b %n",
-                                peers, cycles, rps_size, son_size,
-                                delta_rps, delta_rps, i, traffic);
                     }
                 }
             }
