@@ -83,6 +83,32 @@ public class SnobObserver implements ObserverProgram {
                 triplesback += snob.tripleResponses;
                 if (snob.profile.has_query) {
                     peerSeenMean += snob.profile.query.globalseen;
+                    QuerySnob query = snob.profile.query;
+                    if (query != null) {
+                        List<QuerySolution> res = query.getResults();
+                        int cpt = res.size();
+                        // System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.query.globalseen);
+                        totalreceivedresults += cpt;
+                        totalcardinality += query.cardinality;
+                        long localcomp = 0;
+                        if (cpt > query.cardinality) {
+                            throw new Exception("pipeline " + query.query + " gives more results than expected...");
+                        } else if (cpt == 0 && query.cardinality == 0) {
+                            localcomp = 100;
+                        } else if (cpt == 0 && query.cardinality > 0) {
+                            localcomp = 0;
+                        } else if (cpt > 0 && query.cardinality > 0) {
+                            localcomp = (cpt / query.cardinality) * 100;
+                        } else {
+                            throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
+                        }
+
+                        if(localcomp == 100) {
+                            completed.put(query.qid, current);
+                        }
+
+                        completeness += localcomp;
+                    }
                     if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
                         if (firstq == -1) {
                             firstq = current;
@@ -97,33 +123,10 @@ public class SnobObserver implements ObserverProgram {
                         }
                         seenfinished.put(snob.id, current);
                     }
-
-                    QuerySnob query = snob.profile.query;
-                    if (query != null) {
-                        List<QuerySolution> res = query.getResults();
-                        int cpt = res.size();
-                        // System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.query.globalseen);
-                        totalreceivedresults += cpt;
-                        totalcardinality += query.cardinality;
-                        if (cpt > query.cardinality) {
-                            throw new Exception("pipeline " + query.query + " gives more results than expected...");
-                        } else if (cpt == 0 && query.cardinality == 0) {
-                            completeness += 100;
-                        } else if (cpt == 0 && query.cardinality > 0) {
-                            completeness += 0;
-                        } else if (cpt > 0 && query.cardinality > 0) {
-                            completeness += (cpt / query.cardinality) * 100;
-                        } else {
-                            throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
-                        }
-
-                        if(completeness == 100) {
-                            completed.put(query.qid, current);
-                        }
-                    }
                 }
             }
-
+            System.err.printf("Messages sent from the beginning %d...%n", messages);
+            System.err.printf("Triples exchanged from the beginning %d...%n", triplesback);
             if (totalcardinality == 0) {
                 completenessinresults = 0;
             } else {
@@ -153,19 +156,19 @@ public class SnobObserver implements ObserverProgram {
 
 
             if (firstq != -1) {
-                double minmessages = firstqnbtpqs * (firstq - 1) * firstqrpssize;
+                double minmessages = firstqnbtpqs * (firstq - 1) * Snob.pick;
                 double maxmessages = 0;
                 if (Snob.son) {
                     if (Snob.traffic) {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * (2 * firstqrpssize * (this.queries - 1)));
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * (2 * Snob.pick * (this.queries - 1)));
                     } else {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * (firstqrpssize * (this.queries - 1)));
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * (Snob.pick * (this.queries - 1)));
                     }
                 } else {
                     if (Snob.traffic) {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * 2 * firstqrpssize);
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * 2 * Snob.pick);
                     } else {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * firstqrpssize);
+                        maxmessages = firstqnbtpqs * ((firstq - 1) * Snob.pick);
                     }
                 }
                 System.err.println("Max allowed number of messages for firstq = " + maxmessages);

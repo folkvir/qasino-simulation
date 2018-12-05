@@ -226,8 +226,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * Periodic call for the Cyclon Network
      */
     public void periodicCyclonCall() {
-        messages = 0;
-        tripleResponses = 0;
+//        messages = 0;
+//        tripleResponses = 0;
         // do the periodic shuffling of the rps
         if (this.isUp() && this.partialView.size() > 0) {
             // do the periodic shuffling for Cyclon
