@@ -189,6 +189,17 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                     fullmesh.add(this.node);
                     fullmesh.add(remote.node);
 
+                    // synchronize data everywhere
+                    // synchronize fullmesh data
+                    // firstly pull
+                    for (Node n : fullmesh) {
+                        if(!n.equals(this.node)) this.exchangeTriplePatterns(fromNodeToSnob(n));
+                    }
+                    for (Node n : fullmesh) {
+                        if(!n.equals(this.node)) fromNodeToSnob(n).exchangeTriplePatterns(fromNodeToSnob(this.node));
+                    }
+
+
                     // seen.addAll(this.profile.query.seen);
                     LinkedHashSet<Node> us = new LinkedHashSet<>();
                     for (Node p : fullmesh) {
@@ -211,15 +222,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
             }
         });
-        // synchronize fullmesh data
-        // firstly pull
-        for (Node node : fullmesh) {
-            exchangeTriplePatterns(fromNodeToSnob(node));
-        }
-        // then pull
-        for (Node node : fullmesh) {
-            fromNodeToSnob(node).exchangeTriplePatterns(this);
-        }
     }
 
     /**
@@ -250,7 +252,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         // do the periodic shuffling for the Semantic Overlay if enabled
         if (start && Snob.son && this.isUp()) {
             // list the rps, check for Snob that are not in our fullmesh son, add it
-            List<Node> rps = this.getPeers(Integer.MAX_VALUE);
+            List<Node> rps = this.getPeers(this.pick);
             constructFullmesh(rps);
         }
         // -------- QUERY EXECUTION MODEL -------
@@ -258,14 +260,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             // 1 - send tpqs to neighbours and receive responses
             List<Node> rps_neigh = this.getPeers(this.pick);
             for (Node node_rps : rps_neigh) {
+                // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
                 this.exchangeTriplePatterns(fromNodeToSnob(node_rps));
-            }
-            if (Snob.son && this.isUp()) {
-                fullmesh.forEach(peer -> {
-                    if (!rps_neigh.contains(peer)) {
-                        this.exchangeTriplePatterns(fromNodeToSnob(peer));
-                    }
-                });
             }
             profile.execute();
             // test if the query is terminated or not
@@ -343,7 +339,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                             int hash = miss.next();
                             triples.add(localibf.data.get(hash));
                         }
-                        remote.tripleResponses += this.profile.insertTriples(pattern, triples.iterator(), true);
+                        remote.tripleResponses += remote.profile.insertTriples(pattern, triples.iterator(), true);
                     }
                 });
             }
@@ -362,7 +358,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         this.messages++;
         // send the ibf to remote peer with the pattern
         if (!remote.profile.has_query || (remote.profile.has_query && !remote.profile.query.patterns.contains(pattern))) {
-            // System.err.println("[traffic:true] No tpq.");
             // if remote does not have a query, get triple pattern, get ibf on this triple pattern, set reconciliation.
             Iterator<Triple> it = remote.profile.datastore.getTriplesMatchingTriplePattern(pattern);
             List<Triple> res = new LinkedList<>();
@@ -382,7 +377,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
                 if (diffSize * 2 > IBFStrata.ibfSize) {
                     // directly send triples, because too big.
-                    this.tripleResponses += this.profile.insertTriples(pattern, it, true);
+                    this.tripleResponses += this.profile.insertTriples(pattern, res.iterator(), true);
                     shareTriples(res, pattern);
                 } else {
                     // (from the remote) send the ibf to us
@@ -393,7 +388,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                         // means that we cannot make the difference
                         // send a message to get all triples matching the pattern.
                         this.messages++;
-                        this.tripleResponses += this.profile.insertTriples(pattern, it, true);
+                        this.tripleResponses += this.profile.insertTriples(pattern, res.iterator(), true);
                         shareTriples(res, pattern);
                     } else {
                         this.messages++;
@@ -410,7 +405,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
             }
         } else {
-            // System.err.println("[traffic:true] yes tpq.");
             // the remote peer has the pattern
             IBFStrata remoteIbf = remote.profile.query.strata.get(pattern);
             StrataEstimator localstrat = localibf.getEstimator();
@@ -418,7 +412,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             List<Triple> data = remoteIbf.getTriples();
             if (diffSize * 2 > IBFStrata.ibfSize) {
                 // directly send triples, because too big.
-
                 this.tripleResponses += this.profile.insertTriples(pattern, data.iterator(), true);
                 shareTriples(data, pattern);
             } else {

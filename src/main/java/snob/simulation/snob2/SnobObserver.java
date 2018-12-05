@@ -62,15 +62,9 @@ public class SnobObserver implements ObserverProgram {
         int networksize = Network.size();
         try {
             Snob snob_default = (Snob) observer.nodes.get(Network.get(0).getID()).pss;
-            long completeness = 0;
-            double completenessinresults;
             long messages = 0;
             long firstqmessagesfullmesh = 0;
-            double totalreceivedresults = 0;
-            double totalcardinality = 0;
             int triplesback = 0;
-            double triplebackmean = 0;
-            double peerSeenMean = 0;
             int firstqrpssize = 0;
             int firstqfullmeshsize = 0;
             int firstqnbtpqs = 0;
@@ -82,14 +76,10 @@ public class SnobObserver implements ObserverProgram {
                 messages += snob.messages;
                 triplesback += snob.tripleResponses;
                 if (snob.profile.has_query) {
-                    peerSeenMean += snob.profile.query.globalseen;
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
                         List<QuerySolution> res = query.getResults();
                         int cpt = res.size();
-                        // System.err.printf("[Peer-%d] has a query with %d/%d results. (see %d distinct peers) %n", snob.id, cpt, query.cardinality, snob.profile.query.globalseen);
-                        totalreceivedresults += cpt;
-                        totalcardinality += query.cardinality;
                         long localcomp = 0;
                         if (cpt > query.cardinality) {
                             throw new Exception("pipeline " + query.query + " gives more results than expected...");
@@ -103,14 +93,14 @@ public class SnobObserver implements ObserverProgram {
                             throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
                         }
 
-                        if(localcomp == 100) {
+                        if(!completed.containsKey(query.qid) && localcomp == 100) {
                             completed.put(query.qid, current);
                         }
-
-                        completeness += localcomp;
+                        System.err.printf("[Peer-%d] has a query with %d of completeness. (%d/%d) %n", snob.id, localcomp, cpt, query.cardinality);
                     }
-                    if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize) {
+                    if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize && query.terminated) {
                         if (firstq == -1) {
+                            System.err.printf("[Peer-%d] has a finished query...%n", snob.id);
                             firstq = current;
                             firstqrpssize = snob.getPeers(Integer.MAX_VALUE).size();
                             firstqfullmeshsize = snob.fullmesh.size();
@@ -127,23 +117,6 @@ public class SnobObserver implements ObserverProgram {
             }
             System.err.printf("Messages sent from the beginning %d...%n", messages);
             System.err.printf("Triples exchanged from the beginning %d...%n", triplesback);
-            if (totalcardinality == 0) {
-                completenessinresults = 0;
-            } else {
-                completenessinresults = (totalreceivedresults) / (totalcardinality) * 100;
-            }
-
-
-            triplebackmean = triplesback / this.queries;
-            if (completeness == 0) {
-                completeness = 0;
-            } else {
-                completeness = completeness / this.queries;
-            }
-            peerSeenMean = peerSeenMean / this.queries;
-
-//            System.err.println("Global Completeness in the network: " + completeness + "% (" + this.queries + "," + networksize + ")");
-//            System.err.println("Global Completeness (in results) in the network: " + completenessinresults + "% (" + totalreceivedresults + "," + totalcardinality + ")");
 
             double meanQN = 0;
             for (Map.Entry<Integer, Integer> entry : seenfinished.entrySet()) {
