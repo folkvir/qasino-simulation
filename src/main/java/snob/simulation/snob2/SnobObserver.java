@@ -23,9 +23,11 @@ import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
     private final int begin = 0;
+    private int query = 73;
     private int replicate;
     private int queries;
     private boolean initialized = false;
+    private Map<Integer, Integer> completed = new LinkedHashMap<>();
     private Map<Integer, Integer> seenfinished = new LinkedHashMap<>();
     private int firstq = -1;
     private double firstqcompleteness = 0;
@@ -35,6 +37,7 @@ public class SnobObserver implements ObserverProgram {
     public SnobObserver(String prefix) {
         // System.err.println("Initializing: " + prefix);
         try {
+            this.query = Configuration.getInt(prefix + ".querytoreplicate", 73);
             this.replicate = Configuration.getInt(prefix + ".replicate", 50);
             // System.err.println("Setting the replicate factor to (%): " + this.replicate);
         } catch (Exception e) {
@@ -71,8 +74,9 @@ public class SnobObserver implements ObserverProgram {
             int firstqrpssize = 0;
             int firstqfullmeshsize = 0;
             int firstqnbtpqs = 0;
+            int firstqcompleted = 0;
 
-            System.err.println("Network size: " + networksize);
+            // System.err.println("Network size: " + networksize);
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 messages += snob.messages;
@@ -89,6 +93,7 @@ public class SnobObserver implements ObserverProgram {
                             firstqtriplesback = snob.tripleResponses;
                             firstqmessagesfullmesh = snob.messagesFullmesh;
                             firstqnbtpqs = snob.profile.query.patterns.size();
+                            firstqcompleted = completed.get(snob.profile.query.qid);
                         }
                         seenfinished.put(snob.id, current);
                     }
@@ -111,6 +116,10 @@ public class SnobObserver implements ObserverProgram {
                         } else {
                             throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
                         }
+
+                        if(completeness == 100) {
+                            completed.put(query.qid, current);
+                        }
                     }
                 }
             }
@@ -130,8 +139,8 @@ public class SnobObserver implements ObserverProgram {
             }
             peerSeenMean = peerSeenMean / this.queries;
 
-            System.err.println("Global Completeness in the network: " + completeness + "% (" + this.queries + "," + networksize + ")");
-            System.err.println("Global Completeness (in results) in the network: " + completenessinresults + "% (" + totalreceivedresults + "," + totalcardinality + ")");
+//            System.err.println("Global Completeness in the network: " + completeness + "% (" + this.queries + "," + networksize + ")");
+//            System.err.println("Global Completeness (in results) in the network: " + completenessinresults + "% (" + totalreceivedresults + "," + totalcardinality + ")");
 
             double meanQN = 0;
             for (Map.Entry<Integer, Integer> entry : seenfinished.entrySet()) {
@@ -139,7 +148,7 @@ public class SnobObserver implements ObserverProgram {
             }
             if (meanQN != 0) meanQN = meanQN / seenfinished.size();
 
-            double approximation = Math.floor(Network.size() * Math.log(Network.size()) / (this.queries * Snob.c)) + 1;
+            double approximation = Math.floor(Network.size() * Math.log(Network.size()) / (this.queries * Snob.pick)) + 1;
             double ratio = meanQN / approximation;
 
 
@@ -166,10 +175,12 @@ public class SnobObserver implements ObserverProgram {
                 String res = observer.size()
                         + ", " + this.queries
                         + ", " + firstqrpssize
+                        + ", " + Snob.pick
                         + ", " + firstqfullmeshsize
                         + ", " + observer.meanClusterCoefficient()
                         + ", " + firstq
                         + ", " + firstqcompleteness
+                        + ", " + firstqcompleted
                         + ", " + firstqmessages
                         + ", " + maxmessages
                         + ", " + minmessages
@@ -237,7 +248,7 @@ public class SnobObserver implements ObserverProgram {
         }
 
         // now check the replicate factor and replicate a random query.
-        JSONObject queryToreplicate = finalQueries.get(73); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
+        JSONObject queryToreplicate = finalQueries.get(this.query); // finalQueries.get((int) Math.floor(Math.random() * queriesDiseasome.size()));
         int numberOfReplicatedQueries = this.replicate;
 
         // pick peer that will receive queries

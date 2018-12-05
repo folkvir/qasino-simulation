@@ -29,6 +29,7 @@ public class QuerySnob {
     public Map<Triple, IBFStrata> strata = new LinkedHashMap<>();
     public Map<Triple, Set<Integer>> alreadySeen = new LinkedHashMap<>();
     // stats
+    public Set<Integer> seen = new LinkedHashSet<>();
     public int globalseen = 0;
     public int executionNumber = 0;
     public boolean tripleInserted = false;
@@ -93,6 +94,8 @@ public class QuerySnob {
         if (!this.alreadySeen.containsKey(pattern)) {
             this.alreadySeen.put(pattern, new LinkedHashSet<>());
         }
+        this.seen.add(ours);
+        this.seen.add(remote);
         this.alreadySeen.get(pattern).add(ours);
         this.alreadySeen.get(pattern).add(remote);
         this.computeGlobalSeen();
@@ -117,7 +120,9 @@ public class QuerySnob {
         if (!this.alreadySeen.containsKey(pattern)) {
             this.alreadySeen.put(pattern, new LinkedHashSet<>());
         }
+        // System.err.println("Merge our view " + this.alreadySeen.get(pattern) + "with " + remote);
         this.alreadySeen.get(pattern).addAll(remote);
+        this.seen.addAll(remote);
     }
 
 

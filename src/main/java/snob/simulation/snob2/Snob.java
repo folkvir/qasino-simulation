@@ -16,8 +16,6 @@ import snob.simulation.snob2.messages.SnobMessage;
 
 import java.util.*;
 
-import static java.lang.System.exit;
-
 /**
  * The Snob protocol
  */
@@ -40,6 +38,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static boolean traffic;
     private static int snobs = 0;
     public final int id = Snob.snobs++;
+    public static int pick = 5;
     // Profile of the peer
     public Profile profile;
     // #C local variables
@@ -52,6 +51,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public long tripleResponses = 0;
     public Set<Node> fullmesh = new LinkedHashSet<Node>();
 
+    // for the IKnowYou perriodic call
+    public int step = 0;
+    public int by = 1;
+    public boolean finish = false;
     /**
      * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
      *
@@ -60,6 +63,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public Snob(String prefix) {
         super(prefix);
         this.prefix = prefix;
+        Snob.pick = Configuration.getInt(prefix + ".pick");
         Snob.c = Configuration.getInt(prefix + "." + PAR_C);
         Snob.l = Configuration.getInt(prefix + "." + PAR_L);
         Snob.sonc = Configuration.getInt(prefix + "." + PAR_SON_C);
@@ -130,9 +134,16 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
-        periodicRandomGraphCall();
+        periodicCyclonCall();
     }
 
+    public static Snob fromNodeToSnob(Node node ) {
+        return (Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid);
+    }
+
+    /**
+     * Construct the neighborhood using the RPS
+     */
     public void periodicRandomGraphCall() {
         if (this.isUp()) {
             this.partialView.clear();
@@ -163,40 +174,57 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
     }
 
+    /**
+     * Construct the fullmesh for the specified list of nodes
+     * @param rps
+     */
     public void constructFullmesh(List<Node> rps) {
         rps.forEach(peer -> {
             if (!fullmesh.contains(peer)) {
-                Snob remote = ((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
+                Snob remote = fromNodeToSnob(peer);
                 if (remote.profile.has_query && this.profile.has_query && this.profile.query.query.equals(remote.profile.query.query)) {
-                    // System.err.println("Size before: " + remote.fullmesh.size() + "_" + fullmesh.size());
-                    for (Node node : fullmesh) {
-                        for (Node fullmesh1 : remote.fullmesh) {
-                            ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(fullmesh1);
-                            ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(node);
+                    // merge fullmesh
+                    // LinkedHashSet<Integer> seen = new LinkedHashSet<>();
+                    fullmesh.addAll(remote.fullmesh);
+                    fullmesh.add(this.node);
+                    fullmesh.add(remote.node);
+
+                    // seen.addAll(this.profile.query.seen);
+                    LinkedHashSet<Node> us = new LinkedHashSet<>();
+                    for (Node p : fullmesh) {
+                        // seen.addAll(fromNodeToSnob(p).profile.query.seen);
+                        if(p.equals(this.node)) {
+                            us.addAll(fullmesh);
+                            us.remove(p);
+                        } else {
+                            fromNodeToSnob(p).fullmesh.addAll(fullmesh);
+                            fromNodeToSnob(p).fullmesh.remove(p);
                         }
                     }
-                    // for all neighbours, connect neighbours to the remote one
-                    for (Node node : fullmesh) {
-                        ((Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(remote.node);
-                        remote.fullmesh.add(node);
-                    }
-                    // for all neighbours of the remote peer, connect them to us
-                    for (Node fullmesh1 : remote.fullmesh) {
-                        ((Snob) fullmesh1.getProtocol(ARandomPeerSamplingProtocol.pid)).fullmesh.add(this.node);
-                        this.fullmesh.add(fullmesh1);
-                    }
-                    remote.fullmesh.add(this.node);
-                    this.fullmesh.add(remote.node);
-                    if (Snob.son) this.sonPartialView.addNeighbor(this.node);
-                    // System.err.println("Size after: " + remote.fullmesh.size() + "_" + fullmesh.size());
-                    if (remote.fullmesh.size() != fullmesh.size()) {
-                        exit(1);
-                    }
+//                    for (Node node : fullmesh) {
+//                        fromNodeToSnob(node).profile.query.seen.addAll(seen);
+//                    }
+                    // System.err.println("us: "+ us + "fullmesh: " + fullmesh);
+                    fullmesh = us;
+                    // System.err.println("us: "+ us + "fullmesh: " + fullmesh);
+                    // end merge fullmerge
                 }
             }
         });
+        // synchronize fullmesh data
+        // firstly pull
+        for (Node node : fullmesh) {
+            exchangeTriplePatterns(fromNodeToSnob(node));
+        }
+        // then pull
+        for (Node node : fullmesh) {
+            fromNodeToSnob(node).exchangeTriplePatterns(this);
+        }
     }
 
+    /**
+     * Periodic call for the Cyclon Network
+     */
     public void periodicCyclonCall() {
         messages = 0;
         tripleResponses = 0;
@@ -205,7 +233,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             // do the periodic shuffling for Cyclon
             this.partialView.incrementAge();
             Node q = this.partialView.getOldest();
-            Snob qSnob = (Snob) q.getProtocol(ARandomPeerSamplingProtocol.pid);
+            Snob qSnob = fromNodeToSnob(q);
             if (qSnob.isUp() && !this.pFail(null)) {
                 // #A if the chosen peer is alive, initiate the exchange
                 List<Node> sample = this.partialView.getSample(this.node, q, true);
@@ -224,33 +252,18 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             // list the rps, check for Snob that are not in our fullmesh son, add it
             List<Node> rps = this.getPeers(Integer.MAX_VALUE);
             constructFullmesh(rps);
-//            this.sonPartialView.incrementAge();
-//            Node qSon = this.sonPartialView.getOldest();
-//            Snob qSonSnob = (Snob) qSon.getProtocol(ARandomPeerSamplingProtocol.pid);
-//            if (qSonSnob.isUp() && !this.pFail(null)) {
-//                // #A if the chosen peer is alive, initiate the exchange
-//                List<Node> sample = this.sonPartialView.getSample(this, qSon,
-//                        true);
-//                sample.add(this.node);
-//                IMessage received = qSonSnob.onPeriodicCallSon(this.node, new SnobMessage(sample));
-//                List<Node> samplePrime = (List<Node>) received.getPayload();
-//                this.sonPartialView.mergeSample(this, qSon, samplePrime, sample, true);
-//            } else {
-//                // #B if the chosen peer is dead, remove it from the view
-//                this.sonPartialView.removeNode(qSon);
-//            }
         }
         // -------- QUERY EXECUTION MODEL -------
         if (start && profile.has_query && !profile.query.terminated) {
             // 1 - send tpqs to neighbours and receive responses
-            List<Node> rps_neigh = this.getPeers(Integer.MAX_VALUE);
+            List<Node> rps_neigh = this.getPeers(this.pick);
             for (Node node_rps : rps_neigh) {
-                this.exchangeTriplePatterns((Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid));
+                this.exchangeTriplePatterns(fromNodeToSnob(node_rps));
             }
             if (Snob.son && this.isUp()) {
                 fullmesh.forEach(peer -> {
                     if (!rps_neigh.contains(peer)) {
-                        this.exchangeTriplePatterns((Snob) peer.getProtocol(ARandomPeerSamplingProtocol.pid));
+                        this.exchangeTriplePatterns(fromNodeToSnob(peer));
                     }
                 });
             }
@@ -271,6 +284,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      */
     private void exchangeTriplePatterns(Snob remote) {
         // System.err.printf("[peer-%d/query-%d]Transferring data from %s to %s... %n", this.id, profile.query.qid, remote.id, this.id);
+        // System.err.println("** before: " + this.profile.query.seen);
         this.profile.query.patterns.forEach(pattern -> {
             if (traffic) {
                 exchangeTriplesFromPatternUsingIbf(remote, pattern, true);
@@ -286,9 +300,17 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
                 this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
             }
+            // System.err.println("** after, for the pattern: " + this.profile.query.alreadySeen.get(pattern));
+            // System.err.println("** after global seen: " + this.profile.query.alreadySeen.get(pattern));
         });
+        // System.err.println("** FINAL = " + this.profile.query.seen);
     }
 
+    /**
+     * Share triples with the fullmesh
+     * @param list
+     * @param pattern
+     */
     public void shareTriples(List<Triple> list, Triple pattern) {
         if (this.isUp && Snob.son) {
             // System.err.println("share triples");
@@ -298,7 +320,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 fullmesh.forEach(node -> {
                     this.messagesFullmesh++;
                     this.messages++;
-                    Snob remote = (Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid);
+                    Snob remote = fromNodeToSnob(node);
                     IBFStrata localibf = IBFStrata.createIBFFromTriples(list);
                     // directly send the ibf
                     // once receive proceed to the set difference.
@@ -328,6 +350,12 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
     }
 
+    /**
+     * Exchange triple pattern using Invertible bloom filter, and share data if necessary
+     * @param remote
+     * @param pattern
+     * @param traffic
+     */
     public void exchangeTriplesFromPatternUsingIbf(Snob remote, Triple pattern, boolean traffic) {
         // System.err.println("exchange using ibf");
         IBFStrata localibf = this.profile.query.strata.get(pattern);

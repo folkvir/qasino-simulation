@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class IBFStrata {
     public static final int ibfSize = 1000;
     public final int constant = 2; // 1.5 -> 2 (-_-)"
-    public IBF ibf = new IBF(ibfSize); // 2*5000 diff
+    public IBF ibf = new IBF(ibfSize); // 2*500 diff
     public int count = 0;
     public Map<Integer, Integer> visited = new LinkedHashMap<>();
     public Map<Integer, Triple> data = new LinkedHashMap<>();
