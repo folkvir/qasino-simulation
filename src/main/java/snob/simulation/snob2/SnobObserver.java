@@ -96,7 +96,7 @@ public class SnobObserver implements ObserverProgram {
                         if(!completed.containsKey(query.qid) && localcomp == 100) {
                             completed.put(query.qid, current);
                         }
-                        System.err.printf("[Peer-%d] has a query with %d of completeness. (%d/%d) %n", snob.id, localcomp, cpt, query.cardinality);
+                        // System.err.printf("[Peer-%d] has a query with %d of completeness. (%d/%d) %n", snob.id, localcomp, cpt, query.cardinality);
                     }
                     if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize && query.terminated) {
                         if (firstq == -1) {
@@ -158,8 +158,8 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + firstqcompleteness
                         + ", " + firstqcompleted
                         + ", " + firstqmessages
-                        + ", " + maxmessages
-                        + ", " + minmessages
+//                        + ", " + maxmessages
+//                        + ", " + minmessages
                         + ", " + firstqmessagesfullmesh
                         + ", " + meanmessages
                         + ", " + firstqtriplesback
