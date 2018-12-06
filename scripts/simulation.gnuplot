@@ -1,30 +1,43 @@
 set style data linespoints
 set datafile separator ","
-set terminal png size 800,600
+set terminal png size 1600,1200
 set style fill solid
 
-set output "../results/100samples/simulation.png"
-set xlabel 'Number of replicated queries for N=100'
-set ylabel 'Number of rounds to see all the network'
-set style data histogram
-plot "../results/100samples/mean.txt" using 20:xticlabels(2) title "Approximation", \
-    "../results/100samples/mean.txt" using 16:xticlabels(2) title "Experiment (100 samples)"
+outputdir = "../results/n=1000-100samples/"
 
-set output "../results/100samples/simulation-traffic-messages.png"
-set xlabel 'Number of replicated queries for N=100'
-set ylabel 'Average number of rounds the first query terminate with'
-set style data histogram
-plot "../results/100samples/mean.txt" using 18:xticlabels(2) title "Number of Messages"
+rep1 = outputdir."rep1sontruetraffictrue-mean.txt"
+rep50 = outputdir."rep50sontruetraffictrue-mean.txt"
+rep100 = outputdir."rep100sontruetraffictrue-mean.txt"
 
-set output "../results/100samples/simulation-traffic-triples.png"
-set xlabel 'Number of replicated queries for N=100'
-set ylabel 'Average number of messages sent to neighbours for the first terminated query'
+set output outputdir."simulation.png"
+set xlabel 'Different conjunctive queries'
+set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot "../results/100samples/mean.txt" using 19:xticlabels(2) title "Number of triples"
 
-set yrange [90:110]
-set output "../results/100samples/simulation-completeness.png"
-set xlabel 'Number of replicated queries for N=100'
-set ylabel 'Average completeness for the first terminated query'
-set style data histogram
-plot "../results/100samples/mean.txt" using 17:xticlabels(2) notitle
+plot rep1 using 14:xticlabels(16) lt rgb 'red' title "q=1 (approximation)", \
+    rep1 using 7:xticlabels(16) title "q=1 (experiment)", \
+    rep50 using 14:xticlabels(16) lt rgb 'red' title "q=50 (approximation)", \
+    rep50 using 7:xticlabels(16) title "q=50 (experiment)", \
+    rep100 using 14:xticlabels(16) lt rgb 'red' title "q=100 (approximation)", \
+    rep100 using 7:xticlabels(16) title "q=100 (experiment)"
+
+
+
+#set output outputdir."simulation-traffic-messages.png"
+#set xlabel 'Number of replicated queries for N=100'
+#set ylabel 'Average number of rounds the first query terminate with'
+#set style data histogram
+#plot file using 10:xticlabels(16) title "Number of Messages"
+
+#set output outputdir."simulation-traffic-triples.png"
+#set xlabel 'Number of replicated queries for N=100'
+#set ylabel 'Average number of messages sent to neighbours for the first terminated query'
+#set style data histogram
+#plot file using 13:xticlabels(16) title "Number of triples"
+
+#set yrange [90:110]
+#set output outputdir."simulation-completeness.png"
+#set xlabel 'Number of replicated queries for N=100'
+#set ylabel 'Average completeness for the first terminated query'
+#set style data histogram
+#plot file using 8:xticlabels(16) notitle

@@ -14,7 +14,7 @@ public class App {
         if (args.length > 0 && args[0].equals("--init")) {
             int peers = 1000;
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
-            int[] replicate = {1, 50, 100};
+            int[] replicate = {1, 2, 8, 16, 32, 64, 128};
 
             int numberofqueries = 5;
             int[] queries = new int[numberofqueries];
@@ -30,7 +30,7 @@ public class App {
 
             int delta_rps = 1;
             int delta_son = 1;
-            int rps_size = 50;
+            int rps_size = 100;
             int pick = 5;
             int son_size = 5; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
