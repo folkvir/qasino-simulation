@@ -90,15 +90,19 @@ public class QuerySnob {
         return "Query: " + this.query + " Cardinality: " + this.cardinality;
     }
 
-    public void addAlreadySeen(Triple pattern, int remote, int ours) {
+    public boolean addAlreadySeen(Triple pattern, int remote, int ours) {
+        boolean res = false;
         if (!this.alreadySeen.containsKey(pattern)) {
             this.alreadySeen.put(pattern, new LinkedHashSet<>());
         }
+        if(!this.seen.contains(remote)) res = true;
+        if(!this.alreadySeen.get(pattern).contains(ours)) res = true;
         this.seen.add(ours);
         this.seen.add(remote);
         this.alreadySeen.get(pattern).add(ours);
         this.alreadySeen.get(pattern).add(remote);
         this.computeGlobalSeen();
+        return res;
     }
 
     private void computeGlobalSeen() {

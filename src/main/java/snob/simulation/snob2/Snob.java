@@ -133,7 +133,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
-        periodicCyclonCall();
+        periodicRandomGraphCall();
+        // periodicCyclonCall();
     }
 
     public static Snob fromNodeToSnob(Node node ) {
@@ -144,10 +145,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * Construct the neighborhood using the RPS
      */
     public void periodicRandomGraphCall() {
-        if (this.isUp()) {
+        if (this.isUp() && this.partialView.size() > 0) {
             this.partialView.clear();
             List<Node> rps = new LinkedList<>();
-            while (rps.size() != c) {
+            while (rps.size() != Snob.pick) {
                 int rn = (int) Math.floor(Math.random() * Network.size());
                 Node randomNode = Network.get(rn);
                 if (!rps.contains(randomNode) && !randomNode.equals(this.node)) {
@@ -156,18 +157,20 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
             }
             // son
-            constructFullmesh(rps);
-            // -------- QUERY EXECUTION MODEL -------
-            if (start && profile.has_query && !profile.query.terminated) {
-                // 1 - send tpqs to neighbours and receive responses
-                List<Node> rps_neigh = rps;
-                for (Node node_rps : rps_neigh) {
-                    this.exchangeTriplePatterns((Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid));
-                }
-                profile.execute();
-                // test if the query is terminated or not
-                if (this.profile.query.globalseen == Network.size()) {
-                    this.profile.query.stop();
+            if(start) {
+                if(Snob.son) constructFullmesh(rps);
+                // -------- QUERY EXECUTION MODEL -------
+                if (profile.has_query && !profile.query.terminated) {
+                    // 1 - send tpqs to neighbours and receive responses
+                    List<Node> rps_neigh = rps;
+                    for (Node node_rps : rps_neigh) {
+                        this.exchangeTriplePatterns((Snob) node_rps.getProtocol(ARandomPeerSamplingProtocol.pid));
+                    }
+                    profile.execute();
+                    // test if the query is terminated or not
+                    if (this.profile.query.globalseen == Network.size()) {
+                        this.profile.query.stop();
+                    }
                 }
             }
         }
@@ -294,12 +297,26 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             } else {
                 this.messages++;
                 List<Triple> list = remote.profile.datastore.getTriplesMatchingTriplePatternAsList(pattern);
-                tripleResponses += this.profile.insertTriplesWithList(pattern, list, false);
+                int count = this.profile.insertTriplesWithList(pattern, list, false);
+                System.err.println(count + "_" +list.size());
+                tripleResponses += count;
                 this.shareTriples(list, pattern);
             }
+
             this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
             if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+                int before = this.profile.query.alreadySeen.get(pattern).size();
                 this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
+                int after = this.profile.query.alreadySeen.get(pattern).size();
+                if(Snob.son) {
+                    if(after - before > 0) {
+                        System.err.println("Update the fullmesh with new pair");
+                        // considering that we provide this information by sharing during triple pattern exchange.
+                        for (Node node : fullmesh) {
+                            fromNodeToSnob(node).profile.query.mergeAlreadySeen(pattern, this.profile.query.alreadySeen.get(pattern));
+                        }
+                    }
+                }
             }
             // System.err.println("** after, for the pattern: " + this.profile.query.alreadySeen.get(pattern));
             // System.err.println("** after global seen: " + this.profile.query.alreadySeen.get(pattern));
