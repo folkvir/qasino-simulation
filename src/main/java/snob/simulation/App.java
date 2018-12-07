@@ -21,11 +21,7 @@ public class App {
                 if(i == 0) {
                     replicate[i] = 1;
                 } else {
-                    if(i == 1) {
-                        replicate[i] = step;
-                    } else {
-                        replicate[i] += step;
-                    }
+                    replicate[i] = step * i;
                 }
             }
 
@@ -50,7 +46,7 @@ public class App {
             boolean[] trafficMin = {true};
             // firstly do it with only the rps
             for(int query: queries) {
-                for (int i : replicate) {
+                for (int rep : replicate) {
                     for (boolean b : son_activated) {
                         for (boolean traffic : trafficMin) {
                             // create a file
@@ -59,7 +55,7 @@ public class App {
                             String configName = "p" + peers
                                     + "-q" + query
                                     + "-son" + b
-                                    + "-rep" + i
+                                    + "-rep" + rep
                                     + "-traffic" + traffic
                                     + "-config.conf";
                             String pathTemplate = System.getProperty("user.dir") + "/configs/template.conf";
@@ -80,7 +76,7 @@ public class App {
                             replace(pathConfig, "\\$son_size\\$", String.valueOf(son_size));
                             replace(pathConfig, "\\$rps_delta\\$", String.valueOf(delta_rps));
                             replace(pathConfig, "\\$son_delta\\$", String.valueOf(delta_son));
-                            replace(pathConfig, "\\$replicate\\$", String.valueOf(i));
+                            replace(pathConfig, "\\$replicate\\$", String.valueOf(rep));
                             replace(pathConfig, "\\$querytoreplicate\\$", String.valueOf(query));
                         }
                     }

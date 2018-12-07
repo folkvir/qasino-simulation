@@ -4,7 +4,6 @@ set terminal png size 1600,1200
 set style fill solid
 
 outputdir = "../results/645245f5f8b2362f2d7dd874e77f9a3b/"
-#outputdir = "../results/n=1000-100samples/"
 
 global = outputdir."global-mean.csv"
 

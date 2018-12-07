@@ -120,6 +120,16 @@
         <plugin>
           <artifactId>maven-clean-plugin</artifactId>
           <version>3.0.0</version>
+            <configuration>
+                <filesets>
+                    <fileset>
+                        <directory>./configs/generated/</directory>
+                        <includes>
+                            <include>p*.conf</include>
+                        </includes>
+                    </fileset>
+                </filesets>
+            </configuration>
         </plugin>
         <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
         <plugin>
