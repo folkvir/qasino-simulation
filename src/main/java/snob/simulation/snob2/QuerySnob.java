@@ -126,6 +126,8 @@ public class QuerySnob {
         }
         // System.err.println("Merge our view " + this.alreadySeen.get(pattern) + "with " + remote);
         this.alreadySeen.get(pattern).addAll(remote);
+        computeGlobalSeen();
+        // just a rapid hack, but need to iterate on remote
         this.seen.addAll(remote);
     }
 

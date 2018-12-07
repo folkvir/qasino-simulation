@@ -310,7 +310,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 int after = this.profile.query.alreadySeen.get(pattern).size();
                 if(Snob.son) {
                     if(after - before > 0) {
-                        System.err.println("Update the fullmesh with new pair");
+                        // System.err.println("Update the fullmesh with new pair");
                         // considering that we provide this information by sharing during triple pattern exchange.
                         for (Node node : fullmesh) {
                             fromNodeToSnob(node).profile.query.mergeAlreadySeen(pattern, this.profile.query.alreadySeen.get(pattern));

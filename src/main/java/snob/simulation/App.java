@@ -25,7 +25,7 @@ public class App {
                 }
             }
 
-            int numberofqueries = 1;
+            int numberofqueries = 3;
             int[] queries = new int[numberofqueries];
             boolean soixantetreize = false;
             for (int i = 0; i < queries.length; i++) {
@@ -35,7 +35,7 @@ public class App {
                 }
             }
             // this query generate a lot of intermediate results. which is cool to present. cCool
-            if(!soixantetreize) queries[0] = 0;
+            if(!soixantetreize) queries[0] = 73;
 
             int delta_rps = 1;
             int delta_son = 1;
@@ -43,7 +43,7 @@ public class App {
             int pick = 5;
             int son_size = 5; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
-            boolean[] trafficMin = {true};
+            boolean[] trafficMin = {true, false};
             // firstly do it with only the rps
             for(int query: queries) {
                 for (int rep : replicate) {
