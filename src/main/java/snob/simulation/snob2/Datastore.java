@@ -1,5 +1,6 @@
 package snob.simulation.snob2;
 
+import com.google.common.collect.Lists;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.*;
@@ -11,6 +12,7 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.util.FileManager;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -85,6 +87,10 @@ public class Datastore {
         } finally {
             // this.dataset.end();
         }
+    }
+
+    public List<Triple> getTriplesMatchingTriplePatternAsList(Triple p) {
+        return Lists.newArrayList(this.getTriplesMatchingTriplePattern(p));
     }
 
     public Iterator<Triple> getTriplesMatchingTriplePattern(Triple p) {

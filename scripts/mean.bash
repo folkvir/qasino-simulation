@@ -7,9 +7,9 @@ mean() {
     echo $(LC_NUMERIC=en_US.UTF-8 awk -F ',' "{ total += \$$1 } END { print total/NR }" $2)
 }
 DIRECTORY=$(dirname $1)
-OUTPUT=$DIRECTORY"/global-mean.txt"
+OUTPUT=$DIRECTORY"/global-mean.csv"
 
-rm -rf "${DIRECTORY}/*mean.txt"
+rm -rf "${DIRECTORY}/*-mean.csv"
 
 echo "Writing results in: " $OUTPUT
 
@@ -28,13 +28,16 @@ for file in "${FILES[@]}"; do
 
     RES=$RES$Q", "$SON", "$REP", "$TRAFFIC
 
-    OUTPUTQUERY=$(dirname $1)"/"$REP$SON$TRAFFIC"-mean.txt"
+    OUTPUTQUERY=$(dirname $1)"/"$Q$SON$TRAFFIC"-mean.csv"
+    OUTPUTQUERY2=$(dirname $1)"/"$SON$TRAFFIC"-mean.csv"
+    echo $RES >> "${OUTPUTQUERY2}"
     echo $RES >> "${OUTPUTQUERY}"
     echo $RES >> "${OUTPUT}"
 done
 
 echo "Sorting file on the number of replicated queries..."
 sort -nk2 "${OUTPUT}" > "${OUTPUT}-tmp"; mv "${OUTPUT}-tmp" "${OUTPUT}"
-for file in $DIRECTORY/*-mean.txt; do
+for file in $DIRECTORY/*-mean.csv; do
+    echo "Sorting file: ${file}..."
     sort -nk2 "${file}" > "${file}-tmp"; mv "${file}-tmp" "${file}"
 done

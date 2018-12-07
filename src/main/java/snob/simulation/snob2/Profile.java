@@ -4,10 +4,7 @@ package snob.simulation.snob2;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Profile {
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
@@ -35,10 +32,27 @@ public class Profile {
         return count;
     }
 
+    public int insertTriplesWithList(Triple pattern, List<Triple> list, boolean traffic) {
+        List<Triple> ibf = new LinkedList<>();
+        for (Triple triple : list) {
+            if (!query.data.get(pattern).contains(triple)) {
+                query.insertTriple(pattern, triple);
+            }
+            if (!datastore.contains(triple)) {
+                ibf.add(triple);
+            }
+        }
+        datastore.insertTriples(ibf);
+        if (traffic) this.query.strata.get(pattern).insert(ibf);
+        return list.size();
+    }
+
     public int insertTriples(Triple pattern, Iterator<Triple> it, boolean traffic) {
+        int count = 0;
         List<Triple> list = new ArrayList<>();
         List<Triple> ibf = new ArrayList<>();
         while (it.hasNext()) {
+            count++;
             Triple t = it.next();
             if (!query.data.get(pattern).contains(t)) {
                 query.insertTriple(pattern, t);
@@ -49,7 +63,7 @@ public class Profile {
         }
         datastore.insertTriples(list);
         if (traffic) this.query.strata.get(pattern).insert(ibf);
-        return list.size();
+        return count;
     }
 
     /**

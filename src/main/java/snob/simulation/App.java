@@ -16,7 +16,7 @@ public class App {
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
             int[] replicate = {1, 2, 4, 8, 16, 32, 64, 128};
 
-            int numberofqueries = 5;
+            int numberofqueries = 1;
             int[] queries = new int[numberofqueries];
             boolean soixantetreize = false;
             for (int i = 0; i < queries.length; i++) {
