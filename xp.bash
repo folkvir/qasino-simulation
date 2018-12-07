@@ -2,7 +2,7 @@
 bash install.bash
 
 JAR="-jar target/snob.jar"
-SAMPLE=100
+SAMPLE=20
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     DIRNAME=`date | md5sum | cut -d' ' -f1`

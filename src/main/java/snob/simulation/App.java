@@ -14,7 +14,15 @@ public class App {
         if (args.length > 0 && args[0].equals("--init")) {
             int peers = 1000;
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
-            int[] replicate = {1, 2, 4, 8, 16, 32, 64, 128};
+            int max = 20;
+            int[] replicate = new int[max];
+            for (int i = 0; i <= max; i++) {
+                if(i == 0) {
+                    replicate[i] = 1;
+                } else {
+                    replicate[i] = max * i;
+                }
+            }
 
             int numberofqueries = 1;
             int[] queries = new int[numberofqueries];
@@ -26,7 +34,7 @@ public class App {
                 }
             }
             // this query generate a lot of intermediate results. which is cool to present. cCool
-            if(!soixantetreize) queries[0] = 73;
+            if(!soixantetreize) queries[0] = 0;
 
             int delta_rps = 1;
             int delta_son = 1;
@@ -34,7 +42,7 @@ public class App {
             int pick = 5;
             int son_size = 5; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
-            boolean[] trafficMin = {true, false};
+            boolean[] trafficMin = {true};
             // firstly do it with only the rps
             for(int query: queries) {
                 for (int i : replicate) {

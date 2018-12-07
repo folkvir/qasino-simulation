@@ -39,16 +39,11 @@ q4ff = outputdir.q4l."sonfalsetrafficfalse-mean.csv"
 q5ff = outputdir.q5l."sonfalsetrafficfalse-mean.csv"
 
 
-set output outputdir."simulation-w-clique-traffictrue.png"
+set output outputdir."ratio.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Ratio between approximation and experiment'
 set style data histogram
-plot q1 using 14:xticlabels(16) lt rgb 'red' title "approximation", \
-    q1 using 7:xticlabels(2) title q1l, \
-    q2 using 7:xticlabels(2) title q2l, \
-    q3 using 7:xticlabels(2) title q3l, \
-    q4 using 7:xticlabels(2) title q4l, \
-    q5 using 7:xticlabels(2) title q5l
+plot q1 using 15:xticlabels(2) lt rgb 'red' title "ratio"
 
 
 set output outputdir."simulation-w-clique-traffictrue.png"
