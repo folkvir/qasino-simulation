@@ -246,32 +246,33 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 // #B if the chosen peer is dead, remove it from the view
                 this.partialView.removeNode(q);
             }
-        }
 
-        // do the periodic shuffling for the Semantic Overlay if enabled
-        if (this.isUp() && start) {
-            // list the rps, check for Snob that are not in our fullmesh son, add it
-            List<Node> all = this.getPeers(Integer.MAX_VALUE);
-            List<Node> rps = new LinkedList<>();
-            while(rps.size() != this.pick || all.isEmpty()) {
-                int rn = (int) Math.floor(Math.random() * all.size());
-                if(!rps.contains(all.get(rn))) {
-                    rps.add(all.get(rn));
-                    all.remove(rn);
+
+            if(start) {
+                // list the rps, check for Snob that are not in our fullmesh son, add it
+                List<Node> all = this.getPeers(Integer.MAX_VALUE);
+                List<Node> rps = new LinkedList<>();
+                while(rps.size() < this.pick && !all.isEmpty()) {
+                    int rn = (int) Math.floor(Math.random() * all.size());
+                    if(!rps.contains(all.get(rn))) {
+                        Node node = all.get(rn);
+                        rps.add(node);
+                        all.remove(node);
+                    }
                 }
-            }
-            if(Snob.son) constructFullmesh(rps);
-            // -------- QUERY EXECUTION MODEL -------
-            if (profile.has_query && !profile.query.terminated) {
-                // 1 - send tpqs to neighbours and receive responses
-                for (Node node_rps : rps) {
-                    // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
-                    this.exchangeTriplePatterns(fromNodeToSnob(node_rps));
-                }
-                profile.execute();
-                // test if the query is terminated or not
-                if (this.profile.query.globalseen == Network.size()) {
-                    this.profile.query.stop();
+                if(Snob.son) constructFullmesh(rps);
+                // -------- QUERY EXECUTION MODEL -------
+                if (profile.has_query && !profile.query.terminated) {
+                    // 1 - send tpqs to neighbours and receive responses
+                    for (Node node_rps : rps) {
+                        // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
+                        this.exchangeTriplePatterns(fromNodeToSnob(node_rps));
+                    }
+                    profile.execute();
+                    // test if the query is terminated or not
+                    if (this.profile.query.globalseen == Network.size()) {
+                        this.profile.query.stop();
+                    }
                 }
             }
         }
