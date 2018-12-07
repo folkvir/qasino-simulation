@@ -14,18 +14,9 @@ public class App {
         if (args.length > 0 && args[0].equals("--init")) {
             int peers = 1000;
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
-            int max = 20;
-            int step = 50;
-            int[] replicate = new int[max + 1];
-            for (int i = 0; i <= max; i++) {
-                if(i == 0) {
-                    replicate[i] = 1;
-                } else {
-                    replicate[i] = step * i;
-                }
-            }
+            int[] replicate = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1000};
 
-            int numberofqueries = 3;
+            int numberofqueries = 5;
             int[] queries = new int[numberofqueries];
             boolean soixantetreize = false;
             for (int i = 0; i < queries.length; i++) {
