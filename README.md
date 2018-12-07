@@ -39,4 +39,13 @@ java -jar target/snob.jar --init # will create a lot of configuration file in co
 java -jar target/snob.jar --config <config.conf> // will run the experiment using the specified config file. 
 ```
 
+
+## Variation of N and Q with K=1 on random pick withs graph
+
+stdout: n q n/q res n*ln(n)/q
+
+x: n in logscale
+y: res/(nln(n)/q)
+
+
 ## Results
