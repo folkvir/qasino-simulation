@@ -10,7 +10,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     DIRNAME=`date | md5`
 fi
 
-DIR="./results/${DIRNAME}"
+DIR="./results/${DIRNAME}-all"
 mkdir -p $DIR
 
 java  ${HEAP} ${JAR} --init
