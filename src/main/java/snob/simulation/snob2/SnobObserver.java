@@ -19,6 +19,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
+import org.apache.commons.math3.special.Gamma;
+
 import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
@@ -125,29 +127,11 @@ public class SnobObserver implements ObserverProgram {
             if (meanQN != 0) meanQN = meanQN / seenfinished.size();
 
             double approximation = Math.floor(Network.size() * Math.log(Network.size()) / (this.queries * Snob.pick)) + 1;
+            double appro2 = Math.floor(Network.size() * Math.log(Network.size() + Gamma.GAMMA) / (this.queries * Snob.pick)) + 1;
             double ratio = meanQN / approximation;
 
 
             if (firstq != -1) {
-                double minmessages = firstqnbtpqs * (firstq - 1) * Snob.pick;
-                double maxmessages = 0;
-                if (Snob.son) {
-                    if (Snob.traffic) {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * (2 * Snob.pick * (this.queries - 1)));
-                    } else {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * (Snob.pick * (this.queries - 1)));
-                    }
-                } else {
-                    if (Snob.traffic) {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * 2 * Snob.pick);
-                    } else {
-                        maxmessages = firstqnbtpqs * ((firstq - 1) * Snob.pick);
-                    }
-                }
-                System.err.println("Max allowed number of messages for firstq = " + maxmessages);
-                double meanmessages = firstqmessages;
-                System.err.println("Mean number of messages =" + meanmessages);
-
                 String res = observer.size()
                         + ", " + this.queries
                         + ", " + firstqrpssize
@@ -157,13 +141,12 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + firstq
                         + ", " + firstqcompleteness
                         + ", " + firstqcompleted
+                        + ", " + firstqnbtpqs
                         + ", " + firstqmessages
-//                        + ", " + maxmessages
-//                        + ", " + minmessages
                         + ", " + firstqmessagesfullmesh
-                        + ", " + meanmessages
                         + ", " + firstqtriplesback
                         + ", " + approximation
+                        + ", " + appro2
                         + ", " + ratio;
                 System.out.println(res);
                 exit(0);

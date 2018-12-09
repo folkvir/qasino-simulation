@@ -19,8 +19,6 @@ import java.util.Vector;
 import java.util.stream.Stream;
 
 public class GenerateTest {
-
-
     @Ignore
     @Test
     public void GenerateDiseasomeDataset() {

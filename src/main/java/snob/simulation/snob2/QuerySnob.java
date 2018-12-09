@@ -6,6 +6,7 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONObject;
+import peersim.core.Network;
 import snob.simulation.snob2.data.IBFStrata;
 
 import java.util.*;
@@ -75,6 +76,18 @@ public class QuerySnob {
     public void stop() {
         System.err.printf("[query-%d] %s is finished. %n", qid, query);
         terminated = true;
+    }
+
+    public boolean isFinished() {
+        boolean res = true;
+        for(Map.Entry<Triple, Set<Integer>> entry: alreadySeen.entrySet()) {
+            if(entry.getValue().size() == Network.size()) {
+                res = res && true;
+            } else {
+                res = res && false;
+            }
+        }
+        return res;
     }
 
     public Query getQuery() {

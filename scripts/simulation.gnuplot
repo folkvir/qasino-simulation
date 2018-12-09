@@ -3,14 +3,14 @@ set datafile separator ","
 set terminal png size 1600,1200
 set style fill solid
 
-outputdir = "../results/645245f5f8b2362f2d7dd874e77f9a3b/"
+outputdir = "../results/all/"
 
 global = outputdir."global-mean.csv"
 
-q1l = "q15"
-q2l = "q21"
-q3l = "q33"
-q4l = "q55"
+q1l = "q23"
+q2l = "q31"
+q3l = "q62"
+q4l = "q63"
 q5l = "q73"
 
 q1 = outputdir.q1l."sontruetraffictrue-mean.csv"
@@ -37,7 +37,7 @@ q3ff = outputdir.q3l."sonfalsetrafficfalse-mean.csv"
 q4ff = outputdir.q4l."sonfalsetrafficfalse-mean.csv"
 q5ff = outputdir.q5l."sonfalsetrafficfalse-mean.csv"
 
-
+set logscale y
 set output outputdir."ratio.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Ratio between approximation and experiment'

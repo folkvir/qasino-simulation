@@ -4,12 +4,14 @@ import com.google.common.hash.HashCode;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
 
 import static com.google.common.hash.Hashing.*;
 
 public class IbflTest {
+    @Ignore
     @Test
     public void testHashMurmur() {
         String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
@@ -19,7 +21,7 @@ public class IbflTest {
         System.err.printf("Hash Murmur Length: %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
-
+    @Ignore
     @Test
     public void testChecksum() {
         String xs = "\"<http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/212> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/genes/PPT1>.";
@@ -29,7 +31,7 @@ public class IbflTest {
         System.err.printf("Checksum Length : %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
-
+    @Ignore
     @Test
     public void test3peersTrafficNormal() {
         String query = "PREFIX ns: <http://example.org/ns#> \n" +
@@ -53,7 +55,7 @@ public class IbflTest {
 
         // p2 exchange with p3 first
         for (Triple pattern : p2.query.patterns) {
-            p2.insertTriples(pattern, p3.datastore.getTriplesMatchingTriplePattern(pattern), false);
+            p2.insertTriplesWithList(pattern, p3.datastore.getTriplesMatchingTriplePatternAsList(pattern), false);
         }
 
         p2.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
@@ -62,7 +64,7 @@ public class IbflTest {
 
         // then p1 exchange with p2
         for (Triple pattern : p1.query.patterns) {
-            p1.insertTriples(pattern, p2.datastore.getTriplesMatchingTriplePattern(pattern), false);
+            p1.insertTriplesWithList(pattern, p2.datastore.getTriplesMatchingTriplePatternAsList(pattern), false);
         }
 
         p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
@@ -72,7 +74,7 @@ public class IbflTest {
         p1.execute();
         Assert.assertEquals(3, p1.query.getResults().size());
     }
-
+    @Ignore
     @Test
     public void test1peer() {
         String query = "PREFIX ns: <http://example.org/ns#> \n" +

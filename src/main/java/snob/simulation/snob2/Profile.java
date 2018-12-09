@@ -6,64 +6,31 @@ import org.apache.jena.graph.Triple;
 
 import java.util.*;
 
+import static java.lang.System.exit;
+
 public class Profile {
+    public int inserted = 0;
     public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
     public int WEIGH_CONTAINMENT = 2;
     public int WEIGH_SUBSET = 1;
     public boolean has_query = false;
-    public long qlimit = 1; // number of queries in the network
     public long replicate = 50; // replicate factor in % (one query is replicated over a limited number of peer, 'replicate is this number)
 
     public QuerySnob query;
     public Datastore datastore = new Datastore();
 
-    /**
-     * Insert triples when we receive a list of pattern with triples matching these triple patterns from another peer.
-     *
-     * @param its Iterator of triples associated to a triple pattern.
-     */
-    public int insertTriples(Map<Triple, Iterator<Triple>> its, boolean traffic) {
-        int count = 0;
-        for (Map.Entry<Triple, Iterator<Triple>> entry : its.entrySet()) {
-            int c = insertTriples(entry.getKey(), entry.getValue(), traffic);
-            count += c;
-            // System.err.printf("** %d triples inserted %n", c);
-        }
-        return count;
-    }
-
     public int insertTriplesWithList(Triple pattern, List<Triple> list, boolean traffic) {
+        inserted += list.size();
         List<Triple> ibf = new LinkedList<>();
         for (Triple triple : list) {
-            if (!query.data.get(pattern).contains(triple)) {
-                query.insertTriple(pattern, triple);
-            }
             if (!datastore.contains(triple)) {
+                // System.err.println("Insert in the database and pipeline: " + triple);
                 ibf.add(triple);
+                query.insertTriple(pattern, triple);
             }
         }
         datastore.insertTriples(ibf);
-        if (traffic) this.query.strata.get(pattern).insert(ibf);
         return list.size();
-    }
-
-    public int insertTriples(Triple pattern, Iterator<Triple> it, boolean traffic) {
-        int count = 0;
-        List<Triple> list = new ArrayList<>();
-        List<Triple> ibf = new ArrayList<>();
-        while (it.hasNext()) {
-            count++;
-            Triple t = it.next();
-            if (!query.data.get(pattern).contains(t)) {
-                query.insertTriple(pattern, t);
-            }
-            if (!datastore.contains(t)) {
-                list.add(t);
-            }
-        }
-        datastore.insertTriples(list);
-        if (traffic) this.query.strata.get(pattern).insert(ibf);
-        return count;
     }
 
     /**
@@ -123,7 +90,9 @@ public class Profile {
         // System.err.println("[INIT] Initializing the pipeline...");
         for (Triple pattern : patterns) {
             // System.err.printf("[INIT] Inserting triples from %s into the pipeline: ", pattern.toString());
-            this.datastore.getTriplesMatchingTriplePattern(pattern).forEachRemaining(triple -> this.query.insertTriple(pattern, triple));
+            for (Triple triple : this.datastore.getTriplesMatchingTriplePatternAsList(pattern)) {
+                this.query.insertTriple(pattern, triple);
+            }
         }
     }
 

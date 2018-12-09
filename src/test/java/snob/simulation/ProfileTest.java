@@ -3,6 +3,7 @@ package snob.simulation;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import snob.simulation.snob2.Datastore;
 import snob.simulation.snob2.Profile;
@@ -13,6 +14,7 @@ public class ProfileTest {
     /**
      * Update fonction of profile should extract tpq
      */
+    @Ignore
     @Test
     public void profileShouldUpdateWithQuery() {
         Profile p = new Profile();
@@ -28,6 +30,7 @@ public class ProfileTest {
     /**
      * Update fonction of profile should extract tpq
      */
+    @Ignore
     @Test
     public void profileScoringShouldReturnMaxValue() {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
@@ -50,6 +53,7 @@ public class ProfileTest {
     /**
      * Update fonction of profile should extract tpq
      */
+    @Ignore
     @Test
     public void profileScoringShouldReturn2() {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
@@ -76,6 +80,7 @@ public class ProfileTest {
     /**
      * Update fonction of profile should extract tpq
      */
+    @Ignore
     @Test
     public void profileScoringShouldReturn3() {
         String query = "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>" +
@@ -103,6 +108,7 @@ public class ProfileTest {
     /**
      * Update fonction of profile should extract tpq
      */
+    @Ignore
     @Test
     public void DatastoreShouldBeQueryiable() {
         Datastore d = new Datastore();

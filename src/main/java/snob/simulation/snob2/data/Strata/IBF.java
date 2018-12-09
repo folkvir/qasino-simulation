@@ -85,7 +85,7 @@ public class IBF implements Serializable {
     }
 
     public Cell[] getCells() {
-        return cells;
+        return cells.clone();
     }
 
     public void add(int id) {
