@@ -3,8 +3,6 @@ package snob.simulation;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.System.exit;
-
 public class Simulation {
     public static void main(String[] args) {
         int size = 0;
@@ -177,9 +175,7 @@ public class Simulation {
                 boolean stop = false;
                 while (!stop && rps.get(i).size() != krps) {
                     int rn = (int) Math.floor(Math.random() * connected.size());
-                    if (!rps.get(i).contains(rn)) {
-                        rps.get(i).add(rn);
-                    }
+                    rps.get(i).add(rn);
                     if (rps.get(i).size() >= connected.size()) stop = true;
                 }
                 connected.add(i);
@@ -188,10 +184,10 @@ public class Simulation {
             // fill 0 and 1
             while (rps.get(0).size() < krps) {
                 int rn = (int) Math.floor(Math.random() * size);
-                if (rn != 0 && rn != 1 && !rps.get(0).contains(rn)) {
+                if (rn != 0 && rn != 1) {
                     rps.get(0).add(rn);
                 }
-                if (rn != 0 && rn != 1 && !rps.get(1).contains(rn)) {
+                if (rn != 0 && rn != 1) {
                     rps.get(1).add(rn);
                 }
             }
@@ -201,6 +197,10 @@ public class Simulation {
             System.err.println(rps);
             shuffle();
             // exit(1);
+        }
+
+        static <E> E getRandomSetElement(Set<E> set) {
+            return set.stream().skip(new Random().nextInt(set.size())).findFirst().orElse(null);
         }
 
         public int[] getPeers() {
@@ -287,7 +287,7 @@ public class Simulation {
                         }
                         // otherwise always add only neigh
                         seen.get(qpeer).add(neigh);
-                        if(seen.get(qpeer).size() >= qsmax) {
+                        if (seen.get(qpeer).size() >= qsmax) {
                             qsmax = seen.get(qpeer).size();
                         }
                     }
@@ -313,10 +313,6 @@ public class Simulation {
             // System.err.println("Global Clustering coefficient: " + globalClusteringCoefficient() + " (ideal: " + idealClusteringCoefficient() + ")");
         }
 
-        static <E> E getRandomSetElement(Set<E> set) {
-            return set.stream().skip(new Random().nextInt(set.size())).findFirst().orElse(null);
-        }
-
         private void exchangeRps(int i) {
             if (rps.get(i).size() > 0) {
                 int ex = krps;
@@ -331,10 +327,10 @@ public class Simulation {
 
                 List<Integer> rpsi = new LinkedList<>();
                 System.err.println(i + "_" + neighbour + "_" + union);
-                while(rpsi.size() <= krps) {
+                while (rpsi.size() <= krps) {
                     Integer elem = union.getFirst();
-                    if(!rpsi.contains(elem)) {
-                        if(elem == i) {
+                    if (!rpsi.contains(elem)) {
+                        if (elem == i) {
                             rpsi.add(neighbour);
                         } else {
                             rpsi.add(elem);
@@ -345,7 +341,7 @@ public class Simulation {
                 rps.get(i).addAll(rpsi);
 
                 for (Integer integer : union) {
-                    if(integer == neighbour) {
+                    if (integer == neighbour) {
                         union.remove(integer);
                         union.add(i);
                     }

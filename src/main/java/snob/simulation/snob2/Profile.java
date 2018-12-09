@@ -4,9 +4,9 @@ package snob.simulation.snob2;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-import java.util.*;
-
-import static java.lang.System.exit;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Profile {
     public int inserted = 0;

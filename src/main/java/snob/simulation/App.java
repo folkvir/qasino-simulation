@@ -21,12 +21,12 @@ public class App {
             boolean soixantetreize = false;
             for (int i = 0; i < queries.length; i++) {
                 queries[i] = (int) Math.floor(Math.random() * 100);
-                if(queries[i] == 73) {
+                if (queries[i] == 73) {
                     soixantetreize = true;
                 }
             }
             // this query generate a lot of intermediate results. which is cool to present. cCool
-            if(!soixantetreize) queries[0] = 73;
+            if (!soixantetreize) queries[0] = 73;
 
             int delta_rps = 1;
             int delta_son = 1;
@@ -36,7 +36,7 @@ public class App {
             boolean[] son_activated = {true, false};
             boolean[] trafficMin = {true, false};
             // firstly do it with only the rps
-            for(int query: queries) {
+            for (int query : queries) {
                 for (int rep : replicate) {
                     for (boolean b : son_activated) {
                         for (boolean traffic : trafficMin) {

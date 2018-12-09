@@ -12,7 +12,6 @@ import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.apache.jena.sparql.syntax.Template;
 import org.apache.jena.util.FileManager;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 

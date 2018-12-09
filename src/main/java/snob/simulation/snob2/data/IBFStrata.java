@@ -1,16 +1,16 @@
 package snob.simulation.snob2.data;
 
 import com.github.jsonldjava.shaded.com.google.common.primitives.Ints;
-import com.google.common.hash.Hashing;
 import org.apache.jena.graph.Triple;
 import snob.simulation.snob2.data.Strata.Cell;
 import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.lang.System.exit;
 
 public class IBFStrata {
     public static final int ibfSize = 1000;
@@ -39,7 +39,7 @@ public class IBFStrata {
         List<Integer> res = new LinkedList<>();
         for (Triple triple : triples) {
             int hashed = triple.hashCode(); // hash(triple);
-            if(!data.containsKey(hashed)) {
+            if (!data.containsKey(hashed)) {
                 // System.err.println("Insert triple in the ibf:" + triple);
                 this.data.put(hashed, triple);
                 this.ibf.add(hashed);
@@ -51,11 +51,6 @@ public class IBFStrata {
         return estimator.encode(Ints.toArray(res));
     }
 
-    public class Result {
-        public int diffsize = 0;
-        public int messagessent = 0;
-        public List<Triple> missing = new LinkedList<>();
-    }
     public Result difference(IBFStrata remote) {
         Result res = new Result();
         res.messagessent++;
@@ -63,12 +58,12 @@ public class IBFStrata {
         int diffsize = remote.getEstimator().decode(this.getEstimator());
         // System.err.println("Diffsize: " + diffsize);
         res.diffsize = diffsize;
-        if(diffsize == 0) {
+        if (diffsize == 0) {
             return res;
         } else {
             Cell[] cells = ibf.subtract(remote.ibf.getCells());
             List<Integer>[] difference = ibf.decode(cells);
-            if(difference == null) {
+            if (difference == null) {
                 res.messagessent++;
                 res.missing = remote.getTriples();
                 return res;
@@ -80,5 +75,11 @@ public class IBFStrata {
                 return res;
             }
         }
+    }
+
+    public class Result {
+        public int diffsize = 0;
+        public int messagessent = 0;
+        public List<Triple> missing = new LinkedList<>();
     }
 }

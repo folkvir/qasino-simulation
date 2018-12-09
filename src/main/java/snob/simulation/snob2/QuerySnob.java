@@ -80,8 +80,8 @@ public class QuerySnob {
 
     public boolean isFinished() {
         boolean res = true;
-        for(Map.Entry<Triple, Set<Integer>> entry: alreadySeen.entrySet()) {
-            if(entry.getValue().size() == Network.size()) {
+        for (Map.Entry<Triple, Set<Integer>> entry : alreadySeen.entrySet()) {
+            if (entry.getValue().size() == Network.size()) {
                 res = res && true;
             } else {
                 res = res && false;
@@ -108,8 +108,8 @@ public class QuerySnob {
         if (!this.alreadySeen.containsKey(pattern)) {
             this.alreadySeen.put(pattern, new LinkedHashSet<>());
         }
-        if(!this.seen.contains(remote)) res = true;
-        if(!this.alreadySeen.get(pattern).contains(ours)) res = true;
+        if (!this.seen.contains(remote)) res = true;
+        if (!this.alreadySeen.get(pattern).contains(ours)) res = true;
         this.seen.add(ours);
         this.seen.add(remote);
         this.alreadySeen.get(pattern).add(ours);

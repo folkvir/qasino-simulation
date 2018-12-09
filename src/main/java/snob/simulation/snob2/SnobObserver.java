@@ -1,5 +1,6 @@
 package snob.simulation.snob2;
 
+import org.apache.commons.math3.special.Gamma;
 import org.apache.jena.query.QuerySolution;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -18,8 +19,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
-
-import org.apache.commons.math3.special.Gamma;
 
 import static java.lang.System.exit;
 
@@ -95,7 +94,7 @@ public class SnobObserver implements ObserverProgram {
                             throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
                         }
 
-                        if(!completed.containsKey(query.qid) && localcomp == 100) {
+                        if (!completed.containsKey(query.qid) && localcomp == 100) {
                             completed.put(query.qid, current);
                         }
                         // System.err.printf("[Peer-%d] has a query with %d of completeness. (%d/%d) %n", snob.id, localcomp, cpt, query.cardinality);
