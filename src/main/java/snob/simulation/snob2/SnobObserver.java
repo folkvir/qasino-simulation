@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import static java.lang.System.exit;
 
 public class SnobObserver implements ObserverProgram {
-    private final int begin = 0;
+    private final int begin = 100;
     private int query = 73;
     private int replicate;
     private int queries;

@@ -1,6 +1,5 @@
 package snob.simulation;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONArray;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import snob.simulation.snob2.Profile;
 import snob.simulation.snob2.data.IBFStrata;
 import snob.simulation.snob2.data.Strata.Cell;
-import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.snob2.data.Strata.StrataEstimator;
 
 import java.io.FileReader;
@@ -55,6 +53,7 @@ public class PipelineTest {
         }
         System.err.println("Count: " + count);
     }
+
     @Ignore
     @Test
     public void testIBF() {
@@ -120,7 +119,7 @@ public class PipelineTest {
                 missingtriples.add(ibfp.data.get(integer));
                 System.err.println("Miss: " + integer + " = " + ibfp.data.get(integer));
             }
-            p1.insertTriplesWithList(pattern, missingtriples, true);
+            p1.insertTriplesWithList(pattern, missingtriples);
             p1.query.strata.get(pattern).insert(missingtriples);
 
             List<Triple> list = p1.datastore.getTriplesMatchingTriplePatternAsList(pattern);

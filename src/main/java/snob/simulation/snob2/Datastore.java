@@ -27,45 +27,21 @@ public class Datastore {
         this.dataset = DatasetFactory.createTxnMem();
     }
 
-//    public void update(String filename) {
-//        System.err.println("Updating the datastore with the following filename: " + filename);
-//        // this.dataset.begin(ReadWrite.WRITE);
-//        try {
-//            RDFParser.create()
-//                    .source(filename)
-//                    .parse(this.dataset);
-//            // this.dataset.commit();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            // this.dataset.abort();
-//        } finally {
-//            // this.dataset.end();
-//        }
-//    }
-
     public void update(String filename) {
-        // System.err.println("Updating the datastore with the following filename: " + filename);
-        // this.dataset.begin(ReadWrite.WRITE);
         try {
             RDFParser.create()
                     .source(filename)
                     .parse(general);
-            // this.dataset.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            // this.dataset.abort();
-        } finally {
-            // this.dataset.end();
         }
     }
 
     public boolean contains(Triple p) {
         return general.getGraph().contains(p);
-        // this.dataset.asDatasetGraph().getDefaultGraph().contains(p);
     }
 
     public void insertTriples(List<Triple> triples) {
-        // this.dataset.begin(ReadWrite.WRITE);
         try {
             Graph g = general.getGraph(); // this.dataset.asDatasetGraph().getDefaultGraph();
             Iterator<Triple> it = triples.iterator();
@@ -79,12 +55,8 @@ public class Datastore {
                     exit(1);
                 }
             }
-            // this.dataset.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            // this.dataset.abort();
-        } finally {
-            // this.dataset.end();
         }
     }
 

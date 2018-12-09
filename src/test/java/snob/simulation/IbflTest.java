@@ -8,7 +8,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import snob.simulation.snob2.Profile;
 
-import static com.google.common.hash.Hashing.*;
+import static com.google.common.hash.Hashing.crc32;
+import static com.google.common.hash.Hashing.murmur3_32;
 
 public class IbflTest {
     @Ignore
@@ -21,6 +22,7 @@ public class IbflTest {
         System.err.printf("Hash Murmur Length: %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
+
     @Ignore
     @Test
     public void testChecksum() {
@@ -31,6 +33,7 @@ public class IbflTest {
         System.err.printf("Checksum Length : %d vs %d, string (%s vs %s) %n", xse.bits(), xse2.bits(), xse.toString(), xse2.toString());
         Assert.assertEquals(xse, xse2);
     }
+
     @Ignore
     @Test
     public void test3peersTrafficNormal() {
@@ -55,7 +58,7 @@ public class IbflTest {
 
         // p2 exchange with p3 first
         for (Triple pattern : p2.query.patterns) {
-            p2.insertTriplesWithList(pattern, p3.datastore.getTriplesMatchingTriplePatternAsList(pattern), false);
+            p2.insertTriplesWithList(pattern, p3.datastore.getTriplesMatchingTriplePatternAsList(pattern));
         }
 
         p2.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
@@ -64,7 +67,7 @@ public class IbflTest {
 
         // then p1 exchange with p2
         for (Triple pattern : p1.query.patterns) {
-            p1.insertTriplesWithList(pattern, p2.datastore.getTriplesMatchingTriplePatternAsList(pattern), false);
+            p1.insertTriplesWithList(pattern, p2.datastore.getTriplesMatchingTriplePatternAsList(pattern));
         }
 
         p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
@@ -74,6 +77,7 @@ public class IbflTest {
         p1.execute();
         Assert.assertEquals(3, p1.query.getResults().size());
     }
+
     @Ignore
     @Test
     public void test1peer() {

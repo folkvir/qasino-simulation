@@ -19,7 +19,7 @@ public class Profile {
     public QuerySnob query;
     public Datastore datastore = new Datastore();
 
-    public int insertTriplesWithList(Triple pattern, List<Triple> list, boolean traffic) {
+    public int insertTriplesWithList(Triple pattern, List<Triple> list) {
         inserted += list.size();
         List<Triple> ibf = new LinkedList<>();
         for (Triple triple : list) {

@@ -84,9 +84,10 @@ public class QuerySnob {
             if (entry.getValue().size() == Network.size()) {
                 res = res && true;
             } else {
-                res = res && false;
+                res = false;
             }
         }
+        if (alreadySeen.size() == 0) return false;
         return res;
     }
 
