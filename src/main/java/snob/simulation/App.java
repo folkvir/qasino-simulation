@@ -1,4 +1,5 @@
 package snob.simulation;
+
 import peersim.Simulator;
 
 import java.io.*;
@@ -21,7 +22,7 @@ public class App {
             int delta_son = 1;
             int rps_size = 100;
             int rps_size_exchange = 50;
-            int pick = 1;
+            int pick = 10;
             int son_size = 10; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
             boolean[] trafficMin = {true, false};
