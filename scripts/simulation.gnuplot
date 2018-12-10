@@ -1,11 +1,11 @@
 set style data linespoints
 set datafile separator ","
-set terminal png size 1600,1200
+set terminal png size 1600,1200 font "Default,30"
 set style fill solid
 
 set logscale y
 
-outputdir = "../results/40b8ed954b5af1c60443a2cd8de8607f-all/"
+outputdir = "../results/83174195c9aad2da2cbb7194a5df2d75-all/"
 
 global = outputdir."global-mean.csv"
 
@@ -43,52 +43,52 @@ set output outputdir."ratio.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Ratio between approximation and experiment'
 set style data histogram
-plot q1 using ($7/$15):xticlabels(2) lt rgb 'red' title "ratio"
+plot q1 using ($7/$6):xticlabels(2) lt rgb 'red' title "ratio"
 
 
 set output outputdir."simulation-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1 using ($1*(log($1-$2)+0.557)/$2):xticlabels(2) lt rgb 'red' title "approximation", \
-    q1 using 6:xticlabels(2) title q1l, \
-    q2 using 6:xticlabels(2) title q2l, \
-    q3 using 6:xticlabels(2) title q3l, \
-    q4 using 6:xticlabels(2) title q4l, \
-    q5 using 6:xticlabels(2) title q5l
+plot q1 using 6:xticlabels(2) lt rgb 'red' title "approximation", \
+    q1 using 7:xticlabels(2) title q1l, \
+    q2 using 7:xticlabels(2) title q2l, \
+    q3 using 7:xticlabels(2) title q3l, \
+    q4 using 7:xticlabels(2) title q4l, \
+    q5 using 7:xticlabels(2) title q5l
 
 set output outputdir."simulation-wo-clique-traffictrue.png"
 set xlabel 'Number of replicated queries. For N=1000 (only RPS) with traffic minimized'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1ft using ($1*(log($1 - $2) + 0.557)/$2):xticlabels(2) lt rgb 'red' title "approximation", \
-    q1ft using 6:xticlabels(2) title q1l, \
-    q2ft using 6:xticlabels(2) title q2l, \
-    q3ft using 6:xticlabels(2) title q3l, \
-    q4ft using 6:xticlabels(2) title q4l, \
-    q5ft using 6:xticlabels(2) title q5l
+plot q1ft using 6:xticlabels(2) lt rgb 'red' title "approximation", \
+    q1ft using 7:xticlabels(2) title q1l, \
+    q2ft using 7:xticlabels(2) title q2l, \
+    q3ft using 7:xticlabels(2) title q3l, \
+    q4ft using 7:xticlabels(2) title q4l, \
+    q5ft using 7:xticlabels(2) title q5l
 
 set output outputdir."simulation-w-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) with traffic normal'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1f using ($1*(log($1 - $2) + 0.557)/$2):xticlabels(2) lt rgb 'red' title "approximation", \
-    q1f using 6:xticlabels(2) title q1l, \
-    q2f using 6:xticlabels(2) title q2l, \
-    q3f using 6:xticlabels(2) title q3l, \
-    q4f using 6:xticlabels(2) title q4l, \
-    q5f using 6:xticlabels(2) title q5l
+plot q1f using 6:xticlabels(2) lt rgb 'red' title "approximation", \
+    q1f using 7:xticlabels(2) title q1l, \
+    q2f using 7:xticlabels(2) title q2l, \
+    q3f using 7:xticlabels(2) title q3l, \
+    q4f using 7:xticlabels(2) title q4l, \
+    q5f using 7:xticlabels(2) title q5l
 
 set output outputdir."simulation-wo-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries. For N=1000 (only RPS) with traffic normal'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1ff using ($1*(log($1 - $2) + 0.557)/$2):xticlabels(2) lt rgb 'red' title "approximation", \
-    q1ff using 6:xticlabels(2) title q1l, \
-    q2ff using 6:xticlabels(2) title q2l, \
-    q3ff using 6:xticlabels(2) title q3l, \
-    q4ff using 6:xticlabels(2) title q4l, \
-    q5ff using 6:xticlabels(2) title q5l
+plot q1ff using 6:xticlabels(2) lt rgb 'red' title "approximation", \
+    q1ff using 7:xticlabels(2) title q1l, \
+    q2ff using 7:xticlabels(2) title q2l, \
+    q3ff using 7:xticlabels(2) title q3l, \
+    q4ff using 7:xticlabels(2) title q4l, \
+    q5ff using 7:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-messages-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS+CG)'
@@ -134,40 +134,40 @@ set output outputdir."simulation-traffic-triples-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS+CG)'
 set ylabel 'Average number of triples received from neighbours.'
 set style data histogram
-plot q1 using 12:xticlabels(2) title q1l, \
-    q2 using 12:xticlabels(2) title q2l, \
-    q3 using 12:xticlabels(2) title q3l, \
-    q4 using 12:xticlabels(2) title q4l, \
-    q5 using 12:xticlabels(2) title q5l
+plot q1 using 11:xticlabels(2) title q1l, \
+    q2 using 11:xticlabels(2) title q2l, \
+    q3 using 11:xticlabels(2) title q3l, \
+    q4 using 11:xticlabels(2) title q4l, \
+    q5 using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-triples-wo-clique-traffictrue.png"
 set xlabel 'Number of replicated queries for N=1000 (only RPS)'
 set ylabel 'Average number of triples received from neighbours.'
 set style data histogram
-plot q1ft using 12:xticlabels(2) title q1l, \
-    q2ft using 12:xticlabels(2) title q2l, \
-    q3ft using 12:xticlabels(2) title q3l, \
-    q4ft using 12:xticlabels(2) title q4l, \
-    q5ft using 12:xticlabels(2) title q5l
+plot q1ft using 11:xticlabels(2) title q1l, \
+    q2ft using 11:xticlabels(2) title q2l, \
+    q3ft using 11:xticlabels(2) title q3l, \
+    q4ft using 11:xticlabels(2) title q4l, \
+    q5ft using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-triples-w-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS+CG)'
 set ylabel 'Average number of triples received from neighbours.'
 set style data histogram
-plot q1f using 12:xticlabels(2) title q1l, \
-    q2f using 12:xticlabels(2) title q2l, \
-    q3f using 12:xticlabels(2) title q3l, \
-    q4f using 12:xticlabels(2) title q4l, \
-    q5f using 12:xticlabels(2) title q5l
+plot q1f using 11:xticlabels(2) title q1l, \
+    q2f using 11:xticlabels(2) title q2l, \
+    q3f using 11:xticlabels(2) title q3l, \
+    q4f using 11:xticlabels(2) title q4l, \
+    q5f using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-triples-wo-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries for N=1000 (only RPS)'
 set ylabel 'Average number of triples received from neighbours.'
 set style data histogram
-plot q1ff using 12:xticlabels(2) title q1l, \
-    q2ff using 12:xticlabels(2) title q2l, \
-    q3ff using 12:xticlabels(2) title q3l, \
-    q4ff using 12:xticlabels(2) title q4l, \
-    q5ff using 12:xticlabels(2) title q5l
+plot q1ff using 11:xticlabels(2) title q1l, \
+    q2ff using 11:xticlabels(2) title q2l, \
+    q3ff using 11:xticlabels(2) title q3l, \
+    q4ff using 11:xticlabels(2) title q4l, \
+    q5ff using 11:xticlabels(2) title q5l
 
 
