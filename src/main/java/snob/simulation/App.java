@@ -1,5 +1,4 @@
 package snob.simulation;
-
 import peersim.Simulator;
 
 import java.io.*;
@@ -16,12 +15,12 @@ public class App {
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
             int[] replicate = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 
-            int numberofqueries = 5;
             int[] queries = {17, 22, 54, 73, 87};
 
             int delta_rps = 1;
             int delta_son = 1;
             int rps_size = 100;
+            int rps_size_exchange = 50;
             int pick = 1;
             int son_size = 10; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
@@ -54,6 +53,7 @@ public class App {
                             replace(pathConfig, "\\$size\\$", String.valueOf(peers));
                             replace(pathConfig, "\\$cycle\\$", String.valueOf(cycles));
                             replace(pathConfig, "\\$rps_size\\$", String.valueOf(rps_size));
+                            replace(pathConfig, "\\rps_size_exchange\\$", String.valueOf(rps_size_exchange));
                             replace(pathConfig, "\\$pick\\$", String.valueOf(pick));
                             replace(pathConfig, "\\$son_size\\$", String.valueOf(son_size));
                             replace(pathConfig, "\\$rps_delta\\$", String.valueOf(delta_rps));

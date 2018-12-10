@@ -9,7 +9,7 @@ global = outputdir."global-mean.csv"
 
 q1l = "q22"
 
-#set logscale y
+set logscale y
 
 q1 = outputdir.q1l."sontruetraffictrue-mean.csv"
 q1f = outputdir.q1l."sontruetrafficfalse-mean.csv"
