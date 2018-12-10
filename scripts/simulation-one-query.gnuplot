@@ -3,11 +3,13 @@ set datafile separator ","
 set terminal png size 1600,1200
 set style fill solid
 
-outputdir = "../results/98b69cbc771f51ce462fa324bd3c65e1-all/"
+#outputdir = "../results/98b69cbc771f51ce462fa324bd3c65e1-all/"
+
+outputdir = "../results/cbfdf7968b7b9d7cd9051f330491f370-all/"
 
 global = outputdir."global-mean.csv"
 
-q1l = "q22"
+q1l = "q0"
 
 set logscale y
 
@@ -21,9 +23,9 @@ set xlabel 'Number of replicated queries (q)'
 set ylabel 'Average number of rounds for one query to see all the network'
 set style data histogram
 plot q1 using 15:xticlabels(2) lt rgb 'red' title "approximation", \
-    q1 using 7:xticlabels(2) title q1l." w/ clique", \
+    q1 using 20:xticlabels(2) title q1l." w/ clique", \
     q1 using 9:xticlabels(2) title q1l." w/ clique completed", \
-    q1ft using 7:xticlabels(2) title q1l." wo/ clique", \
+    q1ft using 20:xticlabels(2) title q1l." wo/ clique", \
     q1ft using 9:xticlabels(2) title q1l." wo/ clique completed"
 
 set output outputdir."simulation-traffic-triples.png"

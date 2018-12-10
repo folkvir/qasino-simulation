@@ -136,8 +136,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
-        periodicRandomGraphCall();
-        // periodicCyclonCall();
+        // periodicRandomGraphCall();
+        periodicCyclonCall();
     }
 
     /**
@@ -264,6 +264,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                     for (Node node_rps : rps) {
                         // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
                         this.exchangeTriplePatterns(fromNodeToSnob(node_rps), true);
+                        if(fromNodeToSnob(node_rps).profile.has_query) fromNodeToSnob(node_rps).exchangeTriplePatterns(this, true);
                     }
                     profile.execute();
                     // test if the query is terminated or not

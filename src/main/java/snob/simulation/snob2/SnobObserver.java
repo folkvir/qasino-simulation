@@ -73,8 +73,6 @@ public class SnobObserver implements ObserverProgram {
             int firstqnbtpqs = 0;
             int firstqcompleted = 0;
             int firstfmcompleted = 0; // time when the peer has seen all q
-
-            // System.err.println("Network size: " + networksize);
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 messages += snob.messages;
@@ -104,23 +102,23 @@ public class SnobObserver implements ObserverProgram {
                         if (!completed.containsKey(query.qid) && localcomp == 100) {
                             completed.put(query.qid, current);
                         }
-                        // System.err.printf("[Peer-%d] has a query with %d of completeness. (%d/%d) %n", snob.id, localcomp, cpt, query.cardinality);
-                    }
-                    if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize && query.terminated) {
-                        if (firstq == -1) {
-                            System.err.printf("[Peer-%d] has a finished query...%n", snob.id);
-                            firstq = current;
-                            firstqrpssize = snob.getPeers(Integer.MAX_VALUE).size();
-                            firstqfullmeshsize = snob.fullmesh.size();
-                            firstqcompleteness = snob.profile.query.getResults().size() / snob.profile.query.cardinality * 100;
-                            firstqmessages = snob.messages;
-                            firstqtriplesback = snob.tripleResponses;
-                            firstqmessagesfullmesh = snob.messagesFullmesh;
-                            firstqnbtpqs = snob.profile.query.patterns.size();
-                            firstqcompleted = completed.get(snob.profile.query.qid);
-                            if(Snob.son) firstfmcompleted = fullmeshcompleted.get(snob.profile.query.qid);
+                        // System.err.printf("[Peer-%d] (%b) has a query with %d of completeness. (%d/%d)(%d/%d) %n", snob.id, query.isFinished(), localcomp, cpt, query.cardinality, snob.profile.query.globalseen, Network.size());
+                        if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize && query.isFinished()) {
+                            if (firstq == -1) {
+                                // System.err.printf("[Peer-%d] has a finished query...%n", snob.id);
+                                firstq = current;
+                                firstqrpssize = snob.getPeers(Integer.MAX_VALUE).size();
+                                firstqfullmeshsize = snob.fullmesh.size();
+                                firstqcompleteness = snob.profile.query.getResults().size() / snob.profile.query.cardinality * 100;
+                                firstqmessages = snob.messages;
+                                firstqtriplesback = snob.tripleResponses;
+                                firstqmessagesfullmesh = snob.messagesFullmesh;
+                                firstqnbtpqs = snob.profile.query.patterns.size();
+                                firstqcompleted = completed.get(snob.profile.query.qid);
+                                if(Snob.son) firstfmcompleted = fullmeshcompleted.get(snob.profile.query.qid);
+                            }
+                            seenfinished.put(snob.id, current);
                         }
-                        seenfinished.put(snob.id, current);
                     }
                 }
             }
@@ -143,7 +141,6 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + firstqrpssize
                     + ", " + Snob.pick
                     + ", " + firstqfullmeshsize
-                    + ", " + observer.meanClusterCoefficient()
                     + ", " + firstq
                     + ", " + firstqcompleteness
                     + ", " + firstqcompleted
@@ -158,34 +155,10 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + firstfmcompleted
                     + ", " + seenfinished.size()
                     + ", " + meanQ;
-            // System.err.println(res);
             if (seenfinished.size() == this.queries) {
                 System.out.println(res);
                 exit(0);
             }
-//            if (firstq != -1) {
-//                String res = observer.size()
-//                        + ", " + this.queries
-//                        + ", " + firstqrpssize
-//                        + ", " + Snob.pick
-//                        + ", " + firstqfullmeshsize
-//                        + ", " + observer.meanClusterCoefficient()
-//                        + ", " + firstq
-//                        + ", " + firstqcompleteness
-//                        + ", " + firstqcompleted
-//                        + ", " + firstqnbtpqs
-//                        + ", " + firstqmessages
-//                        + ", " + firstqmessagesfullmesh
-//                        + ", " + firstqtriplesback
-//                        + ", " + approximation
-//                        + ", " + appro2
-//                        + ", " + firstq / approximation
-//                        + ", " + firstq / appro2
-//                        + ", " + firstfmcompleted
-//                        + ", " + meanQ;
-//                System.out.println(res);
-//                exit(0);
-//            }
         } catch (Exception e) {
             System.err.println("ERROR:" + e);
             e.printStackTrace();

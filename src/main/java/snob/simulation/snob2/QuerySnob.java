@@ -77,7 +77,7 @@ public class QuerySnob {
     }
 
     public void stop() {
-        System.err.printf("[query-%d] %s is finished. %n", qid, query);
+        // System.err.printf("[query-%d] %s is finished. %n", qid, query);
         terminated = true;
     }
 

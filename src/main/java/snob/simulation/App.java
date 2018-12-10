@@ -15,7 +15,7 @@ public class App {
             int cycles = 10000; // will stop at the end of all queries anyway, but the stop case is around n * log (n)
             int[] replicate = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 
-            int[] queries = {0}; // {17, 22, 54, 73, 87};
+            int[] queries = {17, 22, 54, 73, 87};
 
             int delta_rps = 1;
             int delta_son = 1;
