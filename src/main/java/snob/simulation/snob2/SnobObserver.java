@@ -124,8 +124,8 @@ public class SnobObserver implements ObserverProgram {
                     }
                 }
             }
-            System.err.printf("Messages sent from the beginning %d...%n", messages);
-            System.err.printf("Triples exchanged from the beginning %d...%n", triplesback);
+            // System.err.printf("Messages sent from the beginning %d...%n", messages);
+            // System.err.printf("Triples exchanged from the beginning %d...%n", triplesback);
 
             double approximation = Math.floor((Network.size() * Math.log(Network.size())) / (this.queries * Snob.pick));
             double appro2 = Math.floor((Network.size() * (Math.log(Network.size() - this.queries) + Gamma.GAMMA)) / (this.queries * Snob.pick));
@@ -189,7 +189,7 @@ public class SnobObserver implements ObserverProgram {
         Iterator<Triple> it = result.iterator();
         while (it.hasNext()) {
             Triple triple = it.next();
-            System.err.printf("Storing triple %d in peer %d %n", k, k % peers.size());
+            // System.err.printf("Storing triple %d in peer %d %n", k, k % peers.size());
             List<Triple> list = new LinkedList<>();
             list.add(triple);
             peers.get(k % peers.size()).profile.datastore.insertTriples(list);
