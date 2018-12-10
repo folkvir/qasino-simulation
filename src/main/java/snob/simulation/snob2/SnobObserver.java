@@ -185,6 +185,7 @@ public class SnobObserver implements ObserverProgram {
         // now create the construct query
         Triple spo = new Triple(Var.alloc("s"), Var.alloc("p"), Var.alloc("o"));
         List<Triple> result = d.getTriplesMatchingTriplePatternAsList(spo);
+        Collections.shuffle(result);
         int k = 0;
         Iterator<Triple> it = result.iterator();
         while (it.hasNext()) {
