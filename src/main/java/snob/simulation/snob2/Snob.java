@@ -181,6 +181,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
      * @param rps
      */
     public void constructFullmesh(List<Node> rps) {
+
         rps.forEach(peer -> {
             if (!fullmesh.contains(peer) && this.profile.has_query && fromNodeToSnob(peer).profile.has_query && this.profile.query.query.equals(fromNodeToSnob(peer).profile.query.query)) {
                 Snob remote = fromNodeToSnob(peer);

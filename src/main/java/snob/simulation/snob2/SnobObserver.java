@@ -126,31 +126,66 @@ public class SnobObserver implements ObserverProgram {
             }
             // System.err.printf("Messages sent from the beginning %d...%n", messages);
             // System.err.printf("Triples exchanged from the beginning %d...%n", triplesback);
+            int meanQ = 0;
+            for(Map.Entry<Integer, Integer> entry: seenfinished.entrySet()) {
+                meanQ += entry.getValue();
+            }
+            if(seenfinished.size() == 0) {
+                meanQ = 0;
+            } else {
+                meanQ = meanQ / seenfinished.size();
+            }
 
             double approximation = Math.floor((Network.size() * Math.log(Network.size())) / (this.queries * Snob.pick));
             double appro2 = Math.floor((Network.size() * (Math.log(Network.size() - this.queries) + Gamma.GAMMA)) / (this.queries * Snob.pick));
-            if (firstq != -1) {
-                String res = observer.size()
-                        + ", " + this.queries
-                        + ", " + firstqrpssize
-                        + ", " + Snob.pick
-                        + ", " + firstqfullmeshsize
-                        + ", " + observer.meanClusterCoefficient()
-                        + ", " + firstq
-                        + ", " + firstqcompleteness
-                        + ", " + firstqcompleted
-                        + ", " + firstqnbtpqs
-                        + ", " + firstqmessages
-                        + ", " + firstqmessagesfullmesh
-                        + ", " + firstqtriplesback
-                        + ", " + approximation
-                        + ", " + appro2
-                        + ", " + firstq / approximation
-                        + ", " + firstq / appro2
-                        + ", " + firstfmcompleted;
+            String res = observer.size()
+                    + ", " + this.queries
+                    + ", " + firstqrpssize
+                    + ", " + Snob.pick
+                    + ", " + firstqfullmeshsize
+                    + ", " + observer.meanClusterCoefficient()
+                    + ", " + firstq
+                    + ", " + firstqcompleteness
+                    + ", " + firstqcompleted
+                    + ", " + firstqnbtpqs
+                    + ", " + firstqmessages
+                    + ", " + firstqmessagesfullmesh
+                    + ", " + firstqtriplesback
+                    + ", " + approximation
+                    + ", " + appro2
+                    + ", " + firstq / approximation
+                    + ", " + firstq / appro2
+                    + ", " + firstfmcompleted
+                    + ", " + seenfinished.size()
+                    + ", " + meanQ;
+            // System.err.println(res);
+            if (seenfinished.size() == this.queries) {
                 System.out.println(res);
                 exit(0);
             }
+//            if (firstq != -1) {
+//                String res = observer.size()
+//                        + ", " + this.queries
+//                        + ", " + firstqrpssize
+//                        + ", " + Snob.pick
+//                        + ", " + firstqfullmeshsize
+//                        + ", " + observer.meanClusterCoefficient()
+//                        + ", " + firstq
+//                        + ", " + firstqcompleteness
+//                        + ", " + firstqcompleted
+//                        + ", " + firstqnbtpqs
+//                        + ", " + firstqmessages
+//                        + ", " + firstqmessagesfullmesh
+//                        + ", " + firstqtriplesback
+//                        + ", " + approximation
+//                        + ", " + appro2
+//                        + ", " + firstq / approximation
+//                        + ", " + firstq / appro2
+//                        + ", " + firstfmcompleted
+//                        + ", " + meanQ;
+//                System.out.println(res);
+//                exit(0);
+//            }
         } catch (Exception e) {
             System.err.println("ERROR:" + e);
             e.printStackTrace();
