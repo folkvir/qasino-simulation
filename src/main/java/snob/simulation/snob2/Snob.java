@@ -136,8 +136,8 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
-        // periodicRandomGraphCall();
-        periodicCyclonCall();
+        periodicRandomGraphCall();
+        // periodicCyclonCall();
     }
 
     /**

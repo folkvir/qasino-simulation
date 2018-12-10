@@ -118,7 +118,7 @@ public class SnobObserver implements ObserverProgram {
                             firstqmessagesfullmesh = snob.messagesFullmesh;
                             firstqnbtpqs = snob.profile.query.patterns.size();
                             firstqcompleted = completed.get(snob.profile.query.qid);
-                            firstfmcompleted = fullmeshcompleted.get(snob.profile.query.qid);
+                            if(Snob.son) firstfmcompleted = fullmeshcompleted.get(snob.profile.query.qid);
                         }
                         seenfinished.put(snob.id, current);
                     }

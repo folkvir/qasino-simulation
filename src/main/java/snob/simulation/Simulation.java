@@ -18,7 +18,7 @@ public class Simulation {
         } else {
             size = 1000;
             sample = 10;
-            max = 2; // (int) Math.floor(Math.log(size)) + 1; // log(size)
+            max = 50; // (int) Math.floor(Math.log(size)) + 1; // log(size)
             kson = 0; // only rps;
         }
 //        int nqs = 100; // number of q points
