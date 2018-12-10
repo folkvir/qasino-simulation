@@ -22,7 +22,7 @@ public class App {
             int delta_rps = 1;
             int delta_son = 1;
             int rps_size = 100;
-            int pick = 10;
+            int pick = 1;
             int son_size = 10; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
             boolean[] trafficMin = {true, false};

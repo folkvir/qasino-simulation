@@ -3,7 +3,9 @@ set datafile separator ","
 set terminal png size 1600,1200
 set style fill solid
 
-outputdir = "../results/1-all/"
+set logscale y
+
+outputdir = "../results/98b69cbc771f51ce462fa324bd3c65e1-all/"
 
 global = outputdir."global-mean.csv"
 
@@ -37,19 +39,18 @@ q3ff = outputdir.q3l."sonfalsetrafficfalse-mean.csv"
 q4ff = outputdir.q4l."sonfalsetrafficfalse-mean.csv"
 q5ff = outputdir.q5l."sonfalsetrafficfalse-mean.csv"
 
-set logscale y
 set output outputdir."ratio.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Ratio between approximation and experiment'
 set style data histogram
-plot q1 using 15:xticlabels(2) lt rgb 'red' title "ratio"
+plot q1 using ($7/$15):xticlabels(2) lt rgb 'red' title "ratio"
 
 
 set output outputdir."simulation-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1 using 14:xticlabels(16) lt rgb 'red' title "approximation", \
+plot q1 using 15:xticlabels(2) lt rgb 'red' title "approximation", \
     q1 using 7:xticlabels(2) title q1l, \
     q2 using 7:xticlabels(2) title q2l, \
     q3 using 7:xticlabels(2) title q3l, \
@@ -60,7 +61,7 @@ set output outputdir."simulation-wo-clique-traffictrue.png"
 set xlabel 'Number of replicated queries. For N=1000 (only RPS) with traffic minimized'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1ft using 14:xticlabels(16) lt rgb 'red' title "approximation", \
+plot q1ft using 15:xticlabels(2) lt rgb 'red' title "approximation", \
     q1ft using 7:xticlabels(2) title q1l, \
     q2ft using 7:xticlabels(2) title q2l, \
     q3ft using 7:xticlabels(2) title q3l, \
@@ -71,7 +72,7 @@ set output outputdir."simulation-w-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) with traffic normal'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1f using 14:xticlabels(16) lt rgb 'red' title "approximation", \
+plot q1f using 15:xticlabels(2) lt rgb 'red' title "approximation", \
     q1f using 7:xticlabels(2) title q1l, \
     q2f using 7:xticlabels(2) title q2l, \
     q3f using 7:xticlabels(2) title q3l, \
@@ -82,7 +83,7 @@ set output outputdir."simulation-wo-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries. For N=1000 (only RPS) with traffic normal'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1ff using 14:xticlabels(16) lt rgb 'red' title "approximation", \
+plot q1ff using 15:xticlabels(2) lt rgb 'red' title "approximation", \
     q1ff using 7:xticlabels(2) title q1l, \
     q2ff using 7:xticlabels(2) title q2l, \
     q3ff using 7:xticlabels(2) title q3l, \
