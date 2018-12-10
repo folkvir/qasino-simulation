@@ -30,3 +30,4 @@ results/
 !src/main/resources/*.jar
 configs/generated/*.conf
 scripts/*.png
+.DS_Store
