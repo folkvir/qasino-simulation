@@ -50,7 +50,7 @@ set output outputdir."simulation-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
 set ylabel 'Average number of rounds for one Q to see all the network'
 set style data histogram
-plot q1 using 15:xticlabels(2) lt rgb 'red' title "approximation", \
+plot q1 using ($1 * ):xticlabels(2) lt rgb 'red' title "approximation", \
     q1 using 7:xticlabels(2) title q1l, \
     q2 using 7:xticlabels(2) title q2l, \
     q3 using 7:xticlabels(2) title q3l, \
