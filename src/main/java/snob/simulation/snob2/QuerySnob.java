@@ -42,6 +42,7 @@ public class QuerySnob {
         this.query = (String) json.get("query");
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        patterns = plan.patterns;
         data = new LinkedHashMap<>();
         for (Triple pattern : plan.patterns) {
             data.put(pattern, new LinkedHashSet<>());
@@ -54,6 +55,7 @@ public class QuerySnob {
         this.query = query;
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        patterns = plan.patterns;
         data = new LinkedHashMap<>();
         for (Triple pattern : plan.patterns) {
             data.put(pattern, new LinkedHashSet<>());
@@ -66,6 +68,7 @@ public class QuerySnob {
         this.query = query;
         this.realQuery = QueryFactory.create(this.query);
         plan = new QueryPlan(query);
+        patterns = plan.patterns;
         data = new LinkedHashMap<>();
         for (Triple pattern : plan.patterns) {
             data.put(pattern, new LinkedHashSet<>());

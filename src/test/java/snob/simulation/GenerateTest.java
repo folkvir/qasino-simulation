@@ -1,5 +1,6 @@
 package snob.simulation;
 
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.json.simple.JSONArray;
@@ -15,6 +16,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Stream;
 
@@ -43,6 +46,17 @@ public class GenerateTest {
             jsonArray.forEach((q) -> {
                 JSONObject j = (JSONObject) q;
                 QuerySnob query = new QuerySnob(j);
+                // execute triple patterns
+                Map<String, Integer> patsi = new LinkedHashMap<>();
+                int tpnumber = query.patterns.size();
+                System.err.println(tpnumber);
+                for (Triple pattern : query.patterns) {
+                    System.err.println(pattern);
+                    patsi.put(pattern.toString(), d.getTriplesMatchingTriplePatternAsList(pattern).size());
+                }
+
+
+                // execute the query
                 ResultSet res = d.select(query.realQuery);
                 long cpt = 0;
                 // write to a ByteArrayOutputStream
@@ -60,6 +74,8 @@ public class GenerateTest {
                 j.put("card", results.size());
                 j.remove("results");
                 j.put("results", resultJson.get("results"));
+                j.put("tpsnumber", tpnumber);
+                j.put("patterns", patsi);
             });
             File file = new File(diseasomeQueryGenerated);
             file.createNewFile();

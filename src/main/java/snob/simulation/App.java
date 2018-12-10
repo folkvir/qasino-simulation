@@ -17,20 +17,11 @@ public class App {
             int[] replicate = {1, 2, 4, 8, 16, 32, 64, 128, 256};
 
             int numberofqueries = 5;
-            int[] queries = new int[numberofqueries];
-            boolean soixantetreize = false;
-            for (int i = 0; i < queries.length; i++) {
-                queries[i] = (int) Math.floor(Math.random() * 100);
-                if (queries[i] == 73) {
-                    soixantetreize = true;
-                }
-            }
-            // this query generate a lot of intermediate results. which is cool to present. cCool
-            if (!soixantetreize) queries[0] = 73;
+            int[] queries = {17, 22, 54, 73, 87};
 
             int delta_rps = 1;
             int delta_son = 1;
-            int rps_size = 10;
+            int rps_size = 100;
             int pick = 10;
             int son_size = 10; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};

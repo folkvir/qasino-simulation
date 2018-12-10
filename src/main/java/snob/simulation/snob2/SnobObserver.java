@@ -1,7 +1,9 @@
 package snob.simulation.snob2;
 
 import org.apache.commons.math3.special.Gamma;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.sparql.core.Var;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,6 +30,7 @@ public class SnobObserver implements ObserverProgram {
     private int replicate;
     private int queries;
     private boolean initialized = false;
+    private Map<Integer, Integer> fullmeshcompleted = new LinkedHashMap<>();
     private Map<Integer, Integer> completed = new LinkedHashMap<>();
     private Map<Integer, Integer> seenfinished = new LinkedHashMap<>();
     private int firstq = -1;
@@ -62,7 +65,6 @@ public class SnobObserver implements ObserverProgram {
         // hack to get the proper pid.... fix it for a proper version
         int networksize = Network.size();
         try {
-            Snob snob_default = (Snob) observer.nodes.get(Network.get(0).getID()).pss;
             long messages = 0;
             long firstqmessagesfullmesh = 0;
             int triplesback = 0;
@@ -70,6 +72,7 @@ public class SnobObserver implements ObserverProgram {
             int firstqfullmeshsize = 0;
             int firstqnbtpqs = 0;
             int firstqcompleted = 0;
+            int firstfmcompleted = 0; // time when the peer has seen all q
 
             // System.err.println("Network size: " + networksize);
             for (int i = 0; i < networksize; ++i) {
@@ -94,6 +97,10 @@ public class SnobObserver implements ObserverProgram {
                             throw new Exception("case not handled.... cpt=" + cpt + " cardinality= " + query.cardinality);
                         }
 
+                        if (!fullmeshcompleted.containsKey(query.qid) && snob.fullmesh.size() == (replicate - 1)) {
+                            fullmeshcompleted.put(query.qid, current);
+                        }
+
                         if (!completed.containsKey(query.qid) && localcomp == 100) {
                             completed.put(query.qid, current);
                         }
@@ -111,6 +118,7 @@ public class SnobObserver implements ObserverProgram {
                             firstqmessagesfullmesh = snob.messagesFullmesh;
                             firstqnbtpqs = snob.profile.query.patterns.size();
                             firstqcompleted = completed.get(snob.profile.query.qid);
+                            firstfmcompleted = fullmeshcompleted.get(snob.profile.query.qid);
                         }
                         seenfinished.put(snob.id, current);
                     }
@@ -119,17 +127,8 @@ public class SnobObserver implements ObserverProgram {
             System.err.printf("Messages sent from the beginning %d...%n", messages);
             System.err.printf("Triples exchanged from the beginning %d...%n", triplesback);
 
-            double meanQN = 0;
-            for (Map.Entry<Integer, Integer> entry : seenfinished.entrySet()) {
-                meanQN += entry.getValue();
-            }
-            if (meanQN != 0) meanQN = meanQN / seenfinished.size();
-
-            double approximation = Math.floor(Network.size() * Math.log(Network.size()) / (this.queries * Snob.pick)) + 1;
-            double appro2 = Math.floor(Network.size() * Math.log(Network.size() + Gamma.GAMMA) / (this.queries * Snob.pick)) + 1;
-            double ratio = meanQN / approximation;
-
-
+            double approximation = Math.floor((Network.size() * Math.log(Network.size())) / (this.queries * Snob.pick));
+            double appro2 = Math.floor((Network.size() * (Math.log(Network.size() - this.queries) + Gamma.GAMMA)) / (this.queries * Snob.pick));
             if (firstq != -1) {
                 String res = observer.size()
                         + ", " + this.queries
@@ -146,7 +145,9 @@ public class SnobObserver implements ObserverProgram {
                         + ", " + firstqtriplesback
                         + ", " + approximation
                         + ", " + appro2
-                        + ", " + ratio;
+                        + ", " + firstq / approximation
+                        + ", " + firstq / appro2
+                        + ", " + firstfmcompleted;
                 System.out.println(res);
                 exit(0);
             }
@@ -157,6 +158,7 @@ public class SnobObserver implements ObserverProgram {
     }
 
     public void init(DictGraph observer) {
+        Datastore d = new Datastore();
         // hack to get the proper pid.... fix it for a proper version
         int networksize = Network.size();
         System.err.println("[INIT:SNOB] Initialized data for: " + networksize + " peers..." + observer.nodes.size());
@@ -170,19 +172,28 @@ public class SnobObserver implements ObserverProgram {
             System.err.println(e.toString());
         }
         System.err.println("[INIT:SNOB] Number of fragments to load: " + filenames.size());
+        for (Object filename : filenames) {
+            d.update(filename.toString());
+        }
 
         Vector<Snob> peers = new Vector();
         for (int i = 0; i < networksize; ++i) {
             Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
             peers.add(snob);
         }
-        int pickedElement = 0;
-        int peersPicked = 0;
-        while (pickedElement < filenames.size() && pickedElement < filenames.size()) {
-            peers.get(peersPicked).profile.datastore.update(filenames.get(pickedElement).toString());
-            peersPicked++;
-            if (peersPicked > peers.size() - 1) peersPicked = 0;
-            pickedElement++;
+
+        // now create the construct query
+        Triple spo = new Triple(Var.alloc("s"), Var.alloc("p"), Var.alloc("o"));
+        List<Triple> result = d.getTriplesMatchingTriplePatternAsList(spo);
+        int k = 0;
+        Iterator<Triple> it = result.iterator();
+        while (it.hasNext()) {
+            Triple triple = it.next();
+            System.err.printf("Storing triple %d in peer %d %n", k, k % peers.size());
+            List<Triple> list = new LinkedList<>();
+            list.add(triple);
+            peers.get(k % peers.size()).profile.datastore.insertTriples(list);
+            k++;
         }
 
         // diseasome queries

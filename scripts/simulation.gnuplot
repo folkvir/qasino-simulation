@@ -3,15 +3,15 @@ set datafile separator ","
 set terminal png size 1600,1200
 set style fill solid
 
-outputdir = "../results/all/"
+outputdir = "../results/1-all/"
 
 global = outputdir."global-mean.csv"
 
-q1l = "q23"
-q2l = "q31"
-q3l = "q62"
-q4l = "q63"
-q5l = "q73"
+q1l = "q17"
+q2l = "q22"
+q3l = "q54"
+q4l = "q73"
+q5l = "q87"
 
 q1 = outputdir.q1l."sontruetraffictrue-mean.csv"
 q2 = outputdir.q2l."sontruetraffictrue-mean.csv"
@@ -93,41 +93,41 @@ set output outputdir."simulation-traffic-messages-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS+CG)'
 set ylabel 'Average number of rounds the first query terminate with'
 set style data histogram
-plot q1 using 10:xticlabels(2) title q1l, \
-    q2 using 10:xticlabels(2) title q2l, \
-    q3 using 10:xticlabels(2) title q3l, \
-    q4 using 10:xticlabels(2) title q4l, \
-    q5 using 10:xticlabels(2) title q5l
+plot q1 using 11:xticlabels(2) title q1l, \
+    q2 using 11:xticlabels(2) title q2l, \
+    q3 using 11:xticlabels(2) title q3l, \
+    q4 using 11:xticlabels(2) title q4l, \
+    q5 using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-messages-wo-clique-traffictrue.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS)'
 set ylabel 'Average number of rounds the first query terminate with'
 set style data histogram
-plot q1ft using 10:xticlabels(2) title q1l, \
-    q2ft using 10:xticlabels(2) title q2l, \
-    q3ft using 10:xticlabels(2) title q3l, \
-    q4ft using 10:xticlabels(2) title q4l, \
-    q5ft using 10:xticlabels(2) title q5l
+plot q1ft using 11:xticlabels(2) title q1l, \
+    q2ft using 11:xticlabels(2) title q2l, \
+    q3ft using 11:xticlabels(2) title q3l, \
+    q4ft using 11:xticlabels(2) title q4l, \
+    q5ft using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-messages-w-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS+CG)'
 set ylabel 'Average number of rounds the first query terminate with'
 set style data histogram
-plot q1f using 10:xticlabels(2) title q1l, \
-    q2f using 10:xticlabels(2) title q2l, \
-    q3f using 10:xticlabels(2) title q3l, \
-    q4f using 10:xticlabels(2) title q4l, \
-    q5f using 10:xticlabels(2) title q5l
+plot q1f using 11:xticlabels(2) title q1l, \
+    q2f using 11:xticlabels(2) title q2l, \
+    q3f using 11:xticlabels(2) title q3l, \
+    q4f using 11:xticlabels(2) title q4l, \
+    q5f using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-messages-wo-clique-trafficfalse.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS)'
 set ylabel 'Average number of rounds the first query terminate with'
 set style data histogram
-plot q1ff using 10:xticlabels(2) title q1l, \
-    q2ff using 10:xticlabels(2) title q2l, \
-    q3ff using 10:xticlabels(2) title q3l, \
-    q4ff using 10:xticlabels(2) title q4l, \
-    q5ff using 10:xticlabels(2) title q5l
+plot q1ff using 11:xticlabels(2) title q1l, \
+    q2ff using 11:xticlabels(2) title q2l, \
+    q3ff using 11:xticlabels(2) title q3l, \
+    q4ff using 11:xticlabels(2) title q4l, \
+    q5ff using 11:xticlabels(2) title q5l
 
 set output outputdir."simulation-traffic-triples-w-clique-traffictrue.png"
 set xlabel 'Number of replicated queries for N=1000 (RPS+CG)'
