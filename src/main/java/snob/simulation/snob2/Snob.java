@@ -331,8 +331,13 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                     if (traffic) {
                         IBFStrata localibf = IBFStrata.createIBFFromTriples(list);
                         IBFStrata.Result res = remote.profile.query.strata.get(pattern).difference(localibf);
-                        this.messages += res.messagessent;
-                        this.messagesFullmesh += res.messagessent;
+                        if(res.messagessent == 0) {
+                            this.messages++;
+                            this.messagesFullmesh++;
+                        } else {
+                            this.messages += res.messagessent;
+                            this.messagesFullmesh += res.messagessent;
+                        }
                         remote.tripleResponses += remote.profile.insertTriplesWithList(pattern, res.missing);
                     } else {
                         remote.tripleResponses += remote.profile.insertTriplesWithList(pattern, this.profile.datastore.getTriplesMatchingTriplePatternAsList(pattern));
@@ -356,13 +361,15 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             // if remote does not have a query, get triple pattern, get ibf on this triple pattern, set reconciliation.
             List<Triple> computed = remote.profile.datastore.getTriplesMatchingTriplePatternAsList(pattern);
             if (computed.size() == 0) {
-                // send back an empty list.
-                // this.tripleResponses += 0;
-                // System.err.println("[exchangeTriplesFromPatternUsingIbf] no pattern and zero triple: " + computed.size());
+                this.messages++; // at least one message
             } else {
                 IBFStrata remoteIbf = IBFStrata.createIBFFromTriples(computed);
                 IBFStrata.Result res = this.profile.query.strata.get(pattern).difference(remoteIbf);
-                this.messages += res.messagessent;
+                if(res.messagessent == 0) {
+                    this.messages++;
+                } else {
+                    this.messages += res.messagessent;
+                }
                 int t = this.profile.insertTriplesWithList(pattern, res.missing);
                 this.tripleResponses += t;
                 if (share) this.shareTriples(res.missing, pattern);
@@ -370,7 +377,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         } else {
             // the remote peer has the pattern
             IBFStrata.Result res = this.profile.query.strata.get(pattern).difference(remote.profile.query.strata.get(pattern));
-            this.messages += res.messagessent;
+            if(res.messagessent == 0) {
+                this.messages++;
+            } else {
+                this.messages += res.messagessent;
+            }
             int t = this.profile.insertTriplesWithList(pattern, res.missing);
             this.tripleResponses += t;
             if (share) this.shareTriples(res.missing, pattern);

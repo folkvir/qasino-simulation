@@ -17,7 +17,7 @@ q1ft = outputdir.q1l."sonfalsetraffictrue-mean.csv"
 q1ff = outputdir.q1l."sonfalsetrafficfalse-mean.csv"
 
 set output outputdir."simulation-round-traffictrue.png"
-set xlabel 'Number of replicated queries (q)'
+set xlabel 'Number of replicated queries (q) For N=1000'
 set ylabel 'Average number of rounds'
 set style data histogram
 plot q1 using 6:xticlabels(2) lt rgb 'red' title "approximation", \
@@ -27,7 +27,7 @@ plot q1 using 6:xticlabels(2) lt rgb 'red' title "approximation", \
     q1ft using 8:xticlabels(2) title q1l." w/o clique completed"
 
 set output outputdir."simulation-traffic-triples.png"
-set xlabel 'Number of replicated queries.'
+set xlabel 'Number of replicated queries (q) For N=1000'
 set ylabel 'Average number of triples received'
 set style data histogram
 plot q1f using 10:xticlabels(2) title q1l." w/ clique normal", \
@@ -36,7 +36,7 @@ plot q1f using 10:xticlabels(2) title q1l." w/ clique normal", \
     q1ft using 10:xticlabels(2) title q1l." w/o clique minimized"
 
 set output outputdir."simulation-traffic-messages.png"
-set xlabel 'Number of replicated queries. For N=1000 (RPS+CG) traffic minimized'
+set xlabel 'Number of replicated queries (q) For N=1000'
 set ylabel 'Average number of messages sent'
 set style data histogram
 plot q1f using 11:xticlabels(2) title q1l." w/ clique normal", \
