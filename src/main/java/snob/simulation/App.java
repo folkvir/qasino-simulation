@@ -53,7 +53,7 @@ public class App {
                             replace(pathConfig, "\\$size\\$", String.valueOf(peers));
                             replace(pathConfig, "\\$cycle\\$", String.valueOf(cycles));
                             replace(pathConfig, "\\$rps_size\\$", String.valueOf(rps_size));
-                            replace(pathConfig, "\\rps_size_exchange\\$", String.valueOf(rps_size_exchange));
+                            replace(pathConfig, "\\$rps_size_exchange\\$", String.valueOf(rps_size_exchange));
                             replace(pathConfig, "\\$pick\\$", String.valueOf(pick));
                             replace(pathConfig, "\\$son_size\\$", String.valueOf(son_size));
                             replace(pathConfig, "\\$rps_delta\\$", String.valueOf(delta_rps));
