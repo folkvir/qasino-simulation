@@ -14,4 +14,6 @@ fi
 DIR="./results/${DIRNAME}variancenq"
 mkdir -p $DIR
 
-java -cp target/classes/ snob.simulation.VariationNQ > "${DIR}/variationnsnq.csv"
+java -cp target/classes/ snob.simulation.VarClique > "${DIR}/varclique.csv" &
+java -cp target/classes/ snob.simulation.VarNoclique > "${DIR}/varnoclique.csv" &
+wait

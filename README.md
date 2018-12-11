@@ -15,10 +15,17 @@ java -javaagent:target/snob.jar -jar target/snob.jar --config <filename>
 
 Where `<filename>` is the **name** of the file in th folder `./configs/generated/` 
 
-Instrumentation of Object size is made with the primitive Agent available in java.
-
 
 ### Test the experiment
+
+This is a simple run for a single query with a minimized traffic using a clique
+
+Parameters:
+* N=1000
+* q=64
+* |Pv|=100
+* |ShuffleLength| = 50
+* query=17 (query 17 will be run)
 
 ```bash
 cd snob-v2-simulation/
@@ -27,8 +34,9 @@ mvn clean package shade:shade ## or bash install.bash
 java -jar target/snob.jar --config test.conf
 ```
 
-Check the configuration file in configs/generated folder.
-
+* Check the configuration file in configs/generated folder.
+* Check all queries in datasets/data/diseasome/queries/queries_jena_generated.json
+or generated this file by running the test in the GenerateTest file (snob-v2-simulation/src/test/java/snob/simulation/GenerateTest.java).
 ### Run the experiment (warning it will run a lot of experiment) 
 
 Be carefull, the script will load a lot of experiment in parallel.
@@ -55,8 +63,60 @@ gnuplot simulation-one-query.gnuplot
 ```
 
 
-## Variation of N and Q with K=1 on random pick withs graph
+## Variations of N without the clique
 
+````
+mvn clean package shade:shade
+java -cp target/classes/ snob.simulation.VarNoclique
+````
+
+![](scripts/variations/plotN.png)
+
+## Variations of N using the clique
+
+````
+mvn clean package shade:shade
+java -cp target/classes/ snob.simulation.VarClique
+````
+
+![](scripts/variations/plotNClique.png)
 
 
 ## Results
+
+### 5 queries
+
+### Using the clique
+
+### Without the clique
+
+## Query 17
+
+### Rounds
+
+### Traffic
+
+## Query 22
+
+### Rounds
+
+### Traffic
+
+## Query 54
+
+### Rounds
+
+### Traffic
+
+## Query 73
+
+### Rounds
+
+### Traffic
+
+## Query 87
+
+### Rounds
+
+### Traffic
+
