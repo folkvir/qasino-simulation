@@ -9,7 +9,6 @@ import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
 import snob.simulation.snob2.data.IBFStrata;
-import snob.simulation.snob2.messages.SnobMessage;
 
 import java.util.*;
 
@@ -20,8 +19,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     // #A the names of the parameters in the configuration file of peersim
     private static final String PAR_C = "c"; // max partial view size
     private static final String PAR_L = "l"; // shuffle size
-    private static final String PAR_SON_C = "sonc"; // shuffle size on the rps
-    private static final String PAR_SON_L = "sonl"; // shuffle size on the son
     private static final String PAR_SON = "son"; // enable son or not
     private static final String PAR_TRAFFIC = "traffic"; // minimization of the traffic
     public static boolean start = false;
@@ -29,8 +26,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static int c;
     public static int l;
     public static boolean son;
-    public static int sonc;
-    public static int sonl;
     public static int RND_WALK = 5;
     public static boolean traffic;
     public static int pick = 5;
@@ -40,18 +35,12 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public Profile profile;
     // #C local variables
     public SnobPartialView partialView;
-    public SonPartialView sonPartialView;
     public String prefix;
     // instrumentations
-    public int messages = 0;
-    public int messagesFullmesh = 0;
+    public double messages = 0;
+    public double messagesFullmesh = 0;
     public long tripleResponses = 0;
     public Set<Node> fullmesh = new LinkedHashSet<Node>();
-
-    // for the IKnowYou perriodic call
-    public int step = 0;
-    public int by = 1;
-    public boolean finish = false;
 
     /**
      * Construction of a Snob instance, By default it is a Cyclon implementation wihtout using the overlay
@@ -64,21 +53,14 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         Snob.pick = Configuration.getInt(prefix + ".pick");
         Snob.c = Configuration.getInt(prefix + "." + PAR_C);
         Snob.l = Configuration.getInt(prefix + "." + PAR_L);
-        Snob.sonc = Configuration.getInt(prefix + "." + PAR_SON_C);
-        Snob.sonl = Configuration.getInt(prefix + "." + PAR_SON_L);
         Snob.son = Configuration.getBoolean(prefix + "." + PAR_SON);
         Snob.traffic = Configuration.getBoolean(prefix + "." + PAR_TRAFFIC);
         this.partialView = new SnobPartialView(Snob.c, Snob.l);
-        if (Snob.son) {
-            this.sonPartialView = new SonPartialView(Snob.sonc, Snob.sonl);
-        }
         try {
             this.profile = new Profile();
-            // System.err.println("Creating the profile...");
         } catch (Exception e) {
             System.err.println(e);
         }
-        // System.err.printf("[%d/%d] Snob peer initialized. %n", id, Network.size());
     }
 
     /**
@@ -112,10 +94,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                         Node chosen = iPeers.next();
                         currentSnob.partialView.removeNode(chosen);
                         originSnob.partialView.addNeighbor(chosen);
-                        if (Snob.son) {
-                            currentSnob.sonPartialView.removeNode(chosen);
-                            originSnob.sonPartialView.addNeighbor(chosen);
-                        }
                     }
                     currentSnob.addNeighbor(origin);
                 }
@@ -125,14 +103,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 
     public static Snob fromNodeToSnob(Node node) {
         return (Snob) node.getProtocol(ARandomPeerSamplingProtocol.pid);
-    }
-
-    @Override
-    protected boolean pFail(List<Node> path) {
-        // the probability is constant since the number of hops to establish
-        // a connection is constant
-        double pf = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail, 6);
-        return CommonState.r.nextDouble() < pf;
     }
 
     public void periodicCall() {
@@ -388,6 +358,13 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         }
     }
 
+    @Override
+    protected boolean pFail(List<Node> path) {
+        // the probability is constant since the number of hops to establish
+        // a connection is constant
+        double pf = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail, 6);
+        return CommonState.r.nextDouble() < pf;
+    }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {
         List<Node> samplePrime = this.partialView.getSample(this.node, origin,
@@ -395,14 +372,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         this.partialView.mergeSample(this.node, origin,
                 (List<Node>) message.getPayload(), samplePrime, false);
 
-        return new SnobMessage(samplePrime);
-    }
-
-    public IMessage onPeriodicCallSon(Node origin, IMessage message) {
-        List<Node> samplePrime = this.sonPartialView.getSample(this, origin,
-                false);
-        this.sonPartialView.mergeSample(this, origin,
-                (List<Node>) message.getPayload(), samplePrime, false);
         return new SnobMessage(samplePrime);
     }
 
@@ -414,10 +383,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
             Snob contactSnob = (Snob) contact.getProtocol(Snob.pid);
             this.partialView.clear();
             this.partialView.addNeighbor(contact);
-            if (Snob.son) {
-                this.sonPartialView.clear();
-                this.sonPartialView.addNeighbor(contact);
-            }
             contactSnob.onSubscription(this.node);
         }
         this.isUp = true;
@@ -443,16 +408,11 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
         return this.partialView.getPeers(k);
     }
 
-    public List<Node> getSonPeers(int k) {
-        return this.sonPartialView.getPeers(k);
-    }
-
     @Override
     public IRandomPeerSampling clone() {
         try {
             Snob s = new Snob(this.prefix);
             s.partialView = (SnobPartialView) this.partialView.clone();
-            if (Snob.son) s.sonPartialView = (SonPartialView) this.sonPartialView.clone();
             return s;
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -462,7 +422,6 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
 
     @Override
     public boolean addNeighbor(Node peer) {
-        if (Snob.son) return this.partialView.addNeighbor(peer) && this.sonPartialView.addNeighbor(peer);
         return this.partialView.addNeighbor(peer);
     }
 

@@ -62,6 +62,7 @@ public class IBFStrata {
             return res;
         } else {
             Cell[] cells = ibf.subtract(remote.ibf.getCells());
+
             List<Integer>[] difference = ibf.decode(cells);
             if (difference == null) {
                 res.messagessent++;

@@ -59,7 +59,7 @@ public class SnobObserver implements ObserverProgram {
         int networksize = Network.size();
         try {
             long messages = 0;
-            int triplesback = 0;
+            long triplesback = 0;
             int meancompleted = 0;
             int meanfullmeshcompleted = 0;
             int meanfinish = 0;
@@ -125,6 +125,15 @@ public class SnobObserver implements ObserverProgram {
             } else {
                 meanfullmeshcompleted = 0;
             }
+
+            if(triplesback != 0) {
+                triplesback = triplesback / this.queries;
+            }
+
+            if(messages != 0) {
+                messages = messages / this.queries;
+            }
+
             double approximation = (Network.size() * (Math.log(Network.size() - this.queries) + Gamma.GAMMA)) / (this.queries * Snob.pick);
             String res = observer.size()
                     + ", " + this.queries

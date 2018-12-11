@@ -19,11 +19,9 @@ public class App {
             int[] queries = {17, 22, 54, 73, 87};
 
             int delta_rps = 1;
-            int delta_son = 1;
             int rps_size = 100;
             int rps_size_exchange = 50;
             int pick = 10;
-            int son_size = 10; // not effect if the fullmesh is active.
             boolean[] son_activated = {true, false};
             boolean[] trafficMin = {true, false};
             // firstly do it with only the rps
@@ -56,9 +54,7 @@ public class App {
                             replace(pathConfig, "\\$rps_size\\$", String.valueOf(rps_size));
                             replace(pathConfig, "\\$rps_size_exchange\\$", String.valueOf(rps_size_exchange));
                             replace(pathConfig, "\\$pick\\$", String.valueOf(pick));
-                            replace(pathConfig, "\\$son_size\\$", String.valueOf(son_size));
                             replace(pathConfig, "\\$rps_delta\\$", String.valueOf(delta_rps));
-                            replace(pathConfig, "\\$son_delta\\$", String.valueOf(delta_son));
                             replace(pathConfig, "\\$replicate\\$", String.valueOf(rep));
                             replace(pathConfig, "\\$querytoreplicate\\$", String.valueOf(query));
                         }

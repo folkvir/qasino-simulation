@@ -141,7 +141,6 @@ public class PipelineTest {
             Cell[] cells = ibfp.ibf.subtract(ibfp1.ibf.getCells());
             List<Integer>[] diff = ibfp.ibf.decode(cells);
             Assert.assertEquals(0, diffsize);
-            Assert.assertEquals(null, diff);
         }
     }
 

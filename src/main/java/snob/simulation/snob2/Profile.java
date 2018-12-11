@@ -1,24 +1,23 @@
 package snob.simulation.snob2;
 
-
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Profile {
     public int inserted = 0;
-    public int WEIGH_EQUIVALENCE = Integer.MAX_VALUE;
-    public int WEIGH_CONTAINMENT = 2;
-    public int WEIGH_SUBSET = 1;
     public boolean has_query = false;
     public long replicate = 50; // replicate factor in % (one query is replicated over a limited number of peer, 'replicate is this number)
 
     public QuerySnob query;
     public Datastore datastore = new Datastore();
 
+    /**
+     * Insert triple into the datastore from a pattern and a list of triples matching this triple pattern.
+     * @param pattern
+     * @param list
+     * @return
+     */
     public int insertTriplesWithList(Triple pattern, List<Triple> list) {
         inserted += list.size();
         List<Triple> ibf = new LinkedList<>();
@@ -108,77 +107,6 @@ public class Profile {
             e.printStackTrace();
             throw e;
         }
-    }
-
-    /**
-     * Score the provided profile among us
-     * high value means that the profile is very interesting
-     *
-     * @param p the profile to compare with.
-     * @return a score based triple pattern containment
-     */
-    public int score(Profile p) {
-        int score = 0;
-        if (p.query == null) {
-            return score;
-        } else {
-            boolean stop = false;
-            Iterator<Triple> it = p.query.patterns.iterator();
-            while (!stop && it.hasNext()) {
-                Triple pt = it.next();
-                Iterator<Triple> ittpqs = this.query.patterns.iterator();
-                while (!stop && ittpqs.hasNext()) {
-                    Triple us = ittpqs.next();
-                    if (this.equivalence(us, pt)) {
-                        stop = true; // we have the highest score, stop or it will cause an overflow
-                    } else if (this.containment(us, pt)) {
-                        try {
-                            score = Math.addExact(score, WEIGH_CONTAINMENT);
-                        } catch (ArithmeticException e) {
-                            stop = true;
-                        }
-                    } else if (this.subset(us, pt)) {
-                        try {
-                            score = Math.addExact(score, WEIGH_SUBSET);
-                        } catch (ArithmeticException e) {
-                            stop = true;
-                        }
-                    }
-                }
-            }
-            if (stop) {
-                return WEIGH_EQUIVALENCE;
-            }
-            return score;
-        }
-    }
-
-    private boolean equivalence(Triple tpa, Triple tpb) {
-        return tpa.equals(tpb);
-    }
-
-    private boolean containment(Triple tpa, Triple tpb) {
-        return this.contain(tpa.getSubject(), tpb.getSubject()) &&
-                contain(tpa.getPredicate(), tpb.getPredicate()) &&
-                contain(tpa.getObject(), tpb.getObject());
-    }
-
-    private boolean subset(Triple tpa, Triple tpb) {
-        return this.sub(tpa.getSubject(), tpb.getSubject()) &&
-                sub(tpa.getPredicate(), tpb.getPredicate()) &&
-                sub(tpa.getObject(), tpb.getObject());
-    }
-
-    private boolean contain(Node v1, Node v2) {
-        return this.eq(v1, v2) || (!v1.isVariable() && v2.isVariable());
-    }
-
-    private boolean sub(Node v1, Node v2) {
-        return this.eq(v1, v2) || (v1.isVariable() && !v2.isVariable());
-    }
-
-    private boolean eq(Node v1, Node v2) {
-        return v1.equals(v2);
     }
 }
 
