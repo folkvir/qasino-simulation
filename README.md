@@ -1,5 +1,5 @@
 # snob-v2-simulation
-Snob v2, Traffic reduced (IBFL), Incremental evaluation (Iterators), Termination criterion
+Snob v2, Traffic reduced (IBFL), Incremental evaluation (Symmetric Hash Join using iterators)
 
 Support for only SELECT (DISTINCT) conjunctive queries without filter only:
 - Projection
@@ -52,7 +52,8 @@ nohup bash xp.bash &
 # check in results folder for the results
 # when terminate, generate average on each values, then compute plots
 cd scripts/
-bash mean ../results/<mygeneratedexperimentfolder>/*conf.txt
+## if you want averages, install Nodejs
+npm install && node mean.js ../results/<mygeneratedexperimentfolder>/
 ## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
 gnuplot simulation.gnuplot
 ## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>

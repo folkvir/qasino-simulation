@@ -7,6 +7,7 @@ set style fill solid
 outputdir = "../results/55f16ca24b08ef2725fbbc5088942a1e-all/"
 
 set logscale y
+set yrange[0.5:]
 do for [indx in "17 22 54 73 87"] {
     q1l = "q".indx
     print q1l
