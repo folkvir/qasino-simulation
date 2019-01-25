@@ -10,10 +10,10 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     DIRNAME=`date | md5`
 fi
 
-DIR="./results/${DIRNAME}-all"
+DIR="./results/review2-${DIRNAME}-all"
 mkdir -p $DIR
 
-java  ${HEAP} ${JAR}
+java  ${HEAP} ${JAR} --template template-review2.conf --cycles=1000000
 
 execute() {
     for i in $(seq 1 $SAMPLE); do

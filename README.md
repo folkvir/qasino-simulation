@@ -30,8 +30,11 @@ Parameters:
 ```bash
 cd snob-v2-simulation/
 ## Install firstly
-mvn clean package shade:shade ## or bash install.bash
-java -jar target/snob.jar --config test.conf
+mvn clean package ## or bash install.bash
+# if you want a list of all options
+java -jar target/snob.jar --help
+# otherwise
+java -jar target/snob.jar --execute=test.conf
 ```
 
 * Check the configuration file in configs/generated folder.

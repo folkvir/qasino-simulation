@@ -25,6 +25,13 @@
     </repositories>
 
   <dependencies>
+      <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
+      <dependency>
+          <groupId>info.picocli</groupId>
+          <artifactId>picocli</artifactId>
+          <version>3.9.2</version>
+      </dependency>
+
       <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
       <dependency>
           <groupId>org.apache.commons</groupId>
@@ -78,8 +85,6 @@
   </dependencies>
 
   <build>
-      <defaultGoal>install</defaultGoal>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
@@ -100,7 +105,6 @@
                           <manifestEntries>
                               <Main-Class>snob.simulation.App</Main-Class>
                               <addClasspath>true</addClasspath>
-                              <Premain-Class>snob.simulation.snob2.Agent</Premain-Class>
                           </manifestEntries>
                       </transformer>
                       <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
@@ -138,47 +142,6 @@
                 </filesets>
             </configuration>
         </plugin>
-        <!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.7.0</version>
-        </plugin>
-        <!--< plugin>
-            <artifactId>maven-jar-plugin</artifactId>
-            <version>3.1.0</version>
-            <configuration>
-                <archive>
-                    <manifest>
-                        <addClasspath>true</addClasspath>
-                        <mainClass>snob.simulation.App</mainClass>
-                    </manifest>
-                    <manifestEntries>
-                        <Premain-Class>snob.simulation.snob2.Agent</Premain-Class>
-                    </manifestEntries>
-                </archive>
-            </configuration>
-        </plugin>
-          <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <configuration>
-                  <archive>
-                      <manifest>
-                          <addClasspath>true</addClasspath>
-                          <mainClass>snob.simulation.App</mainClass>
-                      </manifest>
-                      <manifestEntries>
-                          <Premain-Class>snob.simulation.snob2.Agent</Premain-Class>
-                      </manifestEntries>
-                  </archive>
-                  <descriptorRefs>
-                      <descriptorRef>jar-with-dependencies</descriptorRef>
-                  </descriptorRefs>
-              </configuration>
-          </plugin>-->
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.5.2</version>
@@ -240,101 +203,6 @@
           <artifactId>maven-deploy-plugin</artifactId>
           <version>2.8.2</version>
         </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>1.6.0</version>
-            <executions>
-                <execution>
-                    <id>snob</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>snob-50</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob-50-rps+son.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>snob-100</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob-100-rps+son.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>snob-200</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob-200-rps+son.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>snob-50-rps</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob-50-rps.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>snob-100-rps</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob-100-rps.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-                <execution>
-                    <id>snob-200-rps</id>
-                    <goals>
-                        <goal>java</goal>
-                    </goals>
-                    <configuration>
-                        <mainClass>snob.simulation.App</mainClass>
-                        <arguments>
-                            <argument>snob-200-rps.txt</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
-            </executions>
-            <configuration>
-              <mainClass>snob.simulation.App</mainClass>
-            </configuration>
-        </plugin>
       </plugins>
-    </pluginManagement>
   </build>
 </project>
