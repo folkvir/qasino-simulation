@@ -57,6 +57,7 @@ nohup bash xp.bash &
 cd scripts/
 ## if you want averages, install Nodejs
 npm install && node mean.js ../results/<mygeneratedexperimentfolder>/
+bash sort.bash ../results/<mygeneratedexperimentfolder>/
 ## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
 gnuplot simulation.gnuplot
 ## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
@@ -74,7 +75,7 @@ mvn clean package shade:shade
 java -cp target/classes/ snob.simulation.VarNoclique
 ````
 
-![](scripts/variations/plotN.png | width=100)
+![](scripts/variations/plotN.png)
 
 ## Variations of N using the clique
 
@@ -87,6 +88,16 @@ java -cp target/classes/ snob.simulation.VarClique
 
 
 ## Results
+
+### Query cardinalities
+|| TP1 | TP2  | TP3 | TP4  | TP5 | TP6  | TP7 | Total |
+|---| --- | ---  | --- | ---  | --- | ---  | --- | --- |
+| q17| 1 | 1  |  |   |  |   |  | 2 |
+| q22 | 1 | 4213  |  |   |  |   |  | 4214 |
+| q54 | 1 | 2889  | 1284 | 1284  |  |   |  | 5458 |
+| q73 | 2 | 4213  | 2889 | 9670  | 1284 | 1284  |  | 19342 |
+| q87 | 1 | 1  | 1 | 1  | 1 | 1  | 4 | 10 |
+
 
 ### 5 queries
 
