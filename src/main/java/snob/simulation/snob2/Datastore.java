@@ -23,7 +23,8 @@ public class Datastore {
     public Dataset dataset;
 
     public Datastore() {
-        general = ModelFactory.createDefaultModel();
+        // this could be optimized...
+        this.general = ModelFactory.createDefaultModel();
         this.dataset = DatasetFactory.createTxnMem();
     }
 
