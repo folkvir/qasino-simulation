@@ -5,7 +5,7 @@ set style fill solid
 
 set logscale y
 
-outputdir = "../results/4c4c4d0c2754ff27876d83469e788e99-all/"
+outputdir = "../results/55f16ca24b08ef2725fbbc5088942a1e-all/"
 
 global = outputdir."global-mean.csv"
 
@@ -27,11 +27,11 @@ q3f = outputdir.q3l."sontruetrafficfalse-mean.csv"
 q4f = outputdir.q4l."sontruetrafficfalse-mean.csv"
 q5f = outputdir.q5l."sontruetrafficfalse-mean.csv"
 
-q1ft = outputdir.q1l."sonfalsetraffictrue-mean2.csv"
-q2ft = outputdir.q2l."sonfalsetraffictrue-mean2.csv"
-q3ft = outputdir.q3l."sonfalsetraffictrue-mean2.csv"
-q4ft = outputdir.q4l."sonfalsetraffictrue-mean2.csv"
-q5ft = outputdir.q5l."sonfalsetraffictrue-mean2.csv"
+q1ft = outputdir.q1l."sonfalsetraffictrue-mean.csv"
+q2ft = outputdir.q2l."sonfalsetraffictrue-mean.csv"
+q3ft = outputdir.q3l."sonfalsetraffictrue-mean.csv"
+q4ft = outputdir.q4l."sonfalsetraffictrue-mean.csv"
+q5ft = outputdir.q5l."sonfalsetraffictrue-mean.csv"
 
 q1ff = outputdir.q1l."sonfalsetrafficfalse-mean.csv"
 q2ff = outputdir.q2l."sonfalsetrafficfalse-mean.csv"

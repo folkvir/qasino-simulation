@@ -1,5 +1,5 @@
 # snob-v2-simulation
-Snob v2, Traffic reduced (IBFL), Incremental evaluation (Iterators), Termination criterion
+Snob v2, Traffic reduced (IBFL), Incremental evaluation (Symmetric Hash Join using iterators)
 
 Support for only SELECT (DISTINCT) conjunctive queries without filter only:
 - Projection
@@ -52,7 +52,8 @@ nohup bash xp.bash &
 # check in results folder for the results
 # when terminate, generate average on each values, then compute plots
 cd scripts/
-bash mean ../results/<mygeneratedexperimentfolder>/*conf.txt
+## if you want averages, install Nodejs
+npm install && node mean.js ../results/<mygeneratedexperimentfolder>/
 ## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
 gnuplot simulation.gnuplot
 ## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
@@ -88,35 +89,64 @@ java -cp target/classes/ snob.simulation.VarClique
 
 ### Using the clique
 
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/simulation-w-clique-traffictrue.png)
+
 ### Without the clique
+
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/simulation-wo-clique-traffictrue.png)
 
 ## Query 17
 
 ### Rounds
 
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-round-traffictrue.png)
+
 ### Traffic
+
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-triples.png)
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-messages.png)
 
 ## Query 22
 
 ### Rounds
 
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-round-traffictrue.png)
+
 ### Traffic
+
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-triples.png)
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-messages.png)
 
 ## Query 54
 
 ### Rounds
 
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-round-traffictrue.png)
+
 ### Traffic
+
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-triples.png)
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-messages.png)
 
 ## Query 73
 
 ### Rounds
 
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-round-traffictrue.png)
+
 ### Traffic
+
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-triples.png)
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-messages.png)
 
 ## Query 87
 
 ### Rounds
 
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-round-traffictrue.png)
+
 ### Traffic
+
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-triples.png)
+![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-messages.png)
 

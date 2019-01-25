@@ -4,9 +4,10 @@ set terminal png size 1600,1200 font "Default,30"
 set style fill solid
 
 
-outputdir = "../results/4c4c4d0c2754ff27876d83469e788e99-all/"
+outputdir = "../results/55f16ca24b08ef2725fbbc5088942a1e-all/"
 
 set logscale y
+set yrange[0.5:]
 do for [indx in "17 22 54 73 87"] {
     q1l = "q".indx
     print q1l
