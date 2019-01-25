@@ -74,7 +74,7 @@ mvn clean package shade:shade
 java -cp target/classes/ snob.simulation.VarNoclique
 ````
 
-![](scripts/variations/plotN.png)
+![](scripts/variations/plotN.png | width=100)
 
 ## Variations of N using the clique
 
@@ -109,6 +109,9 @@ java -cp target/classes/ snob.simulation.VarClique
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-triples.png)
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-messages.png)
 
+### Comparison between Algorithm 1 and 2
+![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q17-review2-simulation-round-traffictrue.png)
+
 ## Query 22
 
 ### Rounds
@@ -119,6 +122,9 @@ java -cp target/classes/ snob.simulation.VarClique
 
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-triples.png)
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-messages.png)
+
+### Comparison between Algorithm 1 and 2
+![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q22-review2-simulation-round-traffictrue.png)
 
 ## Query 54
 
@@ -131,6 +137,9 @@ java -cp target/classes/ snob.simulation.VarClique
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-triples.png)
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-messages.png)
 
+### Comparison between Algorithm 1 and 2
+![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q54-review2-simulation-round-traffictrue.png)
+
 ## Query 73
 
 ### Rounds
@@ -141,6 +150,10 @@ java -cp target/classes/ snob.simulation.VarClique
 
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-triples.png)
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-messages.png)
+
+### Comparison between Algorithm 1 and 2
+![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q73-review2-simulation-round-traffictrue.png)
+
 
 ## Query 87
 
@@ -153,3 +166,5 @@ java -cp target/classes/ snob.simulation.VarClique
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-triples.png)
 ![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-messages.png)
 
+### Comparison between Algorithm 1 and 2
+![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q87-review2-simulation-round-traffictrue.png)

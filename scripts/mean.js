@@ -66,7 +66,6 @@ function processFile(file, directory) {
                 const SON = files[i + 3]
                 const TRAFFIC = files[i + 5]
                 average.push(Q, SON, TRAFFIC)
-                console.log(files)
                 const output = path.resolve(`${directory}/${Q}${SON}${TRAFFIC}-mean.csv`)
                 const output2 = path.resolve(`${directory}/${SON}${TRAFFIC}-mean.csv`)
                 const global = path.resolve(`${directory}/global-mean.csv`)
