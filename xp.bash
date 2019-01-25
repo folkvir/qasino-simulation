@@ -2,6 +2,7 @@
 bash install.bash
 
 JAR="-jar target/snob.jar"
+HEAP= "-Xms5g -Xmx5g"
 SAMPLE=100
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
