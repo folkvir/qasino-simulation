@@ -1,6 +1,6 @@
 set style data linespoints
 set datafile separator ","
-set terminal png size 1600,1200 font "Default,30"
+set terminal png size 1600,1200 font "Default,25"
 set style fill solid
 
 
