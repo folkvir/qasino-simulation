@@ -6,11 +6,23 @@ Support for only SELECT (DISTINCT) conjunctive queries without filter only:
 - Selection
 - And Join (Symmetric Hash Join)
 
+## Requirements (tested with)
+
+Executing the simulation: `Java version "1.8.0_161"`
+
+Executing Scripts: 
+- `NodeJs v11.6.0`
+- `GNU bash, version 3.2.57(1)-release`
+
+Plotting: `Gnuplot Version 5.2 patchlevel 2`
+ 
 ## Build and run
 
-```
-mvn clean package shade:shade
-java -javaagent:target/snob.jar -jar target/snob.jar --config <filename>
+```bash
+mvn clean package
+java -javaagent:target/snob.jar -jar target/snob.jar --execute=<filename>
+# if you want a list of all options
+java -jar target/snob.jar --help
 ```
 
 Where `<filename>` is the **name** of the file in th folder `./configs/generated/` 
@@ -31,8 +43,6 @@ Parameters:
 cd snob-v2-simulation/
 ## Install firstly
 mvn clean package ## or bash install.bash
-# if you want a list of all options
-java -jar target/snob.jar --help
 # otherwise
 java -jar target/snob.jar --execute=test.conf
 ```

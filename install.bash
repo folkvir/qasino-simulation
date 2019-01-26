@@ -1,5 +1,5 @@
 #!/bin/bash
-mvn clean package shade:shade
+mvn clean package
 mkdir results
 echo "Snob simulation installed."
 echo "Now run: nohup bash xp.bash &"
