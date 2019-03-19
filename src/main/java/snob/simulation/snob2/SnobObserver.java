@@ -152,7 +152,8 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + messages
                     + ", " + seenfinished.size()
                     + ", " + currentresults
-                    + ", " + attemptedresults;
+                    + ", " + attemptedresults
+                    + ", " + current;
             boolean stop = true;
             for (int i = 0; stop && i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
