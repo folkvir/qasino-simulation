@@ -113,79 +113,79 @@ java -cp target/classes/ snob.simulation.VarClique
 
 ### Using the clique
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/simulation-w-clique-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/simulation-w-clique-traffictrue.png)
 
 ### Without the clique
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/simulation-wo-clique-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/simulation-wo-clique-traffictrue.png)
 
 ## Query 17
 
 ### Rounds
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-round-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-round-traffictrue.png)
 
 ### Traffic
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-triples.png)
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-messages.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-triples.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q17-simulation-traffic-messages.png)
 
 ### Comparison between Algorithm 1 and 2
-![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q17-review2-simulation-round-traffictrue.png)
+![](results/saved/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q17-review2-simulation-round-traffictrue.png)
 
 ## Query 22
 
 ### Rounds
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-round-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-round-traffictrue.png)
 
 ### Traffic
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-triples.png)
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-messages.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-triples.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q22-simulation-traffic-messages.png)
 
 ### Comparison between Algorithm 1 and 2
-![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q22-review2-simulation-round-traffictrue.png)
+![](results/saved/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q22-review2-simulation-round-traffictrue.png)
 
 ## Query 54
 
 ### Rounds
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-round-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-round-traffictrue.png)
 
 ### Traffic
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-triples.png)
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-messages.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-triples.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q54-simulation-traffic-messages.png)
 
 ### Comparison between Algorithm 1 and 2
-![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q54-review2-simulation-round-traffictrue.png)
+![](results/saved/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q54-review2-simulation-round-traffictrue.png)
 
 ## Query 73
 
 ### Rounds
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-round-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-round-traffictrue.png)
 
 ### Traffic
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-triples.png)
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-messages.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-triples.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q73-simulation-traffic-messages.png)
 
 ### Comparison between Algorithm 1 and 2
-![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q73-review2-simulation-round-traffictrue.png)
+![](results/saved/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q73-review2-simulation-round-traffictrue.png)
 
 
 ## Query 87
 
 ### Rounds
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-round-traffictrue.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-round-traffictrue.png)
 
 ### Traffic
 
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-triples.png)
-![](results/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-messages.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-triples.png)
+![](results/saved/55f16ca24b08ef2725fbbc5088942a1e-all/q87-simulation-traffic-messages.png)
 
 ### Comparison between Algorithm 1 and 2
-![](results/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q87-review2-simulation-round-traffictrue.png)
+![](results/saved/review2-a13fa1a657bcaed2b0c17154e6b69b2b-all/q87-review2-simulation-round-traffictrue.png)

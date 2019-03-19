@@ -63,6 +63,8 @@ public class SnobObserver implements ObserverProgram {
             int meancompleted = 0;
             int meanfullmeshcompleted = 0;
             int meanfinish = 0;
+            int currentresults = 0;
+            int attemptedresults = 0;
             for (int i = 0; i < networksize; ++i) {
                 Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
                 messages += snob.messages;
@@ -71,6 +73,8 @@ public class SnobObserver implements ObserverProgram {
                     QuerySnob query = snob.profile.query;
                     if (query != null) {
                         List<QuerySolution> res = query.getResults();
+                        currentresults += res.size();
+                        attemptedresults += query.cardinality;
                         int cpt = res.size();
                         long localcomp = 0;
                         if (cpt > query.cardinality) {
@@ -92,7 +96,7 @@ public class SnobObserver implements ObserverProgram {
                         if (!completed.containsKey(snob.id) && localcomp == 100) {
                             completed.put(snob.id, current);
                         }
-                        if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize && query.isFinished()) {
+                        if (!seenfinished.containsKey(snob.id) && snob.profile.query.globalseen == networksize && query.terminated) {
                             seenfinished.put(snob.id, current);
                         }
 
@@ -146,8 +150,15 @@ public class SnobObserver implements ObserverProgram {
                     + ", " + meanfullmeshcompleted
                     + ", " + triplesback
                     + ", " + messages
-                    + ", " + seenfinished.size();
-            if (seenfinished.size() == this.queries) {
+                    + ", " + seenfinished.size()
+                    + ", " + currentresults
+                    + ", " + attemptedresults;
+            boolean stop = true;
+            for (int i = 0; stop && i < networksize; ++i) {
+                Snob snob = (Snob) observer.nodes.get(Network.get(i).getID()).pss;
+                if(snob.profile.has_query && !snob.profile.query.terminated) stop = false;
+            }
+            if (stop) {
                 System.out.println(res);
                 exit(0);
             }

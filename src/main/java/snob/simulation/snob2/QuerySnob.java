@@ -199,4 +199,20 @@ public class QuerySnob {
             }
         }
     }
+
+    public boolean probabilisticIsFinished(double apriori, int shuffle) {
+        double distinct = this.globalseen;
+        if(distinct == 0) return false;
+        double infinity = 20;
+        double sum = 0;
+        for(int i = 0; i < infinity; ++i) {
+            double tmp = distinct / (distinct + i);
+            double pow = Math.pow(tmp, shuffle);
+            // System.err.println(tmp + " : " + pow);
+            sum += pow;
+        }
+        double result = apriori * sum;
+        // System.err.println("distinct: " + distinct + "; |" + result + " round=" + shuffle + " stop cond: " + (result < 1));
+        return result < 1;
+    }
 }

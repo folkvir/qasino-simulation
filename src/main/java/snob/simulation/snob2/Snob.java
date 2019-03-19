@@ -31,6 +31,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     public static int pick = 5;
     private static int snobs = 0;
     public final int id = Snob.snobs++;
+    public int shuffle = 0;
     // Profile of the peer
     public Profile profile;
     // #C local variables
@@ -106,6 +107,10 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
     }
 
     public void periodicCall() {
+        shuffle++;
+        if(!start) {
+            shuffle = 0;
+        }
         // periodicRandomGraphCall();
         periodicCyclonCall();
     }
@@ -229,7 +234,7 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                 }
                 if (Snob.son) constructFullmesh(rps);
                 // -------- QUERY EXECUTION MODEL -------
-                if (profile.has_query && !profile.query.isFinished()) {
+                if (profile.has_query && !profile.query.terminated) {
                     // 1 - send tpqs to neighbours and receive responses
                     for (Node node_rps : rps) {
                         // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
@@ -239,9 +244,15 @@ public class Snob extends ARandomPeerSamplingProtocol implements IRandomPeerSamp
                         }
                     }
                     profile.execute();
-                    // test if the query is terminated or not
-                    if (this.profile.query.globalseen == Network.size()) {
-                        this.profile.query.stop();
+//                    // test if the query is terminated or not, WHEN WE SAW N PEEES
+//                    if (profile.query.isFinished()) {
+//                        this.profile.stop();
+//                    }
+
+                    // test whether the query is finished or not using a probabilistic criterion
+                    boolean shouldstop = profile.query.probabilisticIsFinished(0.99, this.shuffle);
+                    if(shouldstop){
+                        this.profile.stop();
                     }
                 }
             }

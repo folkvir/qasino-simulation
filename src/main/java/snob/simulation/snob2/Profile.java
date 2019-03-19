@@ -96,6 +96,13 @@ public class Profile {
     }
 
     /**
+     * Stop the query execution;
+     */
+    public void stop () {
+        this.query.stop();
+    }
+
+    /**
      * Execute the query using the pipeline of iterators
      */
     public void execute() {
