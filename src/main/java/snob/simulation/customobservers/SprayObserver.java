@@ -46,27 +46,32 @@ public class SprayObserver implements ObserverProgram {
                 observed.put(Network.get(i).getID(), new LinkedHashSet<>());
                 observed.get(Network.get(i).getID()).add(Network.get(i).getID());
             }
-            if(observed.get(Network.get(i).getID()).size() == Network.size()) {
+            if(observed.get(Network.get(i).getID()).size() == Network.size() && !finished.containsKey(Network.get(i).getID())) {
                 finished.put(Network.get(i).getID(), currentTick);
+                System.out.println(String.join(",", new String[]{
+                        String.valueOf(Network.get(i).getID()),
+                        String.valueOf(currentTick),
+                        String.valueOf(Network.size())
+                }));
             } else {
                 for (Node peer : spray.getPeers(Integer.MAX_VALUE)) {
                     observed.get(Network.get(i).getID()).add(peer.getID());
                 }
             }
         }
-        Stat stat = new Stat(observed, finished);
-        String[] result = {
-                String.valueOf(currentTick),
-                String.valueOf(stat.meanFinished),
-                String.valueOf(stat.meanObserved),
-                String.valueOf(stat.minObserved),
-                String.valueOf(stat.maxObserved)
-        };
-        System.out.println(String.join(",", result));
+//        Stat stat = new Stat(observed, finished);
+//        String[] result = {
+//                String.valueOf(currentTick),
+//                String.valueOf(stat.meanFinished),
+//                String.valueOf(stat.meanObserved),
+//                String.valueOf(stat.minObserved),
+//                String.valueOf(stat.maxObserved)
+//        };
+        //System.out.println(String.join(",", result));
         if(finished.size() == Network.size()) {
-            System.err.println("Finish: " + finished.size());
-            System.err.println("Observed: " + stat.meanObserved);
-            System.err.println("Mean finished: " + stat.meanFinished);
+//            System.err.println("Finish: " + finished.size());
+//            System.err.println("Observed: " + stat.meanObserved);
+//            System.err.println("Mean finished: " + stat.meanFinished);
             exit(0);
         }
     }
