@@ -32,6 +32,7 @@ import static java.lang.System.exit;
 public class SprayObserver implements ObserverProgram {
 
     private HashMap<Long, Set<Long>> observed = new LinkedHashMap<>();
+    private HashMap<Long, Long> finished = new LinkedHashMap<>();
 
     public SprayObserver(String prefix) {}
 
@@ -45,12 +46,17 @@ public class SprayObserver implements ObserverProgram {
                 observed.put(Network.get(i).getID(), new LinkedHashSet<>());
                 observed.get(Network.get(i).getID()).add(Network.get(i).getID());
             }
-            for (Node peer : spray.getPeers(Integer.MAX_VALUE)) {
-                observed.get(Network.get(i).getID()).add(peer.getID());
+            if(observed.get(Network.get(i).getID()).size() == Network.size()) {
+                finished.put(Network.get(i).getID(), currentTick);
+            } else {
+                for (Node peer : spray.getPeers(Integer.MAX_VALUE)) {
+                    observed.get(Network.get(i).getID()).add(peer.getID());
+                }
             }
         }
         String[] result = {
                 String.valueOf(currentTick),
+                String.valueOf(meanFinished()),
                 String.valueOf(meanObservedPv()),
                 String.valueOf(minObservedPv()),
                 String.valueOf(maxObservedPv())
@@ -61,12 +67,20 @@ public class SprayObserver implements ObserverProgram {
         }
     }
 
+    private double meanFinished() {
+        double mean = 0;
+        for (Long value : finished.values()) {
+            mean += value;
+        }
+        return mean/Network.size();
+    }
+
     private double meanObservedPv() {
         double mean = 0;
         for (Set<Long> value : observed.values()) {
             mean += value.size();
         }
-        return mean/observed.size();
+        return mean/Network.size();
     }
 
     private double minObservedPv() {
