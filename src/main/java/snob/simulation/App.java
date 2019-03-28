@@ -72,7 +72,7 @@ public class App implements Runnable {
     public void run() {
         if(config != null) {
             try {
-                new Simulator().main(new String[]{"./configs/generated/" + config});
+                new Simulator().main(new String[]{config});
             } catch (Exception e) {
                 e.printStackTrace();
             }
