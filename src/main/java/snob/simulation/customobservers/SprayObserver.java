@@ -31,8 +31,8 @@ import static java.lang.System.exit;
 
 public class SprayObserver implements ObserverProgram {
 
-    private HashMap<Long, Set<Long>> observed = new LinkedHashMap<>();
-    private HashMap<Long, Long> finished = new LinkedHashMap<>();
+    private HashMap<Long, Set<Long>> observed = new HashMap<>();
+    private HashMap<Long, Long> finished = new HashMap<>();
 
     public SprayObserver(String prefix) {}
 
@@ -54,17 +54,53 @@ public class SprayObserver implements ObserverProgram {
                 }
             }
         }
+        Stat stat = new Stat(observed, finished);
         String[] result = {
                 String.valueOf(currentTick),
-                String.valueOf(meanFinished()),
-                String.valueOf(meanObservedPv()),
-                String.valueOf(minObservedPv()),
-                String.valueOf(maxObservedPv())
+                String.valueOf(stat.meanFinished),
+                String.valueOf(stat.meanObserved),
+                String.valueOf(stat.minObserved),
+                String.valueOf(stat.maxObserved)
         };
         System.out.println(String.join(",", result));
-        if(meanObservedPv() == Network.size()) {
+        if(finished.size() == Network.size()) {
+            System.err.println("Finish: " + finished.size());
+            System.err.println("Observed: " + stat.meanObserved);
+            System.err.println("Mean finished: " + stat.meanFinished);
             exit(0);
         }
+    }
+
+    class Stat {
+        Stat(HashMap<Long, Set<Long>> observed, HashMap<Long, Long> finished) {
+            meanObserved = 0;
+            minObserved = -1;
+            for (Set<Long> value : observed.values()) {
+                meanObserved += value.size();
+                if(minObserved == -1) {
+                    minObserved = value.size();
+                } else if(value.size() < minObserved){
+                    minObserved = value.size();
+                }
+                if(maxObserved == -1) {
+                    maxObserved = value.size();
+                } else if(value.size() > maxObserved){
+                    maxObserved = value.size();
+                }
+            }
+            meanFinished = 0;
+            for (Long value : finished.values()) {
+                meanFinished += value;
+            }
+            meanObserved = meanObserved/Network.size();
+            meanFinished = meanFinished/Network.size();
+
+        }
+        public double meanObserved;
+        public double meanFinished;
+        public double minObserved;
+        public double maxObserved;
+
     }
 
     private double meanFinished() {
