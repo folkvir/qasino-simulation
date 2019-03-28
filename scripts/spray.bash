@@ -23,7 +23,7 @@ for i in $(seq 1 $SAMPLE); do
         echo "Executing file: "$file
         filename=$(basename $file)
         rm -rf /tmp/spray.bash.tmpfile
-        tmpfile=$(mktemp /tmp/spray.bash.tmpfile)
+        tmpfile=$(mktemp /tmp/spray.bash.tmpfile.XXXXXX)
         RESULT="${DIR}/${filename}-${i}.csv"
         RESULTTMP="${DIR}/${filename}-${i}-tmp.txt"
         cat $file | perl -pe "s/random.seed 1237567890/random.seed $i/g" > "$tmpfile"
