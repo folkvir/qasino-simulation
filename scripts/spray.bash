@@ -23,7 +23,7 @@ STEP=100
 SAMPLE=500
 
 CONFIG="$CUR/../configs/spray.conf"
-for size in 10 20 30 40 50 70 90 200 400 600 800 1000 2000; do
+for size in 10 20 30 40 50 70 80 90 100 200 400 600 800 1000 2000; do
     for i in $(seq 1 $SAMPLE); do
         echo "=====SIZE=$size=SAMPLE=$i==================================================================="
         filename=$(basename $CONFIG)
