@@ -1,13 +1,16 @@
 package snob.simulation.spray;
 
 import peersim.core.CommonState;
+import peersim.core.Network;
 import peersim.core.Node;
 import snob.simulation.cyclon.Cyclon;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
 import snob.simulation.rps.IMessage;
 import snob.simulation.rps.IRandomPeerSampling;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The Spray protocol
@@ -20,6 +23,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     // #C local variables
     private SprayPartialView partialView;
 
+    public Long oldest = null;
+    public List<Long> previousSample = new ArrayList<>();
+    public List<Long> previousPartialview = new ArrayList<>();
     /**
      * Constructor of the Spray instance
      *
@@ -49,16 +55,25 @@ public class Spray extends ARandomPeerSamplingProtocol implements
             Node q = this.partialView.getOldest();
             Spray qSpray = (Spray) q
                     .getProtocol(ARandomPeerSamplingProtocol.pid);
+            oldest = q.getID();
             boolean isFailedConnection = this.pFail(null);
             if (qSpray.isUp() && !isFailedConnection) {
+
                 // #A if the chosen peer is alive, exchange
                 List<Node> sample = this.partialView.getSample(this.node, q,
                         true);
+                this.previousPartialview = new ArrayList<>(this.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> node.getID()).collect(Collectors.toList()));
+                this.previousSample = new ArrayList(sample.parallelStream().map(node -> node.getID()).collect(Collectors.toList()));
+
+
                 IMessage received = qSpray.onPeriodicCall(this.node,
                         new SprayMessage(sample));
                 List<Node> samplePrime = (List<Node>) received.getPayload();
                 this.partialView.mergeSample(this.node, q, samplePrime, sample,
                         true);
+
+                // List<Long> newPv = this.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> node.getID()).collect(Collectors.toList());
+                // System.err.println("Spray-shuffle:(" + this.node.getID() + ")_(" + q.getID() + ")" + previousPartialview + "_" + previousSample + "_" + newPv);
             } else {
                 // #B run the appropriate procedure
                 if (!qSpray.isUp()) {

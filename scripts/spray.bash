@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#bash install.bash
+bash install.bash
 
 CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo $CUR
@@ -17,20 +17,32 @@ fi
 DIR="$CUR/../results/spray-${DIRNAME}"
 mkdir -p $DIR
 
-SAMPLE=1000
-for i in $(seq 1 $SAMPLE); do
-    for file in $(ls $CUR/../configs/sprays/spray-*.conf); do
-        echo "Executing file: "$file
-        filename=$(basename $file)
-        rm -rf /tmp/spray.bash.tmpfile
+START=100
+END=$((1000 + $START))
+STEP=100
+SAMPLE=500
+
+CONFIG="$CUR/../configs/spray.conf"
+for size in 10 20 30 40 50 70 90 200 400 600 800 1000 2000; do
+    for i in $(seq 1 $SAMPLE); do
+        echo "=====SIZE=$size=SAMPLE=$i==================================================================="
+        filename=$(basename $CONFIG)
         tmpfile=$(mktemp /tmp/spray.bash.tmpfile.XXXXXX)
-        RESULT="${DIR}/${filename}-${i}.csv"
+        RESULT="${DIR}/${filename}-${size}-${i}.csv"
         RESULTTMP="${DIR}/${filename}-${i}-tmp.txt"
-        cat $file | perl -pe "s/random.seed 1237567890/random.seed $i/g" > "$tmpfile"
-        cat $tmpfile
+        cp $CONFIG "$tmpfile"
+        perl -pi -e "s/random.seed 1237567890/random.seed $i/g" $tmpfile
+        perl -pi -e "s/SIZE 100/SIZE $size/g" $tmpfile
+        echo "Replacing values (random.seed $i and SIZE $size) in the config file done."
         touch "${RESULTTMP}"
-        java ${HEAP} ${JAR} --execute="${tmpfile}" > "${RESULTTMP}"
+        echo "Executing file:" $tmpfile
+        java ${HEAP} ${JAR} --execute="$tmpfile" > "${RESULTTMP}"
         echo "$(awk NF $RESULTTMP)" >> "${RESULT}"
-        rm -rf "$RESULTTMP"
+        rm -rf "$RESULTTMP" "$tmpfile"
+        echo "========================================================================="
     done
 done
+
+# clean tmp files
+rm -rf /tmp/spray.bash.*
+
