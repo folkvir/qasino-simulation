@@ -1,7 +1,6 @@
 package snob.simulation.spray;
 
 import peersim.core.CommonState;
-import peersim.core.Network;
 import peersim.core.Node;
 import snob.simulation.cyclon.Cyclon;
 import snob.simulation.rps.ARandomPeerSamplingProtocol;
@@ -21,11 +20,13 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     // #A no configuration needed, everything is adaptive
     // #B no values from the configuration file of peersim
     // #C local variables
-    private SprayPartialView partialView;
+    public SprayPartialView partialView;
 
     public Long oldest = null;
     public List<Long> previousSample = new ArrayList<>();
+    public List<Node> previousSampleNode = new ArrayList<>();
     public List<Long> previousPartialview = new ArrayList<>();
+    public List<Node> previousPartialviewNode = new ArrayList<>();
     /**
      * Constructor of the Spray instance
      *
@@ -41,7 +42,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     }
 
     @Override
-    protected boolean pFail(List<Node> path) {
+    public boolean pFail(List<Node> path) {
         // the probability is constant since the number of hops to establish
         // a connection is constant
         double pf = 1 - Math.pow(1 - ARandomPeerSamplingProtocol.fail, 6);
@@ -62,8 +63,11 @@ public class Spray extends ARandomPeerSamplingProtocol implements
                 // #A if the chosen peer is alive, exchange
                 List<Node> sample = this.partialView.getSample(this.node, q,
                         true);
-                this.previousPartialview = new ArrayList<>(this.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> node.getID()).collect(Collectors.toList()));
-                this.previousSample = new ArrayList(sample.parallelStream().map(node -> node.getID()).collect(Collectors.toList()));
+
+                this.previousPartialviewNode = new ArrayList<>(this.getPeers(Integer.MAX_VALUE));
+                this.previousPartialview = previousPartialviewNode.parallelStream().map(node -> node.getID()).collect(Collectors.toList());
+                this.previousSampleNode = new ArrayList<>(sample);
+                this.previousSample = previousSampleNode.parallelStream().map(node -> node.getID()).collect(Collectors.toList());
 
 
                 IMessage received = qSpray.onPeriodicCall(this.node,
@@ -148,7 +152,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
      *
      * @param q the peer supposedly crashed
      */
-    private void onPeerDown(Node q) {
+    public void onPeerDown(Node q) {
         // #1 probability to NOT recreate the connection
         double pRemove = 1.0 / this.partialView.size();
         // #2 remove all occurrences of q in our partial view and count them
@@ -170,7 +174,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
      *
      * @param q the destination of the arc to replace
      */
-    private void onArcDown(Node q) {
+    public void onArcDown(Node q) {
         // #1 remove the unestablished link
         this.partialView.removeNode(q);
         // #2 double a known connection at random
