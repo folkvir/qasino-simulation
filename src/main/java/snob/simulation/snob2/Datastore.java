@@ -19,6 +19,7 @@ import static java.lang.System.exit;
 
 
 public class Datastore {
+    public int inserted = 0;
     public Model general;
     public Dataset dataset;
 
@@ -51,6 +52,7 @@ public class Datastore {
                 if (!g.contains(p)) {
                     // System.err.println("Inserting triple: " + p.toString());
                     g.add(p);
+                    inserted++;
                 } else {
                     System.err.println(new Error("[]inserting twice a triple..."));
                     exit(1);
