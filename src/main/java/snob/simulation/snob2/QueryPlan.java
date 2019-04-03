@@ -10,6 +10,7 @@ import snob.simulation.snob2.pipeline.AppendableSource;
 import snob.simulation.snob2.pipeline.PipelineBuilder;
 import snob.simulation.snob2.pipeline.QueryIteratorPlus;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ public class QueryPlan {
     public String query;
     public List<Triple> patterns;
     public Map<Triple, AppendableSource> sources;
+    public Map<Triple, Integer> inserted = new HashMap<>();
     public QueryIteratorPlus iterator;
     public List<String> vars;
     public ResultSet results;
@@ -31,6 +33,9 @@ public class QueryPlan {
         iterator = builder.create(this.query);
 
         sources = builder.getSources();
+        sources.forEach((pattern, source) -> {
+            inserted.put(pattern, 0);
+        });
         patterns = builder.getTriples();
 
         vars = iterator.getVars().parallelStream().map(var -> var.toString()).collect(Collectors.toList());
@@ -52,6 +57,7 @@ public class QueryPlan {
 
     public void insertTriple(Triple pattern, Triple triple) {
         Binding b = projection(pattern, triple);
+        inserted.put(pattern, inserted.get(pattern) + 1);
         sources.get(pattern).append(b);
     }
 

@@ -62,33 +62,41 @@ public class SnobSprayObserver implements ObserverProgram {
 
         for(Map.Entry<Long, SnobSpray> entry: collaborativepeers.entrySet()) {
             SnobSpray peer = entry.getValue();
+            Map<String, Object> data = jsonToMap((JSONObject) queryToreplicate.get("patterns"));
+            long sumRequired = 0;
+            long sumAcquired = 0;
+            for(Map.Entry<String, Object> d: data.entrySet()) {
+                sumRequired += (long) d.getValue();
+            }
+            for(Triple p: peer.profile.query.plan.inserted.keySet()) {
+                sumAcquired += peer.profile.query.plan.inserted.get(p);
+            }
+
+            double seen = 0;
+            for (Triple triple : peer.profile.query.alreadySeen.keySet()) {
+                seen += peer.profile.query.alreadySeen.get(triple).size();
+            }
+            seen = seen / peer.profile.query.alreadySeen.keySet().size();
+            System.out.println(String.join(",", new String[]{
+                    String.valueOf(peer.node.getID()),
+                    String.valueOf(peer.shuffle),
+                    String.valueOf(peer.observed),
+                    String.valueOf(seen),
+                    String.valueOf(peer.messages),
+                    String.valueOf(peer.tripleResponses),
+                    String.valueOf(peer.profile.inserted),
+                    String.valueOf(sumAcquired),
+                    String.valueOf(sumRequired),
+                    String.valueOf(sumAcquired/sumRequired),
+                    String.valueOf(peer.profile.datastore.inserted),
+                    String.valueOf(peer.profile.query.getResults().size()),
+                    String.valueOf(peer.profile.query.cardinality),
+                    String.valueOf(Network.size()),
+                    String.valueOf(peer.getPeers(Integer.MAX_VALUE).size()),
+                    String.valueOf(replicate),
+                    String.valueOf(SnobSpray.traffic)
+            }));
             if(peer.profile.has_query && peer.profile.query.terminated){
-                Map<String, Object> data = jsonToMap((JSONObject) queryToreplicate.get("patterns"));
-                long sumRequired = 0;
-                long sumAcquired = 0;
-                for(Map.Entry<String, Object> d: data.entrySet()) {
-                    sumRequired += (long) d.getValue();
-                }
-                for(Triple p: peer.profile.query.patterns) {
-                    sumAcquired += peer.profile.datastore.getTriplesMatchingTriplePatternAsList(p).size();
-                }
-                System.out.println(String.join(",", new String[]{
-                        String.valueOf(peer.node.getID()),
-                        String.valueOf(peer.shuffle),
-                        String.valueOf(peer.observed),
-                        String.valueOf(peer.messages),
-                        String.valueOf(peer.tripleResponses),
-                        String.valueOf(peer.profile.inserted),
-                        String.valueOf(sumAcquired),
-                        String.valueOf(sumRequired),
-                        String.valueOf(peer.profile.datastore.inserted),
-                        String.valueOf(peer.profile.query.getResults().size()),
-                        String.valueOf(peer.profile.query.cardinality),
-                        String.valueOf(Network.size()),
-                        String.valueOf(peer.getPeers(Integer.MAX_VALUE).size()),
-                        String.valueOf(replicate),
-                        String.valueOf(SnobSpray.traffic)
-                }));
                 toRemove.add(entry.getKey());
             }
         }
