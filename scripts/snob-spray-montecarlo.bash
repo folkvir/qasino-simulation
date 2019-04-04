@@ -58,5 +58,5 @@ done
 
 wait
 # clean tmp files
-rm -rf /tmp/snob-spray-montecarlo.bash.tmpfile.*
+rm -rf /tmp/snob*
 

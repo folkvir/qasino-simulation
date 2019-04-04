@@ -48,7 +48,7 @@ execute() {
             ########### WITH TRAFFIC DISABLED
             echo "==QUERY:$query==R:$replicate=SIZE=$size=SAMPLE=$i==================================================================="
             filename=$(basename $CONFIG)
-            tmpfile=$(mktemp /tmp/snob-spray.bash.tmpfile.XXXXXX)
+            tmpfile=$(mktemp /tmp/snob-spray-traffic.bash.tmpfile.XXXXXX)
             RESULT="${DIR}/${filename}-traffic-disabled-${size}-${i}-q${query}-r${replicate}.csv"
             RESULTTMP="${DIR}/${filename}-traffic-disabled-${i}-q${query}-r${replicate}-tmp.txt"
             cp $CONFIG "$tmpfile"
@@ -78,5 +78,5 @@ done
 
 wait
 # clean tmp files
-rm -rf /tmp/snob-spray-traffic.bash.tmpfile.*
+rm -rf /tmp/snob*
 
