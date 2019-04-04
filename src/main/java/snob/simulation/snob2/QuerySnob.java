@@ -29,6 +29,7 @@ public class QuerySnob {
     public Map<Triple, Set<Triple>> data = new LinkedHashMap<>();
     public Map<Triple, IBFStrata> strata = new LinkedHashMap<>();
     public Map<Triple, Set<Integer>> alreadySeen = new LinkedHashMap<>();
+
     // stats
     public Set<Integer> seen = new LinkedHashSet<>();
     public int globalseen = 0;
@@ -202,10 +203,10 @@ public class QuerySnob {
 
     public boolean probabilisticIsFinished(double apriori, int shuffle) {
         double distinct = this.globalseen;
-        if(distinct == 0) return false;
+        if (distinct == 0) return false;
         double infinity = 20;
         double sum = 0;
-        for(int i = 0; i < infinity; ++i) {
+        for (int i = 0; i < infinity; ++i) {
             double tmp = distinct / (distinct + i);
             double pow = Math.pow(tmp, shuffle);
             // System.err.println(tmp + " : " + pow);

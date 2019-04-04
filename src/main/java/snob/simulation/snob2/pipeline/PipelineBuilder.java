@@ -133,7 +133,7 @@ public class PipelineBuilder {
                 int c2 = getConstants(o2);
 
                 int tpo1 = triplePatternOrder(o1, o2);
-                int tpo2 = joinPatternOrderTer(o2, o1);
+                int tpo2 = triplePatternOrder(o2, o1);
 
                 one += per1m + c1 + tpo1;
                 two += per2m + c2 + tpo2;

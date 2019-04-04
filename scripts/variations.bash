@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#!/usr/bin/env bash
 bash install.bash
 
 JAR="-jar target/snob.jar"
@@ -11,9 +10,9 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     DIRNAME=`date | md5`
 fi
 
-DIR="./results/${DIRNAME}variancenq"
+DIR="../results/${DIRNAME}variancenq"
 mkdir -p $DIR
 
-java -cp target/classes/ snob.simulation.VarClique > "${DIR}/varclique.csv" &
-java -cp target/classes/ snob.simulation.VarNoclique > "${DIR}/varnoclique.csv" &
+java -cp ../target/classes/ snob.simulation.VarClique > "${DIR}/varclique.csv" &
+java -cp ../target/classes/ snob.simulation.VarNoclique > "${DIR}/varnoclique.csv" &
 wait

@@ -27,6 +27,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     public List<Node> previousSampleNode = new ArrayList<>();
     public List<Long> previousPartialview = new ArrayList<>();
     public List<Node> previousPartialviewNode = new ArrayList<>();
+
     /**
      * Constructor of the Spray instance
      *

@@ -30,19 +30,68 @@ public class SnobSprayObserver implements ObserverProgram {
 
     private JSONObject queryToreplicate = null;
 
+
+    // can be "lasvegas", end when all have seen all, or "montecarlo", if montecarlo, proportion=0.999999999 until the end of the experiment
+    private String stopcond = "lasvegas";
+    private double proportion = 0.999999999;
+    private double montecarlostop = 0;
     private int replicate;
     private int queries;
     private boolean initialized = false;
 
-    private Map<Long, SnobSpray> collaborativepeers = new HashMap<>();
+    private Map<Long, SnobSpray> collaborativepeers = new LinkedHashMap<>();
 
     public SnobSprayObserver(String prefix) {
         try {
+            this.stopcond = Configuration.getString(prefix + ".stopcond", "lasvegas");
             this.query = Configuration.getInt(prefix + ".querytoreplicate", 73);
             this.replicate = Configuration.getInt(prefix + ".replicate", 50);
         } catch (Exception e) {
             System.err.println("Cant find any query limit: setting value to unlimited: " + e);
         }
+        this.montecarlostop = Network.size() * Math.log((1 / (1 - proportion)));
+
+    }
+
+    public static Map<String, Object> jsonToMap(JSONObject json) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+
+        if (json != null) {
+            retMap = toMap(json);
+        }
+        return retMap;
+    }
+
+    public static Map<String, Object> toMap(JSONObject object) {
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        Iterator<String> keysItr = object.keySet().iterator();
+        while (keysItr.hasNext()) {
+            String key = keysItr.next();
+            Object value = object.get(key);
+
+            if (value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            } else if (value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            map.put(key, value);
+        }
+        return map;
+    }
+
+    public static List<Object> toList(JSONArray array) {
+        List<Object> list = new ArrayList<Object>();
+        for (int i = 0; i < array.size(); i++) {
+            Object value = array.get(i);
+            if (value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            } else if (value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            list.add(value);
+        }
+        return list;
     }
 
     @Override
@@ -58,54 +107,77 @@ public class SnobSprayObserver implements ObserverProgram {
     }
 
     public void observe(long currentTick, DictGraph observer) {
-        List<Long> toRemove = new ArrayList<>();
-
-        for(Map.Entry<Long, SnobSpray> entry: collaborativepeers.entrySet()) {
-            SnobSpray peer = entry.getValue();
-            Map<String, Object> data = jsonToMap((JSONObject) queryToreplicate.get("patterns"));
-            long sumRequired = 0;
-            long sumAcquired = 0;
-            for(Map.Entry<String, Object> d: data.entrySet()) {
-                sumRequired += (long) d.getValue();
-            }
-            for(Triple p: peer.profile.query.plan.inserted.keySet()) {
-                sumAcquired += peer.profile.query.plan.inserted.get(p);
-            }
-
-            double seen = 0;
-            for (Triple triple : peer.profile.query.alreadySeen.keySet()) {
-                seen += peer.profile.query.alreadySeen.get(triple).size();
-            }
-            seen = seen / peer.profile.query.alreadySeen.keySet().size();
-            System.out.println(String.join(",", new String[]{
-                    String.valueOf(peer.node.getID()),
-                    String.valueOf(peer.shuffle),
-                    String.valueOf(peer.observed),
-                    String.valueOf(seen),
-                    String.valueOf(peer.messages),
-                    String.valueOf(peer.tripleResponses),
-                    String.valueOf(peer.profile.inserted),
-                    String.valueOf(sumAcquired),
-                    String.valueOf(sumRequired),
-                    String.valueOf(sumAcquired/sumRequired),
-                    String.valueOf(peer.profile.datastore.inserted),
-                    String.valueOf(peer.profile.query.getResults().size()),
-                    String.valueOf(peer.profile.query.cardinality),
-                    String.valueOf(Network.size()),
-                    String.valueOf(peer.getPeers(Integer.MAX_VALUE).size()),
-                    String.valueOf(replicate),
-                    String.valueOf(SnobSpray.traffic)
-            }));
-            if(peer.profile.has_query && peer.profile.query.terminated){
-                toRemove.add(entry.getKey());
-            }
+        // always pick the first collaborative peer.
+        Map.Entry<Long, SnobSpray> entry = collaborativepeers.entrySet().iterator().next();
+        SnobSpray peer = entry.getValue();
+        Map<String, Object> data = jsonToMap((JSONObject) queryToreplicate.get("patterns"));
+        long sumRequired = 0;
+        long sumAcquired = 0;
+        for (Map.Entry<String, Object> d : data.entrySet()) {
+            sumRequired += (long) d.getValue();
         }
-        // remove finish entry
-        for (Long key : toRemove) {
-            collaborativepeers.remove(key);
+        for (Triple p : peer.profile.query.plan.inserted.keySet()) {
+            sumAcquired += peer.profile.query.plan.inserted.get(p);
         }
-        if(collaborativepeers.size() == 0) {
+
+        double seen = 0;
+        for (Triple triple : peer.profile.query.alreadySeen.keySet()) {
+            seen += peer.profile.query.alreadySeen.get(triple).size();
+        }
+        seen = seen / peer.profile.query.alreadySeen.keySet().size();
+        System.out.println(String.join(",", new String[]{
+                String.valueOf(peer.node.getID()),
+                String.valueOf(peer.shuffle),
+                String.valueOf(peer.observed),
+                String.valueOf(seen),
+                String.valueOf(peer.crdt.sum()),
+                String.valueOf(peer.messages),
+                String.valueOf(peer.tripleResponses),
+                String.valueOf(peer.profile.inserted),
+                String.valueOf(sumAcquired),
+                String.valueOf(sumRequired),
+                String.valueOf(sumAcquired / sumRequired),
+                String.valueOf(peer.profile.datastore.inserted),
+                String.valueOf(peer.profile.query.getResults().size()),
+                String.valueOf(peer.profile.query.cardinality),
+                String.valueOf(Network.size()),
+                String.valueOf(peer.getPeers(Integer.MAX_VALUE).size()),
+                String.valueOf(replicate),
+                String.valueOf(SnobSpray.traffic),
+                String.valueOf(query)
+        }));
+
+        boolean shouldexit = true;
+        for (Map.Entry<Long, SnobSpray> end : collaborativepeers.entrySet()) {
+            // should stop the query
+            switch (stopcond) {
+                case "lasvegas":
+                    lasVegasCondition(end.getValue());
+                    break;
+                case "montecarlo":
+                    monteCarloCondition(end.getValue());
+                    break;
+                default:
+                    System.err.println("No termination defined! switch to las vegas termination");
+                    lasVegasCondition(end.getValue());
+            }
+            // should exi
+            shouldexit = shouldexit && end.getValue().profile.query.terminated;
+        }
+        if (shouldexit) {
             exit(0);
+        }
+    }
+
+    private void monteCarloCondition(SnobSpray peer) {
+        if (peer.profile.has_query && peer.crdt.sum() > montecarlostop) {
+            peer.profile.stop();
+        }
+    }
+
+    private void lasVegasCondition(SnobSpray peer) {
+        if (peer.profile.has_query && peer.profile.query.isFinished()) {
+            peer.profile.stop();
         }
     }
 
@@ -113,7 +185,6 @@ public class SnobSprayObserver implements ObserverProgram {
     public void onLastTick(DictGraph observer) {
 
     }
-
 
     public void init(DictGraph observer) {
         Datastore d = new Datastore();
@@ -193,51 +264,5 @@ public class SnobSprayObserver implements ObserverProgram {
             snob.profile.replicate = numberOfReplicatedQueries;
             snob.profile.update((String) queryToreplicate.get("query"), (long) queryToreplicate.get("card"));
         }
-    }
-
-
-    public static Map<String, Object> jsonToMap(JSONObject json) {
-        Map<String, Object> retMap = new HashMap<String, Object>();
-
-        if(json != null) {
-            retMap = toMap(json);
-        }
-        return retMap;
-    }
-
-    public static Map<String, Object> toMap(JSONObject object) {
-        Map<String, Object> map = new HashMap<String, Object>();
-
-        Iterator<String> keysItr = object.keySet().iterator();
-        while(keysItr.hasNext()) {
-            String key = keysItr.next();
-            Object value = object.get(key);
-
-            if(value instanceof JSONArray) {
-                value = toList((JSONArray) value);
-            }
-
-            else if(value instanceof JSONObject) {
-                value = toMap((JSONObject) value);
-            }
-            map.put(key, value);
-        }
-        return map;
-    }
-
-    public static List<Object> toList(JSONArray array){
-        List<Object> list = new ArrayList<Object>();
-        for(int i = 0; i < array.size(); i++) {
-            Object value = array.get(i);
-            if(value instanceof JSONArray) {
-                value = toList((JSONArray) value);
-            }
-
-            else if(value instanceof JSONObject) {
-                value = toMap((JSONObject) value);
-            }
-            list.add(value);
-        }
-        return list;
     }
 }

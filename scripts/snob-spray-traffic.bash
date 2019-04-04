@@ -14,10 +14,10 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     DIRNAME=`date | md5`
 fi
 
-DIR="$CUR/../results/snob-spray-${DIRNAME}"
+DIR="$CUR/../results/snob-spray-traffic-${DIRNAME}"
 mkdir -p $DIR
 
-SAMPLE=100
+SAMPLE=10
 CONFIG="$CUR/../configs/template-snob-spray.conf"
 
 execute() {
@@ -28,7 +28,7 @@ execute() {
             ########### WITH TRAFFIC ENABLED
             echo "==QUERY:$query==R:$replicate=SIZE=$size=SAMPLE=$i==================================================================="
             filename=$(basename $CONFIG)
-            tmpfile=$(mktemp /tmp/snob-spray.bash.tmpfile.XXXXXX)
+            tmpfile=$(mktemp /tmp/snob-spray-traffic.bash.tmpfile.XXXXXX)
             RESULT="${DIR}/${filename}-traffic-enabled-${size}-${i}-q${query}-r${replicate}.csv"
             RESULTTMP="${DIR}/${filename}-traffic-enabled-${i}-q${query}-r${replicate}-tmp.txt"
             cp $CONFIG "$tmpfile"
@@ -75,7 +75,8 @@ for replicate in 1 2 5 10 50 100 500 1000; do
     done
 done
 
+
 wait
 # clean tmp files
-rm -rf /tmp/snob-spray.bash.tmpfile.*
+rm -rf /tmp/snob-spray-traffic.bash.tmpfile.*
 

@@ -1,6 +1,7 @@
 package snob.simulation.snob2;
 
 import org.apache.jena.graph.Triple;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class Profile {
 
     /**
      * Insert triple into the datastore from a pattern and a list of triples matching this triple pattern.
+     *
      * @param pattern
      * @param list
      * @return
@@ -98,7 +100,7 @@ public class Profile {
     /**
      * Stop the query execution;
      */
-    public void stop () {
+    public void stop() {
         this.query.stop();
     }
 

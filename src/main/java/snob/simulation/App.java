@@ -28,7 +28,7 @@ public class App implements Runnable {
     @CommandLine.Option(names = {"--replicate"}, description = "Number of Replicated queries with the form of \"1 2 3 4 5\" for 1 rep query then 2, then 3 etc...")
     String replicatedQueries = "1 2 4 8 16 32 64 128 256";
 
-    @CommandLine.Option(names = { "--execute" }, description = "Execute the configuration file place in configs/generated")
+    @CommandLine.Option(names = {"--execute"}, description = "Execute the configuration file place in configs/generated")
     String config = null;
 
     public static void main(String[] args) {
@@ -70,7 +70,7 @@ public class App implements Runnable {
 
     @Override
     public void run() {
-        if(config != null) {
+        if (config != null) {
             try {
                 new Simulator().main(new String[]{config});
             } catch (Exception e) {

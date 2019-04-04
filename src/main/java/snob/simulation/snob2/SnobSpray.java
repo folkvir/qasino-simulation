@@ -30,6 +30,9 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
     public long tripleResponses = 0;
     public int observed = 0;
 
+    // state based crdt counter Map(pattern, Map(id, counter))
+    public StateBasedCrdtCounter crdt = new StateBasedCrdtCounter(this.id);
+
     // #A no configuration needed, everything is adaptive
     // #B no values from the configuration file of peersim
     // #C local variables
@@ -40,6 +43,7 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
     public List<Node> previousSampleNode = new ArrayList<>();
     public List<Long> previousPartialview = new ArrayList<>();
     public List<Node> previousPartialviewNode = new ArrayList<>();
+
     /**
      * Constructor of the Spray instance
      *
@@ -59,7 +63,6 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
     public static SnobSpray fromNodeToSnob(Node node) {
         return (SnobSpray) node.getProtocol(ARandomPeerSamplingProtocol.pid);
     }
-
 
 
     @Override
@@ -97,7 +100,7 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
                 this.partialView.mergeSample(this.node, q, samplePrime, sample,
                         true);
 
-                if(start) {
+                if (start) {
                     shuffle++;
                     // APPLY SNOB NOW
                     List<Node> currentPartialview = this.getPeers(Integer.MAX_VALUE);
@@ -108,23 +111,17 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
                             observed++;
                             // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
                             this.exchangeTriplePatterns(fromNodeToSnob(node_rps), true);
+                            crdt.increment();
                             if (fromNodeToSnob(node_rps).profile.has_query) {
                                 fromNodeToSnob(node_rps).exchangeTriplePatterns(this, true);
+                                // update crdts on both side, synchronization
+                                crdt.update(fromNodeToSnob(node_rps).crdt);
+                                fromNodeToSnob(node_rps).crdt.update(this.crdt);
                             }
                         }
                         profile.execute();
-                        // test if the query is terminated or not, WHEN WE SAW N PEEES
-                        boolean shouldstop = profile.query.isFinished();
-//                  // test whether the query is finished or not using a probabilistic criterion
-//                  boolean shouldstop = profile.query.probabilisticIsFinished(0.99, this.shuffle);
-
-
-                        if(shouldstop){
-                            this.profile.stop();
-                        }
                     }
                 }
-
             } else {
                 // #B run the appropriate procedure
                 if (!qSpray.isUp()) {
@@ -274,7 +271,7 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
             } else {
                 IBFStrata remoteIbf = IBFStrata.createIBFFromTriples(computed);
                 IBFStrata.Result res = this.profile.query.strata.get(pattern).difference(remoteIbf);
-                if(res.messagessent == 0) {
+                if (res.messagessent == 0) {
                     this.messages++;
                 } else {
                     this.messages += res.messagessent;
@@ -285,7 +282,7 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
         } else {
             // the remote peer has the pattern
             IBFStrata.Result res = this.profile.query.strata.get(pattern).difference(remote.profile.query.strata.get(pattern));
-            if(res.messagessent == 0) {
+            if (res.messagessent == 0) {
                 this.messages++;
             } else {
                 this.messages += res.messagessent;
