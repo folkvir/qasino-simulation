@@ -22,6 +22,11 @@ CONFIG="$CUR/../configs/template-snob-spray.conf"
 execute() {
     replicate=$1
     query=$2
+    if [ $query -eq 73 ]; then
+        HEAP="-Xms30g -Xmx30g"
+    else
+        HEAP="-Xms10g -Xmx10g"
+    fi
     for size in 1000; do
         for i in $(seq 1 $SAMPLE); do
             ########### WITH TRAFFIC ENABLED
