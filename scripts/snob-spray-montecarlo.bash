@@ -16,7 +16,7 @@ fi
 DIR="$CUR/../results/snob-spray-montecarlo-${DIRNAME}"
 mkdir -p $DIR
 
-SAMPLE=100
+SAMPLE=5
 CONFIG="$CUR/../configs/template-snob-spray.conf"
 
 execute() {
