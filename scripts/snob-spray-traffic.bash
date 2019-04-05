@@ -24,6 +24,8 @@ execute() {
     query=$2
     if [ $query -eq 73 ]; then
         HEAP="-Xms30g -Xmx30g"
+    else
+        HEAP="-Xms10g -Xmx10g"
     fi
     for size in 100; do
         for i in $(seq 1 $SAMPLE); do
