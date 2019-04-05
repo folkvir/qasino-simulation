@@ -27,7 +27,7 @@ execute() {
     else
         HEAP="-Xms10g -Xmx10g"
     fi
-    for size in 100; do
+    for size in 1000; do
         for i in $(seq 1 $SAMPLE); do
             ########### WITH TRAFFIC ENABLED
             echo "==QUERY:$query==R:$replicate=SIZE=$size=SAMPLE=$i==================================================================="
