@@ -11,7 +11,29 @@ public class Profile {
     public long replicate = 50; // replicate factor in % (one query is replicated over a limited number of peer, 'replicate is this number)
 
     public QuerySnob query;
-    public Datastore datastore = new Datastore();
+    public Datastore local_datastore = new Datastore();
+
+
+    /**
+     * Insert triple into the datastore from a pattern and a list of triples matching this triple pattern.
+     *
+     * @param pattern
+     * @param list
+     * @return
+     */
+    public int insertLocalTriplesWithList(Triple pattern, List<Triple> list) {
+        inserted += list.size();
+        List<Triple> ibf = new LinkedList<>();
+        for (Triple triple : list) {
+            //if (!local_datastore.contains(triple)) {
+                // System.err.println("Insert in the database and pipeline: " + triple);
+                ibf.add(triple);
+                query.insertTriple(pattern, triple);
+            //}
+        }
+        local_datastore.insertTriples(ibf);
+        return list.size();
+    }
 
     /**
      * Insert triple into the datastore from a pattern and a list of triples matching this triple pattern.
@@ -24,15 +46,16 @@ public class Profile {
         inserted += list.size();
         List<Triple> ibf = new LinkedList<>();
         for (Triple triple : list) {
-            if (!datastore.contains(triple)) {
+            if (!query.data.get(pattern).contains(triple)) {
                 // System.err.println("Insert in the database and pipeline: " + triple);
                 ibf.add(triple);
                 query.insertTriple(pattern, triple);
             }
         }
-        datastore.insertTriples(ibf);
-        return list.size();
+        return ibf.size();
     }
+
+
 
     /**
      * Update the profile with a new Query as string only
@@ -88,12 +111,11 @@ public class Profile {
      * @param patterns
      */
     private void init(List<Triple> patterns) {
-        // System.err.println("[INIT] Initializing the pipeline...");
+        //System.err.println("[INIT] Initializing the pipeline...");
         for (Triple pattern : patterns) {
             // System.err.printf("[INIT] Inserting triples from %s into the pipeline: ", pattern.toString());
-            for (Triple triple : this.datastore.getTriplesMatchingTriplePatternAsList(pattern)) {
-                this.query.insertTriple(pattern, triple);
-            }
+            this.insertTriplesWithList(pattern, this.local_datastore.getTriplesMatchingTriplePatternAsList(pattern));
+            // System.err.println(pattern + ": " + this.local_datastore.inserted + " - " + this.query.datastore.inserted);
         }
     }
 

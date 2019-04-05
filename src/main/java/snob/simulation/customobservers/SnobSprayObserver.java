@@ -1,12 +1,16 @@
 package snob.simulation.customobservers;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import peersim.Simulator;
 import peersim.config.Configuration;
+import peersim.core.CommonState;
 import peersim.core.Network;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
@@ -98,7 +102,7 @@ public class SnobSprayObserver implements ObserverProgram {
     public void tick(long currentTick, DictGraph observer) {
         if (currentTick == begin) {
             init(observer);
-            System.err.println(queryToreplicate);
+            System.err.println(new GsonBuilder().setPrettyPrinting().create().toJson(new JsonParser().parse(queryToreplicate.toJSONString())));
             initialized = true;
             SnobSpray.start = true;
         } else {
@@ -111,35 +115,18 @@ public class SnobSprayObserver implements ObserverProgram {
         Map.Entry<Long, SnobSpray> entry = collaborativepeers.entrySet().iterator().next();
         SnobSpray peer = entry.getValue();
         Map<String, Object> data = jsonToMap((JSONObject) queryToreplicate.get("patterns"));
-        long sumRequired = 0;
-        long sumAcquired = 0;
-        for (Map.Entry<String, Object> d : data.entrySet()) {
-            sumRequired += (long) d.getValue();
-        }
-        for (Triple p : peer.profile.query.plan.inserted.keySet()) {
-            sumAcquired += peer.profile.query.plan.inserted.get(p);
-        }
-
-        double seen = 0;
-        for (Triple triple : peer.profile.query.alreadySeen.keySet()) {
-            seen += peer.profile.query.alreadySeen.get(triple).size();
-        }
-        seen = seen / peer.profile.query.alreadySeen.keySet().size();
         System.out.println(String.join(",", new String[]{
                 String.valueOf(peer.node.getID()),
                 String.valueOf(peer.shuffle),
                 String.valueOf(peer.observed),
-                String.valueOf(seen),
+                String.valueOf(peer.profile.query.globalseen),
                 String.valueOf(peer.crdt.sum()),
                 String.valueOf(peer.messages),
                 String.valueOf(peer.tripleResponses),
-                String.valueOf(peer.profile.inserted),
-                String.valueOf(sumAcquired),
-                String.valueOf(sumRequired),
-                String.valueOf(sumAcquired / sumRequired),
-                String.valueOf(peer.profile.datastore.inserted),
+                String.valueOf(peer.profile.local_datastore.inserted),
                 String.valueOf(peer.profile.query.getResults().size()),
                 String.valueOf(peer.profile.query.cardinality),
+                String.valueOf((double) peer.profile.query.getResults().size() / peer.profile.query.cardinality),
                 String.valueOf(Network.size()),
                 String.valueOf(peer.getPeers(Integer.MAX_VALUE).size()),
                 String.valueOf(replicate),
@@ -161,8 +148,10 @@ public class SnobSprayObserver implements ObserverProgram {
                     System.err.println("No termination defined! switch to las vegas termination");
                     lasVegasCondition(end.getValue());
             }
-            // should exi
-            shouldexit = shouldexit && end.getValue().profile.query.terminated;
+            if(end.getKey() == peer.node.getID()) {
+                // should exit
+                shouldexit = shouldexit && end.getValue().profile.query.terminated;
+            }
         }
         if (shouldexit) {
             exit(0);
@@ -214,14 +203,14 @@ public class SnobSprayObserver implements ObserverProgram {
         // now create the construct query
         Triple spo = new Triple(Var.alloc("s"), Var.alloc("p"), Var.alloc("o"));
         List<Triple> result = d.getTriplesMatchingTriplePatternAsList(spo);
-        Collections.shuffle(result);
+        Collections.shuffle(result, CommonState.r);
         int k = 0;
         Iterator<Triple> it = result.iterator();
         while (it.hasNext()) {
             Triple triple = it.next();
             List<Triple> list = new LinkedList<>();
             list.add(triple);
-            peers.get(k % peers.size()).profile.datastore.insertTriples(list);
+            peers.get(k % peers.size()).profile.local_datastore.insertTriples(list);
             k++;
         }
         JSONParser parser = new JSONParser();
@@ -250,8 +239,9 @@ public class SnobSprayObserver implements ObserverProgram {
 
         // pick peer that will receive queries
         List<SnobSpray> nodes = new ArrayList<>();
+        Random random = new Random(CommonState.r.getLastSeed());
         while (nodes.size() != numberOfReplicatedQueries) {
-            int rn = (int) Math.floor(Math.random() * Network.size());
+            int rn = (int) Math.floor(random.nextDouble() * Network.size());
             SnobSpray n = (SnobSpray) observer.nodes.get(Network.get(rn).getID()).pss;
             if (!nodes.contains(n)) nodes.add(n);
         }

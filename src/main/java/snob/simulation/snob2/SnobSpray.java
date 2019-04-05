@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SnobSpray extends ARandomPeerSamplingProtocol implements
-        IRandomPeerSampling {
+public class SnobSpray extends ARandomPeerSamplingProtocol implements IRandomPeerSampling {
     private static final String PAR_TRAFFIC = "traffic"; // minimization of the traffic
     public static boolean traffic;
     public static boolean start = false;
@@ -241,7 +240,12 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
                 exchangeTriplesFromPatternUsingIbf(remote, pattern, share);
             } else {
                 this.messages++;
-                List<Triple> list = remote.profile.datastore.getTriplesMatchingTriplePatternAsList(pattern);
+                List<Triple> list;
+                if(remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+                    list = remote.profile.query.data.get(pattern).parallelStream().collect(Collectors.toList());
+                } else {
+                    list = remote.profile.local_datastore.getTriplesMatchingTriplePatternAsList(pattern);
+                }
                 tripleResponses += list.size();
                 this.profile.insertTriplesWithList(pattern, list);
             }
@@ -264,20 +268,14 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
     public void exchangeTriplesFromPatternUsingIbf(SnobSpray remote, Triple pattern, boolean share) {
         // send the ibf to remote peer with the pattern
         if (!remote.profile.has_query || (remote.profile.has_query && !remote.profile.query.patterns.contains(pattern))) {
+            // no synchronization as the other do not have any triple pattern in common. So send all triples
+
             // if remote does not have a query, get triple pattern, get ibf on this triple pattern, set reconciliation.
-            List<Triple> computed = remote.profile.datastore.getTriplesMatchingTriplePatternAsList(pattern);
-            if (computed.size() == 0) {
-                this.messages++; // at least one message
-            } else {
-                IBFStrata remoteIbf = IBFStrata.createIBFFromTriples(computed);
-                IBFStrata.Result res = this.profile.query.strata.get(pattern).difference(remoteIbf);
-                if (res.messagessent == 0) {
-                    this.messages++;
-                } else {
-                    this.messages += res.messagessent;
-                }
-                int t = this.profile.insertTriplesWithList(pattern, res.missing);
-                this.tripleResponses += t;
+            List<Triple> computed = remote.profile.local_datastore.getTriplesMatchingTriplePatternAsList(pattern);
+            this.messages++;
+            if (computed.size() > 0) {
+                this.profile.insertTriplesWithList(pattern, computed);
+                this.tripleResponses += computed.size();
             }
         } else {
             // the remote peer has the pattern
@@ -287,8 +285,8 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements
             } else {
                 this.messages += res.messagessent;
             }
-            int t = this.profile.insertTriplesWithList(pattern, res.missing);
-            this.tripleResponses += t;
+            this.profile.insertTriplesWithList(pattern, res.missing);
+            this.tripleResponses += res.missing.size();
         }
     }
 

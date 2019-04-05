@@ -37,7 +37,7 @@ public class PipelineTest {
         } catch (IOException e) {
             System.err.println(e.toString());
         }
-        filenames.forEach(f -> p.datastore.update(f.toString()));
+        filenames.forEach(f -> p.local_datastore.update(f.toString()));
 
         p.update("SELECT DISTINCT  ?x3 ?x4 ?x2 ?x5 WHERE   { <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/2804> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> ?x2 .  " +
                 "   <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/2804> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?x3 .     " +
@@ -47,7 +47,7 @@ public class PipelineTest {
 
         int count = 0;
         for (Triple pattern : p.query.patterns) {
-            int s = p.datastore.getTriplesMatchingTriplePatternAsList(pattern).size();
+            int s = p.local_datastore.getTriplesMatchingTriplePatternAsList(pattern).size();
             count += s;
             System.err.println("tp count: " + s);
         }
@@ -65,7 +65,7 @@ public class PipelineTest {
         } catch (IOException e) {
             System.err.println(e.toString());
         }
-        filenames.forEach(f -> p.datastore.update(f.toString()));
+        filenames.forEach(f -> p.local_datastore.update(f.toString()));
 
         int card = 2;
         String q = "SELECT DISTINCT  ?x3 ?x4 ?x2 ?x5 WHERE   { <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseases/2804> <http://www4.wiwiss.fu-berlin.de/diseasome/resource/diseasome/associatedGene> ?x2 .  " +
@@ -122,7 +122,7 @@ public class PipelineTest {
             p1.insertTriplesWithList(pattern, missingtriples);
             p1.query.strata.get(pattern).insert(missingtriples);
 
-            List<Triple> list = p1.datastore.getTriplesMatchingTriplePatternAsList(pattern);
+            List<Triple> list = p1.local_datastore.getTriplesMatchingTriplePatternAsList(pattern);
             Assert.assertEquals(diffsize, list.size());
         }
         Assert.assertEquals(6, triples);
@@ -148,7 +148,7 @@ public class PipelineTest {
     @Test
     public void ordering() {
         Profile p = new Profile();
-        p.datastore.update("./datasets/test-peer1.ttl");
+        p.local_datastore.update("./datasets/test-peer1.ttl");
         p.update("PREFIX ns: <http://example.org/ns#> \n" +
                 "PREFIX :     <http://example.org/ns#> \n" +
                 "SELECT * WHERE   {\n" +
@@ -173,7 +173,7 @@ public class PipelineTest {
         } catch (IOException e) {
             System.err.println(e.toString());
         }
-        filenames.forEach(f -> p.datastore.update(f.toString()));
+        filenames.forEach(f -> p.local_datastore.update(f.toString()));
         // once all fragments loaded
         String diseasomeQuery = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries.json";
         String diseasomeQueryGenerated = System.getProperty("user.dir") + "/datasets/data/diseasome/queries/queries_jena_generated.json";
@@ -187,7 +187,7 @@ public class PipelineTest {
                 System.err.println(query);
                 p.update(query, card);
                 // execute the pipeline over JENA
-                ResultSet resJena = p.datastore.select(p.query.realQuery);
+                ResultSet resJena = p.local_datastore.select(p.query.realQuery);
                 int countJena = 0;
                 while (resJena.hasNext()) {
                     resJena.next();
@@ -215,7 +215,7 @@ public class PipelineTest {
         } catch (IOException e) {
             System.err.println(e.toString());
         }
-        filenames.forEach(f -> p.datastore.update(f.toString()));
+        filenames.forEach(f -> p.local_datastore.update(f.toString()));
         // once all fragments loaded
         String linkedmdbQuery = System.getProperty("user.dir") + "/datasets/data/linkedmdb/queries/queries.json";
         String linkedmdbQueryGenerated = System.getProperty("user.dir") + "/datasets/data/linkedmdb/queries/queries_jena_generated.json";
@@ -229,7 +229,7 @@ public class PipelineTest {
                 System.err.println(query);
                 p.update(query, card);
                 // execute the pipeline over JENA
-                ResultSet resJena = p.datastore.select(p.query.realQuery);
+                ResultSet resJena = p.local_datastore.select(p.query.realQuery);
                 int countJena = 0;
                 while (resJena.hasNext()) {
                     resJena.next();

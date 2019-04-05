@@ -4,7 +4,7 @@ CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo $CUR
 
 JAR="-jar target/snob.jar"
-HEAP="-Xms10g -Xmx10g"
+HEAP="-Xms30g -Xmx30g"
 
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then

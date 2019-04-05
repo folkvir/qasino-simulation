@@ -43,34 +43,34 @@ public class IbflTest {
         // init peer 1
         int dtriples = 0;
         Profile p1 = new Profile();
-        p1.datastore.update("./datasets/test-peer1.ttl");
+        p1.local_datastore.update("./datasets/test-peer1.ttl");
         p1.update(query, 3);
         // init peer 2
         Profile p2 = new Profile();
-        p2.datastore.update("./datasets/test-peer2.ttl");
+        p2.local_datastore.update("./datasets/test-peer2.ttl");
         p2.update(query, 1);
         p2.execute();
         // init peer 3
         Profile p3 = new Profile();
-        p3.datastore.update("./datasets/test-peer3.ttl");
+        p3.local_datastore.update("./datasets/test-peer3.ttl");
         p3.update(query, 1);
         p3.execute();
 
         // p2 exchange with p3 first
         for (Triple pattern : p2.query.patterns) {
-            p2.insertTriplesWithList(pattern, p3.datastore.getTriplesMatchingTriplePatternAsList(pattern));
+            p2.insertTriplesWithList(pattern, p3.local_datastore.getTriplesMatchingTriplePatternAsList(pattern));
         }
 
-        p2.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
+        p2.local_datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
             System.err.println("Triple in p2: " + triple);
         });
 
         // then p1 exchange with p2
         for (Triple pattern : p1.query.patterns) {
-            p1.insertTriplesWithList(pattern, p2.datastore.getTriplesMatchingTriplePatternAsList(pattern));
+            p1.insertTriplesWithList(pattern, p2.local_datastore.getTriplesMatchingTriplePatternAsList(pattern));
         }
 
-        p1.datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
+        p1.local_datastore.getTriplesMatchingTriplePattern(new Triple(Var.alloc("x"), Var.alloc("y"), Var.alloc("z"))).forEachRemaining(triple -> {
             System.err.println("Triple in p1: " + triple);
         });
 
@@ -86,8 +86,8 @@ public class IbflTest {
                 "SELECT * WHERE { ?x ns:p ?y . ?y ns:p ?z . }";
         // init peer 1
         Profile p1 = new Profile();
-        p1.datastore.update("./datasets/test-peer1.ttl");
-        p1.datastore.update("./datasets/test-peer2.ttl");
+        p1.local_datastore.update("./datasets/test-peer1.ttl");
+        p1.local_datastore.update("./datasets/test-peer2.ttl");
         p1.update(query, 2);
         p1.execute();
         Assert.assertEquals(2, p1.query.getResults().size());
