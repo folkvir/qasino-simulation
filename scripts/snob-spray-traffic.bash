@@ -4,7 +4,7 @@ CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo $CUR
 
 JAR="-jar target/snob.jar"
-HEAP="-Xms30g -Xmx30g"
+HEAP="-Xms10g -Xmx10g"
 
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
@@ -22,6 +22,9 @@ CONFIG="$CUR/../configs/template-snob-spray.conf"
 execute() {
     replicate=$1
     query=$2
+    if [ $query -eq 73 ]; then
+        HEAP="-Xms30g -Xmx30g"
+    fi
     for size in 100; do
         for i in $(seq 1 $SAMPLE); do
             ########### WITH TRAFFIC ENABLED

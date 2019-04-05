@@ -22,12 +22,14 @@ END=$((1000 + $START))
 STEP=100
 SAMPLE=500
 
+TMP="spray.bash"
+
 CONFIG="$CUR/../configs/spray.conf"
 for size in 10 20 30 40 50 60 70 80 90 100 200 400 600 800 1000; do
     for i in $(seq 1 $SAMPLE); do
         echo "=====SIZE=$size=SAMPLE=$i==================================================================="
         filename=$(basename $CONFIG)
-        tmpfile=$(mktemp /tmp/spray.bash.tmpfile.XXXXXX)
+        tmpfile=$(mktemp /tmp/$TMP.tmpfile.XXXXXX)
         RESULT="${DIR}/${filename}-${size}-${i}.csv"
         RESULTTMP="${DIR}/${filename}-${i}-tmp.txt"
         cp $CONFIG "$tmpfile"
@@ -44,5 +46,5 @@ for size in 10 20 30 40 50 60 70 80 90 100 200 400 600 800 1000; do
 done
 
 # clean tmp files
-rm -rf /tmp/spray.bash.*
+rm -rf /tmp/$TMP.*
 
