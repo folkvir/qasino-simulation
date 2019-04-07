@@ -25,7 +25,6 @@ for root, dirs, files in os.walk(pathtoexp):
                 plots = csv.reader(csvfile, delimiter=',')
                 peers = {}
                 for row in plots:
-
                         try:
                             #if row[16] != "1000":
                                 # add the row into queries[number][r=X]
@@ -89,8 +88,8 @@ def plotBar(query, values):
 
         #r1 = ax.bar(ind - width/2, height=values[rep]["true"], width=width, color='SkyBlue', label="Enabled", tick_label=str(rep))
         #r2 = ax.bar(ind + width/2, height=values[rep]["false"], width=width, color='IndianRed', label="Disabled", tick_label=str(rep))
-    autolabel(r1, ax)
-    autolabel(r2, ax)
+    autolabel(r1, ax, "{:+.2f}", 'left')
+    autolabel(r2, ax, "{:+.2f}", 'right')
     print(ind, keys)
     ax.set_xticks(ind)
     ax.set_xticklabels(keys)
