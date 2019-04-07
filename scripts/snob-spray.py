@@ -188,6 +188,8 @@ def plotBar (q, query, p):
     plt.suptitle("Network size: N = 1000 and Expected proportion of the network seen: p = " + str(p))
     plt.savefig(fname=args.path + '/p-' + p+ '-query-' + str(q) + '.png', quality=100, format='png', dpi=100)
 
+def plotGlobalDistinct
+
 for q in queries:
     plotBarAverageTermination(q, queries[q], args.p)
     plotBar(q, queries[q], args.p)
