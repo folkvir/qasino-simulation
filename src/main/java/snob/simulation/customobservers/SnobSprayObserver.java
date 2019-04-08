@@ -144,6 +144,9 @@ public class SnobSprayObserver implements ObserverProgram {
                 case "montecarlo":
                     monteCarloCondition(end.getValue());
                     break;
+                case "both":
+                    bothCondition(end.getValue());
+                    break;
                 default:
                     System.err.println("No termination defined! switch to las vegas termination");
                     lasVegasCondition(end.getValue());
@@ -155,6 +158,12 @@ public class SnobSprayObserver implements ObserverProgram {
         }
         if (shouldexit) {
             exit(0);
+        }
+    }
+
+    private void bothCondition(SnobSpray peer) {
+        if (peer.profile.has_query && peer.crdt.sum() > montecarlostop && peer.profile.query.isFinished()) {
+            peer.profile.stop();
         }
     }
 
