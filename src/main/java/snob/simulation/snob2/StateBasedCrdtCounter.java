@@ -23,9 +23,9 @@ public class StateBasedCrdtCounter {
     public void update(StateBasedCrdtCounter remoteCrdt) {
         for (Integer peer : remoteCrdt.crdt.keySet()) {
             if (!this.crdt.containsKey(peer)) {
-                this.crdt.put(peer, remoteCrdt.crdt.get(remoteCrdt.id));
+                this.crdt.put(peer, remoteCrdt.crdt.get(peer));
             } else {
-                this.crdt.put(peer, Math.max(remoteCrdt.crdt.get(remoteCrdt.id), crdt.get(remoteCrdt.id)));
+                this.crdt.put(peer, Math.max(remoteCrdt.crdt.get(peer), crdt.get(peer)));
             }
         }
     }

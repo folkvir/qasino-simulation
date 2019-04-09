@@ -1,4 +1,5 @@
 from math import log
+import sys
 
 # Return the line where kmax is reached for the list of row
 # if kmax is not reached return the last line
@@ -30,6 +31,27 @@ def sampleRatioByRand(sample = [], rep = 1):
         result["rand"].append(int(row[randIndex]))
         ratio = int(row[distinctIndex]) / int(row[sizeIndex]) * 100
         result["ratio"].append(ratio)
+    return result
+
+def findStopCompleteSeen(sample = []):
+    randIndex = 2
+    distinctIndex = 3
+    completeIndex = 10
+    result = {"stop": -1, "complete": -1}
+    stop = False
+    complete = False
+    for row in sample:
+        if not stop and int(row[distinctIndex]) == 1000.0:
+            stop = True
+            result["stop"] = int(row[randIndex])
+        if not complete and float(row[completeIndex]) == 1.0:
+            complete = True
+            result["complete"] = float(row[randIndex])
+    if result["stop"] ==-1 or result["complete"] == -1:
+        print("The stop value or the complete value cannot be -1")
+        print("result: ", result)
+        print(sample)
+        sys.exit(1)
     return result
 
 

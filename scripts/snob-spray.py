@@ -6,7 +6,7 @@ import argparse
 import os
 from math import log, exp
 from math import exp
-from utils import sampleByP, sampleRatioByRand, returnMax
+from utils import sampleByP, sampleRatioByRand, returnMax, findStopCompleteSeen
 import sys
 from functools import reduce
 
@@ -27,7 +27,84 @@ def autolabel(rects, ax, format='{}', xpos='center'):
         ax.text(rect.get_x() + rect.get_width()*offset[xpos], 1.01*height,
                 format.format(height), ha=ha[xpos], va='bottom')
 
+def plotBar (q, query, p):
+    for rep in query:
+        succeeded = []
+        for sample in query[rep]:
+            row_complete = []
+            found = False
+            for row in query[rep][sample]:
+                if float(row[4]) <= row[16] and float(row[10]) == 1.0 and len(row_complete) == 0: row_complete = row
+                if float(row[4]) > row[16]:
+                    if len(row_complete) == 0: row_complete = row
+                    row.append(row_complete)
+                    succeeded.append(row)
+                    found = True
+                    break;
+            # print(found, row_complete)
+        # now count how many of them are complete, and print the row
+        completes = []
+        for suc in succeeded:
+            if float(suc[10]) == 1.0:
+                completes.append(suc)
 
+        # now we have only complete answer we can only keep what we need in average
+        # the number fo shuffle done
+        # the number of rand() done
+        # the number of shuffles and rand for completion
+        saved = []
+        for row in completes:
+            tosave = [row[1], row[2]]
+            if len(row[17]) > 0:
+                tosave.append(row[17][1])
+                tosave.append(row[17][2])
+            saved.append(tosave)
+        query[rep] = [saved, len(saved), len(query[rep]), rep, q]
+        #print(q, rep, queries[q][rep])
+    rep = query
+    keys = []
+    # sort q
+    for k in [*rep]:
+        keys.append(int(k))
+    keys = sorted(keys)
+
+    terminated = []
+    notterminated = []
+    botterminatedaverage = []
+    botcompletedaverage = []
+    for k in keys:
+        terminated.append(rep[str(k)][1])
+        notterminated.append(rep[str(k)][2])
+        if len(rep[str(k)][0]) > 0:
+            averagecompleted = 0
+            averageterminated = 0
+            for row in rep[str(k)][0]:
+                averageterminated += int(row[1])
+                averagecompleted += int(row[3])
+            averageterminated = averageterminated / len(rep[str(k)][0])
+            averagecompleted = averagecompleted / len(rep[str(k)][0])
+            botterminatedaverage.append(averageterminated)
+            botcompletedaverage.append(averagecompleted)
+        else:
+            botterminatedaverage.append(0)
+            botcompletedaverage.append(0)
+    ind = np.arange(len(keys))
+    width= 0.4
+    print(len(botcompletedaverage), len(botterminatedaverage), len(keys))
+    fig, (top, bottom) = plt.subplots(figsize=(10, 6), nrows=2, ncols=1, sharex=True)
+    top.bar(ind, height=terminated, width=width, color="SkyBlue")
+    bottom.bar(ind, height=botterminatedaverage, width=width, color="SkyBlue", label="#calls for terminating")
+    bottom.bar(ind, height=botcompletedaverage, width=width, color="IndianRed", label="#calls for completion")
+    bottom.legend()
+    bottom.set_xticks(ind)
+    bottom.set_xticklabels(keys)
+    bottom.set_yscale('log')
+    bottom.set_xlabel("Number of replicated queries")
+    top.set_title("Number of completed and terminated executions (" + str(notterminated[0]) + " samples)")
+    bottom.set_title("Average call to rand() for terminating and completing the execution (" + str(notterminated[0]) + " samples)")
+    # ax.legend()
+    plt.suptitle("Network size: N = 1000 and Expected proportion of the network seen: p = " + str(p))
+    plt.savefig(fname=args.path + '/p-' + p+ '-query-' + str(q) + '.png', quality=100, format='png', dpi=100)
 
 def plotBarAverageTermination(q, query, p):
     fig, ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1, sharex=True)
@@ -75,6 +152,57 @@ def plotBarAverageTermination(q, query, p):
     ax.set_yscale('log')
     plt.suptitle("Network size: N = 1000 and Expected proportion of the network seen: p = 0.999999999")
     plt.savefig(fname=args.path + '/global-query-' + str(q) + '.png', quality=100, format='png', dpi=100)
+
+def plotBarStopAndCompleteforQone(queries):
+    fig, ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1, sharex=True)
+    keys = [*queries]
+    print("Keys: ", keys)
+    ind = np.arange(len(keys))
+    ax.set_xticklabels(keys)
+    ax.set_xticks(ind)
+    points = {}
+    points = [[], []]
+    #ps = [0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999, 0.9999999, 0.99999999, 0.999999999]
+    ps = [0.5, 0.95, 0.97, 0.99, 0.9999]
+    colors = "bgrcmykw"
+    i = 0
+    for p in ps:
+        ax.axhline(y=1000*log(1/(1-p)), color=colors[i], label="p="+str(p), linestyle='--')
+        i = i + 1
+    width=0.2
+
+    stop = []
+    complete = []
+    stopstd = []
+    completestd = []
+    for q in queries:
+        rep = "1"
+        average = []
+        stopval = []
+        completeval = []
+
+        for sample in queries[q][rep]:
+            average.append(findStopCompleteSeen(queries[q][rep][sample]))
+        for a in average:
+            stopval.append(a["stop"])
+            completeval.append(a["complete"])
+        sum = reduce(lambda a, b: {
+            "stop": a["stop"] + b["stop"],
+            "complete": a["complete"] + b["complete"]
+        }, average)
+        print(sum)
+        sum["stop"] = sum["stop"] / len(average)
+        sum["complete"] = sum["complete"] / len(average)
+        stop.append(sum["stop"])
+        complete.append(sum["complete"])
+        stopstd.append(np.std(stopval))
+        completestd.append(np.std(completeval))
+
+    ax.bar(ind, height=stop, yerr=stopstd, width=width, color="red", label="Stop")
+    ax.bar(ind, height=complete, yerr=completestd, width=width, color="green", label="Complete")
+    ax.legend()
+    plt.savefig(fname=args.path + '/p-effectiveness.png', quality=100, format='png', dpi=100)
+
 
 def plotKbyQforDifferentP(q, query):
     keys = []
@@ -161,33 +289,15 @@ def completenessByRand(q, query):
             y.append(average)
 
         ax.plot(y, x, label="q="+str(rep))
-        reversed(x)
-        y.reverse()
-        ax1.plot(y, x, label="q="+str(rep))
 
 
-    ax.set_xlabel("Ratio of distinct nodes seen by the network size (in %)")
+    ax.set_xlabel("Proportion of distinct nodes seen (in %)")
     ax.set_ylabel("(log scale) Number of calls to rand()")
     ax.set_yscale('log')
 
-    ax1.set_xlabel("Ratio of distinct nodes seen by the network size (in %)")
-    ax1.set_ylabel("(log scale) Number of calls to rand()")
-    #ax1.set_yscale('log')
-    #ax1.set_ylim(bottom=1, top=1000*(log(1000)+0.577))
-
-    ax1.invert_xaxis()
-    #ax1.set_xscale('log')
-
-    ax1.set_yscale('log')
-    #ax1.ticks(ticks=ax1.get_xticks(), labels=xticks)
-    ax1.set_xlim(left=0, right=100)
-
-    print(ax1.get_xticks())
-    ax1.xaxis.set_ticks([0, 100])
     #ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
     ax.legend()
     fig.savefig(fname=args.path + '/ratiobyrand' + str(q) + '.png', quality=100, format='png', dpi=100)
-    fig1.savefig(fname=args.path + '/zoom-ratiobyrand' + str(q) + '.png', quality=100, format='png', dpi=100)
 
 
 if __name__ == '__main__':
@@ -222,8 +332,9 @@ if __name__ == '__main__':
                             if not run in queries[row[15]][row[13]]: queries[row[15]][row[13]][run] = []
                             queries[row[15]][row[13]][run].append(row)
     for q in queries:
-        #start parallel process
         #plotBarAverageTermination(q, queries[q].copy(), args.p)
         #plotKbyQforDifferentP(q, queries[q].copy())
-        completenessByRand(q, queries[q].copy())
+        #completenessByRand(q, queries[q].copy())
+        plotBarStopAndCompleteforQone(queries.copy())
+        plotBar(q, queries[q].copy(), args.p)
 
