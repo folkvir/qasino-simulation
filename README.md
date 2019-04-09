@@ -60,18 +60,17 @@ Xp ran on a machine with:
 * 160 cores
 * 1,585,239,160 kb (1.5 Tb) RAM
 
+
 ```bash
-nohup bash xp.bash &
-# check in results folder for the results
-# when terminate, generate average on each values, then compute plots
-cd scripts/
-## if you want averages, install Nodejs
-npm install && node mean.js ../results/<mygeneratedexperimentfolder>/
-bash sort.bash ../results/<mygeneratedexperimentfolder>/
-## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
-gnuplot simulation.gnuplot
-## Modify in simulation.gnuplot the input with <mygeneratedexperimentfolder>
-gnuplot simulation-one-query.gnuplot
+# spray experiment for different network size
+bash scripts/spray.bash
+# qasino full (montecarlo and las vegas with and without IBLT) (warning it requires around 600go of ram)
+bash scripts/snob-spray-both.bash
+# generate traffic plots with python3
+python3 scripts/traffic.py results/<myxpdir>/
+# generate other plots still with python3
+python3 scripts/snob-spray.py results/<myxpdir>/
+```
 
 ## Generate the variations
 

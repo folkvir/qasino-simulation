@@ -17,9 +17,6 @@ fi
 DIR="$CUR/../results/spray-${DIRNAME}"
 mkdir -p $DIR
 
-START=100
-END=$((1000 + $START))
-STEP=100
 SAMPLE=500
 
 TMP="spray.bash"

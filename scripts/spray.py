@@ -13,7 +13,7 @@ globalx = []
 globaly = []
 points = []
 pathtoexp = os.getcwd() + '/' + args.path
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1, sharex=True)
 for root, dirs, files in os.walk(pathtoexp):
     for filename in files:
         pathfilename = pathtoexp + filename
@@ -92,14 +92,15 @@ for p in points:
 
 ax.plot(globalx, globaly, color="blue", label="Spray")
 ax.plot(globalxappro, globalyappro, color="red", label="n*(ln(n)+\u03B3)")
-ax.plot(globalxappro4, globalyappro4, color="purple", label="n*ln(1/(1-p)) with p=0.99999")
-ax.plot(globalxappro2, globalyappro2, color="green", label="n*ln(1/(1-p)) with p=0.9999")
-ax.plot(globalxappro3, globalyappro3, color="orange", label="n*ln(1/(1-p)) with p=0.99")
+# ax.plot(globalxappro4, globalyappro4, color="purple", label="n*ln(1/(1-p)) with p=0.99999")
+# ax.plot(globalxappro2, globalyappro2, color="green", label="n*ln(1/(1-p)) with p=0.9999")
+# ax.plot(globalxappro3, globalyappro3, color="orange", label="n*ln(1/(1-p)) with p=0.99")
 ax.legend()
-plt.xlabel("Number of Nodes")
-plt.ylabel("Number of Rounds")
+
+ax.set_xlabel("Number of Nodes")
+ax.set_ylabel("Number of calls to rand()")
 
 
 # ax.plot(bleu2rougex, bleu2rougey)
 
-plt.show()
+plt.savefig(fname=args.path + '/approx-vs-spray.png', quality=100, format='png', dpi=100)
