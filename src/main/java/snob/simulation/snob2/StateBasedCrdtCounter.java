@@ -3,6 +3,11 @@ package snob.simulation.snob2;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * For the simulation context only!!!!
+ * This implementation is only usable when the same Q is executed in the network.
+ * Consider to put this for each triple pattern of a query if you want to implement a real prototype.
+ */
 public class StateBasedCrdtCounter {
     public Map<Integer, Integer> crdt = new LinkedHashMap<>();
     public int id;

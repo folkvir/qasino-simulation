@@ -159,6 +159,7 @@ public class SprayObserver implements ObserverProgram {
         public double meanFinished;
         public double minObserved;
         public double maxObserved;
+
         Stat(HashMap<Long, Set<Long>> observed, HashMap<Long, Long> finished) {
             meanObserved = 0;
             minObserved = -1;

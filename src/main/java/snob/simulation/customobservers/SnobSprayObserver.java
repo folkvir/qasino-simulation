@@ -8,7 +8,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import peersim.Simulator;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Network;
@@ -37,7 +36,7 @@ public class SnobSprayObserver implements ObserverProgram {
 
     // can be "lasvegas", end when all have seen all, or "montecarlo", if montecarlo, proportion=0.999999999 until the end of the experiment
     private String stopcond = "lasvegas";
-    private double proportion = 0.999999999;
+    private double proportion = 0.99999;
     private double montecarlostop = 0;
     private int replicate;
     private int queries;
@@ -151,7 +150,7 @@ public class SnobSprayObserver implements ObserverProgram {
                     System.err.println("No termination defined! switch to las vegas termination");
                     lasVegasCondition(end.getValue());
             }
-            if(end.getKey() == peer.node.getID()) {
+            if (end.getKey() == peer.node.getID()) {
                 // should exit
                 shouldexit = shouldexit && end.getValue().profile.query.terminated;
             }

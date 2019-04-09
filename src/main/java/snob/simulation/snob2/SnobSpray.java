@@ -59,7 +59,7 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements IRandomPee
         this.partialView = new SprayPartialView();
     }
 
-    public static SnobSpray fromNodeToSnob(Node node) {
+    public static SnobSpray fromNodeToSnobSpray(Node node) {
         return (SnobSpray) node.getProtocol(ARandomPeerSamplingProtocol.pid);
     }
 
@@ -108,14 +108,15 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements IRandomPee
                         // 1 - send tpqs to neighbours and receive responses
                         for (Node node_rps : peers) {
                             observed++;
-                            // System.err.println(this.id +" exchange with " + fromNodeToSnob(node_rps).id);
-                            this.exchangeTriplePatterns(fromNodeToSnob(node_rps), true);
+                            this.exchangeTriplePatterns(fromNodeToSnobSpray(node_rps));
                             crdt.increment();
-                            if (fromNodeToSnob(node_rps).profile.has_query) {
-                                fromNodeToSnob(node_rps).exchangeTriplePatterns(this, true);
+                            if (fromNodeToSnobSpray(node_rps).profile.has_query) {
+                                fromNodeToSnobSpray(node_rps).exchangeTriplePatterns(this);
+                                // warning only usable when the same query is executed in the network
+                                // see message in crdt class for a real prototype
                                 // update crdts on both side, synchronization
-                                crdt.update(fromNodeToSnob(node_rps).crdt);
-                                fromNodeToSnob(node_rps).crdt.update(this.crdt);
+                                crdt.update(fromNodeToSnobSpray(node_rps).crdt);
+                                fromNodeToSnobSpray(node_rps).crdt.update(this.crdt);
                             }
                         }
                         profile.execute();
@@ -234,29 +235,42 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements IRandomPee
      *
      * @param remote
      */
-    protected void exchangeTriplePatterns(SnobSpray remote, boolean share) {
+    protected void exchangeTriplePatterns(SnobSpray remote) {
         this.profile.query.patterns.forEach(pattern -> {
-            if (traffic) {
-                exchangeTriplesFromPatternUsingIbf(remote, pattern, share);
-            } else {
-                this.messages++;
-                List<Triple> list;
-                if(remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
-                    list = remote.profile.query.data.get(pattern).parallelStream().collect(Collectors.toList());
+            if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+                if (traffic) {
+                    exchangeTriplesFromPatternUsingIbf(remote, pattern);
                 } else {
-                    list = remote.profile.local_datastore.getTriplesMatchingTriplePatternAsList(pattern);
+                    exchangeTriplesFromPatternWithoutIblt(remote, pattern);
                 }
-                tripleResponses += list.size();
-                this.profile.insertTriplesWithList(pattern, list);
+            } else {
+                if (!this.profile.query.alreadySeen.containsKey(pattern) || !this.profile.query.alreadySeen.get(pattern).contains(remote.id)) {
+                    exchangeTriplesFromPatternWithoutIblt(remote, pattern);
+                }
             }
-
             this.profile.query.addAlreadySeen(pattern, remote.id, this.id);
             if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
-                int before = this.profile.query.alreadySeen.get(pattern).size();
                 this.profile.query.mergeAlreadySeen(pattern, remote.profile.query.alreadySeen.get(pattern));
-                int after = this.profile.query.alreadySeen.get(pattern).size();
             }
         });
+    }
+
+    /**
+     * Exchange triples without using iblt.
+     *
+     * @param remote
+     * @param pattern
+     */
+    private void exchangeTriplesFromPatternWithoutIblt(SnobSpray remote, Triple pattern) {
+        this.messages++;
+        List<Triple> list;
+        if (remote.profile.has_query && remote.profile.query.patterns.contains(pattern)) {
+            list = remote.profile.query.data.get(pattern).parallelStream().collect(Collectors.toList());
+        } else {
+            list = remote.profile.local_datastore.getTriplesMatchingTriplePatternAsList(pattern);
+        }
+        tripleResponses += list.size();
+        this.profile.insertTriplesWithList(pattern, list);
     }
 
     /**
@@ -265,7 +279,7 @@ public class SnobSpray extends ARandomPeerSamplingProtocol implements IRandomPee
      * @param remote
      * @param pattern
      */
-    public void exchangeTriplesFromPatternUsingIbf(SnobSpray remote, Triple pattern, boolean share) {
+    public void exchangeTriplesFromPatternUsingIbf(SnobSpray remote, Triple pattern) {
         // send the ibf to remote peer with the pattern
         if (!remote.profile.has_query || (remote.profile.has_query && !remote.profile.query.patterns.contains(pattern))) {
             // no synchronization as the other do not have any triple pattern in common. So send all triples

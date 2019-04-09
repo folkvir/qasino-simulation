@@ -26,9 +26,9 @@ public class Profile {
         List<Triple> ibf = new LinkedList<>();
         for (Triple triple : list) {
             //if (!local_datastore.contains(triple)) {
-                // System.err.println("Insert in the database and pipeline: " + triple);
-                ibf.add(triple);
-                query.insertTriple(pattern, triple);
+            // System.err.println("Insert in the database and pipeline: " + triple);
+            ibf.add(triple);
+            query.insertTriple(pattern, triple);
             //}
         }
         local_datastore.insertTriples(ibf);
@@ -54,7 +54,6 @@ public class Profile {
         }
         return ibf.size();
     }
-
 
 
     /**

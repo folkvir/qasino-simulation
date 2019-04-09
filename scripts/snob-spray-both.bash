@@ -23,7 +23,7 @@ execute() {
     replicate=$1
     query=$2
     if [ $query -eq 73 ]; then
-        HEAP="-Xms30g -Xmx30g"
+        HEAP="-Xms40g -Xmx40g"
     else
         HEAP="-Xms10g -Xmx10g"
     fi
