@@ -4,6 +4,7 @@ import peersim.core.Network;
 import peersim.core.Node;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
+import snob.simulation.snob2.data.Strata.IBF;
 import snob.simulation.spray.Spray;
 
 import java.util.*;
@@ -17,6 +18,7 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
 
     private HashMap<Long, Integer> count = new HashMap<>();
     private HashMap<Long, Set<Long>> observed = new HashMap<>();
+    private Set<Long> finished = new LinkedHashSet<>();
 
     // estimators
     private class Estimator {
@@ -34,59 +36,69 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
     public void tick(long currentTick, DictGraph observer) {
         boolean finish = true;
         for (int i = 0; i < Network.size(); ++i) {
-            Spray spray = (Spray) observer.nodes.get(Network.get(i).getID()).pss;
+            if(!finished.contains(Network.get(i).getID())) {
+                Spray spray = (Spray) observer.nodes.get(Network.get(i).getID()).pss;
 
-            double local = estimateLocal(spray);
-            double neighbours = estimateLocalPlusNeighbours(spray, observer);
-            double localAverage = estimateLocalAverage(spray);
-            double neighboursAverage = estimateLocalPlusNeighboursAverage(spray, observer);
+                double local = estimateLocal(spray);
+                double neighbours = estimateLocalPlusNeighbours(spray, observer);
+                double localAverage = estimateLocalAverage(spray);
+                double neighboursAverage = estimateLocalPlusNeighboursAverage(spray, observer);
 
-            double kmax1 = local *  Math.log(1 / (1 - p));
-            double kmax2 = neighbours *  Math.log(1 / (1 - p));
-            double kmax3 = localAverage *  Math.log(1 / (1 - p));
-            double kmax4 = neighboursAverage *  Math.log(1 / (1 - p));
+                double kmax1 = local *  Math.log(1 / (1 - p));
+                double kmax2 = neighbours *  Math.log(1 / (1 - p));
+                double kmax3 = localAverage *  Math.log(1 / (1 - p));
+                double kmax4 = neighboursAverage *  Math.log(1 / (1 - p));
 
-            List<Long> currentPartialview = spray.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> {
-                return observer.nodes.get(node.getID()).id;
-            }).collect(Collectors.toList());
+                List<Long> currentPartialview = spray.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> {
+                    return observer.nodes.get(node.getID()).id;
+                }).collect(Collectors.toList());
 
 
-            List<Long> newPeers = this.computeRealNewPeers(spray.node.getID(), spray.oldest, spray.previousPartialview, spray.previousSample, currentPartialview);
-            if (!observed.containsKey(Network.get(i).getID())) {
-                observed.put(Network.get(i).getID(), new LinkedHashSet<>());
-                observed.get(Network.get(i).getID()).add(Network.get(i).getID());
+                List<Long> newPeers = this.computeRealNewPeers(spray.node.getID(), spray.oldest, spray.previousPartialview, spray.previousSample, currentPartialview);
+                if (!observed.containsKey(Network.get(i).getID())) {
+                    observed.put(Network.get(i).getID(), new LinkedHashSet<>());
+                    observed.get(Network.get(i).getID()).add(Network.get(i).getID());
+                }
+
+                if (!count.containsKey(Network.get(i).getID())) {
+                    count.put(Network.get(i).getID(), 0);
+                }
+
+                count.put(Network.get(i).getID(), count.get(Network.get(i).getID()) + newPeers.size());
+                for (Long peer : newPeers) {
+                    observed.get(Network.get(i).getID()).add(peer);
+                }
+
+                String[] toPrint = {
+                        String.valueOf(spray.node.getID()),
+                        String.valueOf(currentTick),
+                        String.valueOf(observed.get(Network.get(i).getID()).size()),
+                        String.valueOf(count.get(Network.get(i).getID())),
+                        String.valueOf(local),
+                        String.valueOf(neighbours),
+                        String.valueOf(localAverage),
+                        String.valueOf(neighboursAverage),
+                        String.valueOf(Network.size() * Math.log(1 / (1 - p))),
+                        String.valueOf(kmax1),
+                        String.valueOf(kmax2),
+                        String.valueOf(kmax3),
+                        String.valueOf(kmax4),
+                };
+
+
+                System.out.println(String.join(",", toPrint));
+
+                if(count.get(Network.get(i).getID()) > (Network.size() * Math.log(1 / (1 - p)))) {
+                    finished.add(Network.get(i).getID());
+                }
             }
 
-            if (!count.containsKey(Network.get(i).getID())) {
-                count.put(Network.get(i).getID(), 0);
+            if(finished.size() == Network.size()) {
+                exit(0);
             }
-
-            count.put(Network.get(i).getID(), count.get(Network.get(i).getID()) + newPeers.size());
-            for (Long peer : newPeers) {
-                observed.get(Network.get(i).getID()).add(peer);
-            }
-
-            String[] toPrint = {
-                    String.valueOf(spray.node.getID()),
-                    String.valueOf(currentTick),
-                    String.valueOf(observed.get(Network.get(i).getID()).size()),
-                    String.valueOf(count.get(Network.get(i).getID())),
-                    String.valueOf(local),
-                    String.valueOf(neighbours),
-                    String.valueOf(localAverage),
-                    String.valueOf(neighboursAverage),
-                    String.valueOf(kmax1),
-                    String.valueOf(kmax2),
-                    String.valueOf(kmax3),
-                    String.valueOf(kmax4),
-            };
-
-            System.out.println(String.join(",", toPrint));
         }
 
-        if(currentTick > Network.size() * Math.log(1 / (1 - p))) {
-            exit(0);
-        }
+
     }
 
     private List<Long> computeRealNewPeers(long id, Long oldest, List<Long> previousPartialview, List<Long> previousSample, List<Long> currentPartialview) {
