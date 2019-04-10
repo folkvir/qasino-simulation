@@ -15,6 +15,9 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
     // proportion expected
     double p = 0.99999;
 
+    private HashMap<Long, Integer> count = new HashMap<>();
+    private HashMap<Long, Set<Long>> observed = new HashMap<>();
+
     // estimators
     private class Estimator {
         public int iterationLocal = 0;
@@ -43,9 +46,31 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
             double kmax3 = localAverage *  Math.log(1 / (1 - p));
             double kmax4 = neighboursAverage *  Math.log(1 / (1 - p));
 
+            List<Long> currentPartialview = spray.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> {
+                return observer.nodes.get(node.getID()).id;
+            }).collect(Collectors.toList());
+
+
+            List<Long> newPeers = this.computeRealNewPeers(spray.node.getID(), spray.oldest, spray.previousPartialview, spray.previousSample, currentPartialview);
+            if (!observed.containsKey(Network.get(i).getID())) {
+                observed.put(Network.get(i).getID(), new LinkedHashSet<>());
+                observed.get(Network.get(i).getID()).add(Network.get(i).getID());
+            }
+
+            if (!count.containsKey(Network.get(i).getID())) {
+                count.put(Network.get(i).getID(), 0);
+            }
+
+            count.put(Network.get(i).getID(), count.get(Network.get(i).getID()) + newPeers.size());
+            for (Long peer : newPeers) {
+                observed.get(Network.get(i).getID()).add(peer);
+            }
+
             String[] toPrint = {
                     String.valueOf(spray.node.getID()),
                     String.valueOf(currentTick),
+                    String.valueOf(observed.get(Network.get(i).getID()).size()),
+                    String.valueOf(count.get(Network.get(i).getID())),
                     String.valueOf(local),
                     String.valueOf(neighbours),
                     String.valueOf(localAverage),
@@ -55,14 +80,28 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
                     String.valueOf(kmax3),
                     String.valueOf(kmax4),
             };
+
             System.out.println(String.join(",", toPrint));
-
-
         }
 
         if(currentTick > Network.size() * Math.log(1 / (1 - p))) {
             exit(0);
         }
+    }
+
+    private List<Long> computeRealNewPeers(long id, Long oldest, List<Long> previousPartialview, List<Long> previousSample, List<Long> currentPartialview) {
+        // firstly, remove the oldest from the old partialview
+        List<Long> oldpv = new ArrayList<>(previousPartialview);
+        oldpv.remove(oldest);
+        // secondly, remove the id from the old sample
+        List<Long> oldsample = new ArrayList<>(previousSample);
+        oldsample.remove(id);
+        // thridly, substract oldpv wiith oldsample
+        oldpv.removeAll(oldsample);
+        // then remove all entry in newpv containing remaining oldpv entries
+        List<Long> remainings = new ArrayList<>(currentPartialview);
+        remainings.removeAll(oldpv);
+        return remainings;
     }
 
     @Override
