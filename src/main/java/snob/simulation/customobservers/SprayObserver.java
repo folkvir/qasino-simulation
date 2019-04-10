@@ -1,6 +1,8 @@
 package snob.simulation.customobservers;
 
+import org.apache.jena.tdb.store.Hash;
 import peersim.core.Network;
+import peersim.core.Node;
 import snob.simulation.observers.DictGraph;
 import snob.simulation.observers.ObserverProgram;
 import snob.simulation.spray.Spray;
@@ -11,9 +13,6 @@ import java.util.stream.Collectors;
 import static java.lang.System.exit;
 
 public class SprayObserver implements ObserverProgram {
-    // with one round memory
-    private HashMap<Long, List<Long>> lastround = new HashMap<>();
-    private HashMap<Long, Integer> lastRoundMemory = new HashMap<>();
     // without memory
     private HashMap<Long, Integer> withoutMemory = new HashMap<>();
     // with full memory
@@ -35,27 +34,12 @@ public class SprayObserver implements ObserverProgram {
 
 
             List<Long> newPeers = this.computeRealNewPeers(spray.node.getID(), spray.oldest, spray.previousPartialview, spray.previousSample, currentPartialview);
-            // System.err.println("Observer:(" + spray.node.getID() + ")_(" + spray.oldest + ")" + spray.previousPartialview + "_" + spray.previousSample + "_" + currentPartialview + "_newPeers:" + newPeers);
-            // real new peers
 
             if (!withoutMemory.containsKey(Network.get(i).getID())) {
                 withoutMemory.put(Network.get(i).getID(), newPeers.size());
             } else {
                 withoutMemory.put(Network.get(i).getID(), withoutMemory.get(Network.get(i).getID()) + newPeers.size());
             }
-//            if(!lastround.containsKey(Network.get(i).getID())) {
-//                lastround.put(Network.get(i).getID(), observer.nodes.get(Network.get(i).getID()).neighbors);
-//                lastRoundMemory.put(Network.get(i).getID(), 0);
-//            }
-//
-//
-//            for (Node peer : spray.getPeers(Integer.MAX_VALUE)) {
-//                if(!lastround.get(Network.get(i).getID()).contains(peer.getID())) {
-//                    lastRoundMemory.put(Network.get(i).getID(), lastRoundMemory.get(Network.get(i).getID()) + 1);
-//                }
-//            }
-//            // now rewrite lastround
-//            lastround.put(Network.get(i).getID(), observer.nodes.get(Network.get(i).getID()).neighbors);
 
 
             if (!observed.containsKey(Network.get(i).getID())) {
@@ -77,19 +61,7 @@ public class SprayObserver implements ObserverProgram {
                 }
             }
         }
-//        Stat stat = new Stat(observed, finished);
-//        String[] result = {
-//                String.valueOf(currentTick),
-//                String.valueOf(stat.meanFinished),
-//                String.valueOf(stat.meanObserved),
-//                String.valueOf(stat.minObserved),
-//                String.valueOf(stat.maxObserved)
-//        };
-        //System.out.println(String.join(",", result));
         if (finished.size() == Network.size()) {
-//            System.err.println("Finish: " + finished.size());
-//            System.err.println("Observed: " + stat.meanObserved);
-//            System.err.println("Mean finished: " + stat.meanFinished);
             exit(0);
         }
     }
@@ -184,6 +156,5 @@ public class SprayObserver implements ObserverProgram {
             meanFinished = meanFinished / Network.size();
 
         }
-
     }
 }

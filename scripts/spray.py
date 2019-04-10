@@ -90,15 +90,15 @@ for p in points:
     bleu2rougey.append(p[1] / ((p[0] * (log(p[0]) + 0.5772156649))))
 
 
-ax.plot(globalx, globaly, color="blue", label="Spray")
-ax.plot(globalxappro, globalyappro, color="red", label="n*(ln(n)+\u03B3)")
+ax.plot(globalx, globaly, color="blue", ls='-' ,label="Spray")
+ax.plot(globalxappro, globalyappro, color="red", ls='--', label="n*(ln(n)+\u03B3)")
 # ax.plot(globalxappro4, globalyappro4, color="purple", label="n*ln(1/(1-p)) with p=0.99999")
 # ax.plot(globalxappro2, globalyappro2, color="green", label="n*ln(1/(1-p)) with p=0.9999")
 # ax.plot(globalxappro3, globalyappro3, color="orange", label="n*ln(1/(1-p)) with p=0.99")
 ax.legend()
 
 ax.set_xlabel("Number of Nodes")
-ax.set_ylabel("Number of calls to rand()")
+ax.set_ylabel("Number of iterations (#rand())")
 
 
 # ax.plot(bleu2rougex, bleu2rougey)

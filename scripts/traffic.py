@@ -88,19 +88,19 @@ def plotBar(query, values):
 
         #r1 = ax.bar(ind - width/2, height=values[rep]["true"], width=width, color='SkyBlue', label="Enabled", tick_label=str(rep))
         #r2 = ax.bar(ind + width/2, height=values[rep]["false"], width=width, color='IndianRed', label="Disabled", tick_label=str(rep))
-    autolabel(r1, ax, "{:+.2f}", 'left')
-    autolabel(r2, ax, "{:+.2f}", 'right')
-    print(ind, keys)
+    autolabel(r1, ax, "{:.0f}", 'left')
+    autolabel(r2, ax, "{:.0f}", 'right')
     ax.set_xticks(ind)
     ax.set_xticklabels(keys)
     ax.set_yscale('log')
     ax.set_ylabel("Number of triples received")
-    ax.set_xlabel("Number of replicated queries")
-    ax.set_title("Average number of triples received for the query " + str(query))
+    ax.set_xlabel("Number of nodes executing the same query")
+    #ax.set_title("Average number of triples received for the query " + str(query))
     ax.legend()
     plt.savefig(fname=args.path + '/query-' + str(query) + '.png', quality=100, format='png', dpi=100)
 
 
 for q in queries:
+    print("Plotting traffic of query: ", q)
     plotBar(q, queries[q])
 
