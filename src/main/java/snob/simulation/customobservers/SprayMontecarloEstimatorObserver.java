@@ -76,11 +76,9 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
 
     public double estimateLocalPlusNeighbours(Spray node, DictGraph observer) {
         double sum = 0;
-        System.out.println(node.partialView.getPeers().size());
         for (Node node1 : node.partialView.getPeers()) {
             Spray spray = (Spray) observer.nodes.get(node1.getID()).pss;
             sum += spray.partialView.size();
-            System.out.println(sum + " _ " + spray.partialView.size());
         }
         return Math.exp((node.partialView.size() + sum) / (node.partialView.size() + 1));
     }
@@ -102,7 +100,7 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
 
         Estimator nodeest = this.estimators.get(node.node.getID());
         nodeest.iterationLocalPlusNeighbours++;
-        nodeest.sumLocalPlusNeighbours += estimateLocal(node);
+        nodeest.sumLocalPlusNeighbours += estimateLocalPlusNeighbours(node, observer);
 
         this.estimators.put(node.node.getID(), nodeest);
 
