@@ -1,1 +1,0 @@
-## Implementation adapted from [zsbreak/InvertibleBloomFilter](https://github.com/zsbreak/InvertibleBloomFilter)

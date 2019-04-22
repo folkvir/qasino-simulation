@@ -4,12 +4,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>snobv2simulation</groupId>
-  <artifactId>snobv2simulation</artifactId>
+  <groupId>qasinosimulation</groupId>
+  <artifactId>qasinosimulation</artifactId>
   <version>1.0-SNAPSHOT</version>
     <!-- Output to jar format -->
     <packaging>jar</packaging>
-  <name>snob-simulation</name>
+  <name>qasinosimulation</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,6 +25,11 @@
     </repositories>
 
   <dependencies>
+      <dependency>
+          <groupId>com.github.jsonld-java</groupId>
+          <artifactId>jsonld-java</artifactId>
+          <version>0.12.4</version>
+      </dependency>
       <dependency>
           <groupId>com.google.code.gson</groupId>
           <artifactId>gson</artifactId>
@@ -59,16 +64,22 @@
         <groupId>djep</groupId>
         <artifactId>djep</artifactId>
         <version>1.0.0</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/resources/djep-1.0.0.jar</systemPath>
     </dependency>
     <dependency>
         <groupId>jep</groupId>
         <artifactId>jep</artifactId>
         <version>2.3.0</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/resources/jep-2.3.0.jar</systemPath>
     </dependency>
     <dependency>
         <groupId>peersim</groupId>
         <artifactId>peersim</artifactId>
         <version>1.0.5</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/resources/peersim-1.0.5.jar</systemPath>
     </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.jena/apache-jena-libs -->
       <dependency>
@@ -103,12 +114,12 @@
                   </execution>
               </executions>
               <configuration>
-                  <finalName>snob</finalName>
+                  <finalName>qasino</finalName>
                   <shadedArtifactAttached>true</shadedArtifactAttached>
                   <transformers>
                       <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                           <manifestEntries>
-                              <Main-Class>snob.simulation.App</Main-Class>
+                              <Main-Class>qasino.simulation.App</Main-Class>
                               <addClasspath>true</addClasspath>
                           </manifestEntries>
                       </transformer>

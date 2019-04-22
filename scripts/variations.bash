@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-bash install.bash
 
 JAR="-jar target/snob.jar"
 SAMPLE=100
