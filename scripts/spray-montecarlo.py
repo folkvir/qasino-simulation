@@ -45,6 +45,7 @@ if __name__ == '__main__':
     ps = [0.25, 0.5, 0.75, 0.9, 0.99, 0.999, 0.9999]
     print('Proportions draws:', ps)
     proportions = {}
+    theoritical = []
     for peer in peers:
         for val,rand,p in getProportionsForPs(peers[peer], ps):
             if not p in proportions: proportions[p] = []
@@ -52,15 +53,46 @@ if __name__ == '__main__':
 
     ind = np.arange(len([*proportions]))
     keys = sorted([*proportions])
+
+    scatterx = []
+    scattery = []
+
     y = []
     for p in keys:
+        print('Nomber of points: ', len(proportions[p]))
         average = reduce(lambda a,b: a+b, proportions[p]) / len(proportions[p])
+        for val in proportions[p]:
+            scatterx.append(p)
+            scattery.append(val)
         y.append(average)
-    print(keys, y)
+        theoritical.append(1000 * p)
     fig, ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1)
-    ax.bar(ind, height=y)
-    ax.set_xticks(ind)
-    ax.set_xticklabels(keys)
-    ax.set_ylabel("Number of distinct nodes seen")
-    ax.set_xlabel("Proportion of nodes seen")
+
+    keys2 = []
+    for k in keys:
+        keys2.append(1 - k)
+
+    y2 = []
+    for k in y:
+        y2.append(1000 - k)
+
+    th2 = []
+    for t in theoritical:
+        th2.append(1000-t)
+
+    scatter2x = []
+    for k in scatterx:
+        scatter2x.append(1 - k)
+
+    scatter2y = []
+    for k in scattery:
+        scatter2y.append(1000 - k)
+    ax.scatter(keys2, y2, color="SkyBlue", label = 'Spray')
+    #ax.scatter(scatter2x, scatter2y, color="SkyBlue", label = 'Spray')
+    ax.plot(keys2, th2, color="IndianRed", label = '1000 * (1 - p)')
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.legend()
+    ax.set_ylabel("Number of distinct nodes yet to be seen")
+    ax.set_xlabel("1 - p")
     fig.savefig(fname=args.path + '.montecarlo.png', quality=100, format='png', dpi=100)

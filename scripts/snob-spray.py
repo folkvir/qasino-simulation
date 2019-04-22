@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+from matplotlib.transforms import blended_transform_factory
 import numpy as np
 import csv
 import argparse
 import os
-from math import log, exp
-from math import exp
+from math import log
 from utils import sampleByP, sampleRatioByRand, returnMax, findStopCompleteSeen
 import sys
 from functools import reduce
@@ -187,11 +186,11 @@ def plotBarStopAndCompleteforQone(queries):
     #ps = [0.9, 0.99, 0.999, 0.9999, 0.99999, 0.999999, 0.9999999, 0.99999999, 0.999999999]
     ps = [0.5, 0.95, 0.97, 0.99, 0.9999]
     colors = "bgrcmykw"
-    i = 0
+
     styles = [(5,2),(2,5),(4,10),(3,3,2,2),(5,2,20,2)]
-    for p in ps:
-        ax.axhline(y=1000*log(1/(1-p)), ls="--", dashes=styles[i], label="p="+str(p))
-        i = i + 1
+
+    print(ind)
+
     width=0.2
 
     stop = []
@@ -225,6 +224,22 @@ def plotBarStopAndCompleteforQone(queries):
     ax.set_ylabel("Number of iterations (#rand())")
     ax.bar(ind, height=stop, yerr=stopstd, width=width, color="SkyBlue", label="Stop")
     ax.bar(ind, height=complete, yerr=completestd, width=width, color="IndianRed", label="Complete")
+
+
+    i = 0
+    reference_transform = blended_transform_factory(ax.transAxes, ax.transData)
+    for p in ps:
+        ax.axhline(y=1000*log(1/(1-p)), ls=(0, (1, 1)))
+        ax.annotate("p="+str(p),
+                    xy=(1, 1000*log(1/(1-p))),
+                    xycoords=reference_transform,
+                    xytext=(10, 0),
+                    textcoords='offset points',
+                    color="black",
+                    fontsize=8, ha="left",
+                    family="monospace")
+        i = i + 1
+
     ax.legend()
     plt.savefig(fname=args.path + '/p-effectiveness.png', quality=100, format='png', dpi=100)
 
