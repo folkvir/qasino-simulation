@@ -8,6 +8,7 @@ import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONObject;
 import peersim.core.Network;
 import qasino.simulation.qasino.data.IBFStrata;
+import qasino.simulation.spray.SizeEstimator;
 
 import java.util.*;
 
@@ -82,10 +83,10 @@ public class QueryQasino {
         terminated = true;
     }
 
-    public boolean isFinished() {
+    public boolean isFinished(SizeEstimator estimator) {
         boolean res = true;
         for (Map.Entry<Triple, Set<Integer>> entry : alreadySeen.entrySet()) {
-            if (entry.getValue().size() == Network.size()) {
+            if (entry.getValue().size() == estimator.size()) {
                 res = res && true;
             } else {
                 res = false;

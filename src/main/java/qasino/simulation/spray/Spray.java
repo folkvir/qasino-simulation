@@ -3,7 +3,6 @@ package qasino.simulation.spray;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import qasino.simulation.cyclon.Cyclon;
-import qasino.simulation.qasino.SizeEstimator;
 import qasino.simulation.rps.ARandomPeerSamplingProtocol;
 import qasino.simulation.rps.IMessage;
 import qasino.simulation.rps.IRandomPeerSampling;
@@ -86,7 +85,7 @@ public class Spray extends ARandomPeerSamplingProtocol implements
                         true);
 
                 // compute the aggregate estimator
-                if (start) estimator.compute(this, qSpray);
+                estimator.compute(this, qSpray);
             } else {
                 // #B run the appropriate procedure
                 if (!qSpray.isUp()) {
