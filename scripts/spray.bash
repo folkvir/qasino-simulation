@@ -3,7 +3,7 @@
 CUR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo $CUR
 
-JAR="-jar target/snob.jar"
+JAR="-jar target/qasino.jar"
 HEAP="-Xms50g -Xmx50g"
 
 

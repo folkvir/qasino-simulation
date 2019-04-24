@@ -6,7 +6,7 @@ import org.apache.jena.sparql.core.Var;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import qasino.simulation.snob2.Profile;
+import qasino.simulation.qasino.Profile;
 
 import static com.google.common.hash.Hashing.crc32;
 import static com.google.common.hash.Hashing.murmur3_32;

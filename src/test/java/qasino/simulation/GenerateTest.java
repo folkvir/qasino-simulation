@@ -9,8 +9,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Ignore;
 import org.junit.Test;
-import qasino.simulation.snob2.Datastore;
-import qasino.simulation.snob2.QuerySnob;
+import qasino.simulation.qasino.Datastore;
+import qasino.simulation.qasino.QueryQasino;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -45,7 +45,7 @@ public class GenerateTest {
             JSONArray jsonArray = (JSONArray) parser.parse(is);
             jsonArray.forEach((q) -> {
                 JSONObject j = (JSONObject) q;
-                QuerySnob query = new QuerySnob(j);
+                QueryQasino query = new QueryQasino(j);
                 // execute triple patterns
                 Map<String, Integer> patsi = new LinkedHashMap<>();
                 int tpnumber = query.patterns.size();

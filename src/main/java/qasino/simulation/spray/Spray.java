@@ -3,6 +3,7 @@ package qasino.simulation.spray;
 import peersim.core.CommonState;
 import peersim.core.Node;
 import qasino.simulation.cyclon.Cyclon;
+import qasino.simulation.qasino.SizeEstimator;
 import qasino.simulation.rps.ARandomPeerSamplingProtocol;
 import qasino.simulation.rps.IMessage;
 import qasino.simulation.rps.IRandomPeerSampling;
@@ -18,6 +19,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
         IRandomPeerSampling {
 
     public static boolean start = false;
+    // # size estimator, aggregation
+    public SizeEstimator estimator;
     // #A no configuration needed, everything is adaptive
     // #B no values from the configuration file of peersim
     // #C local variables
@@ -27,9 +30,9 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     public List<Node> previousSampleNode = new ArrayList<>();
     public List<Long> previousPartialview = new ArrayList<>();
     public List<Node> previousPartialviewNode = new ArrayList<>();
-    // for the estimator
-    public double estimator = 0;
-    public double m_estimator = 0;
+//    // for the estimator
+//    public double estimator = 0;
+//    public double m_estimator = 0;
 
     /**
      * Constructor of the Spray instance
@@ -39,10 +42,12 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     public Spray(String prefix) {
         super(prefix);
         this.partialView = new SprayPartialView();
+        this.estimator = new SizeEstimator(CommonState.r);
     }
 
     public Spray() {
         this.partialView = new SprayPartialView();
+        this.estimator = new SizeEstimator(CommonState.r);
     }
 
     @Override
@@ -80,9 +85,8 @@ public class Spray extends ARandomPeerSamplingProtocol implements
                 this.partialView.mergeSample(this.node, q, samplePrime, sample,
                         true);
 
-                if (start) {
-                    this.processEstimatorWithPeer(qSpray);
-                }
+                // compute the aggregate estimator
+                if (start) estimator.compute(this, qSpray);
             } else {
                 // #B run the appropriate procedure
                 if (!qSpray.isUp()) {
@@ -94,30 +98,30 @@ public class Spray extends ARandomPeerSamplingProtocol implements
         }
     }
 
-    private void processEstimatorWithPeer(Spray node) {
-        if (this.estimator == 0) {
-            this.estimator = Math.exp(this.partialView.size());
-        }
-        if (node.estimator == 0) {
-            node.estimator = Math.exp(node.partialView.size());
-        }
-        double est = (this.estimator + node.estimator) / 2;
-        this.estimator = est;
-        node.estimator = est;
-        this.m_estimator++;
-    }
+//    private void processEstimatorWithPeer(Spray node) {
+//        if (this.estimator == 0) {
+//            this.estimator = Math.exp(this.partialView.size());
+//        }
+//        if (node.estimator == 0) {
+//            node.estimator = Math.exp(node.partialView.size());
+//        }
+//        double est = (this.estimator + node.estimator) / 2;
+//        this.estimator = est;
+//        node.estimator = est;
+//        this.m_estimator++;
+//    }
 
-    private void processEstimatorWithPV() {
-        // then for each peer of the pv, process 2 by 2 the average both values
-        for (Node peer : this.getAliveNeighbors()) {
-            processEstimatorWithPeer((Spray) node.getProtocol(ARandomPeerSamplingProtocol.pid));
-        }
-    }
+//    private void processEstimatorWithPV() {
+//        // then for each peer of the pv, process 2 by 2 the average both values
+//        for (Node peer : this.getAliveNeighbors()) {
+//            processEstimatorWithPeer((Spray) node.getProtocol(ARandomPeerSamplingProtocol.pid));
+//        }
+//    }
 
 
-    public double estimateSize() {
-        return this.estimator;
-    }
+//    public double estimateSize() {
+//        return this.estimator;
+//    }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {
         List<Node> samplePrime = this.partialView.getSample(this.node, origin,

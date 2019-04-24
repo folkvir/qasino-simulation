@@ -36,7 +36,7 @@ def getProportionsForPs(sample, ps = []):
     return result
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Plot an experiment built using spray-estimator.conf')
+    parser = argparse.ArgumentParser(description='Plot an experiment built using spray-montecarlo.conf')
     parser.add_argument('path', metavar='path', type=str, help='Path to the experiment result file')
     args = parser.parse_args()
     pathtoexp = os.getcwd() + '/' + args.path

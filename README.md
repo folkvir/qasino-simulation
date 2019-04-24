@@ -21,6 +21,10 @@ mvn clean package
 | q87 | 1 | 1  | 1 | 1  | 1 | 1  | 4 | 10 |
 
 
+## Network size estimator
+The estimator implemented is: Jelasity, M., & Montresor, A. (2004). Epidemic-style proactive aggregation in large overlay networks. In 24th International Conference on Distributed Computing Systems, 2004. Proceedings. (pp. 102-109). IEEE.
+![](results/plots/spray-estimator.csv.png)
+
 ## Las Vegas
 
 Number of iterations of the LV algorithms in order to get all nodes for different network size, against the approximation.

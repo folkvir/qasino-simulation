@@ -9,10 +9,10 @@ import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import qasino.simulation.snob2.Profile;
-import qasino.simulation.snob2.data.IBFStrata;
-import qasino.simulation.snob2.data.Strata.Cell;
-import qasino.simulation.snob2.data.Strata.StrataEstimator;
+import qasino.simulation.qasino.Profile;
+import qasino.simulation.qasino.data.IBFStrata;
+import qasino.simulation.qasino.data.Strata.Cell;
+import qasino.simulation.qasino.data.Strata.StrataEstimator;
 
 import java.io.FileReader;
 import java.io.IOException;
