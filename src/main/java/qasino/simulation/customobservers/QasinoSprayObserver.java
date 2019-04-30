@@ -161,7 +161,7 @@ public class QasinoSprayObserver implements ObserverProgram {
     }
 
     private void bothCondition(Qasino peer) {
-        if (peer.profile.has_query && peer.crdt.sum() > montecarlostop && peer.profile.query.isFinished(peer.estimator)) {
+        if (peer.profile.has_query && peer.crdt.sum() > montecarlostop && peer.profile.query.isFinished(peer.getEstimator())) {
             peer.profile.stop();
         }
     }
@@ -173,7 +173,7 @@ public class QasinoSprayObserver implements ObserverProgram {
     }
 
     private void lasVegasCondition(Qasino peer) {
-        if (peer.profile.has_query && peer.profile.query.isFinished(peer.estimator)) {
+        if (peer.profile.has_query && peer.profile.query.isFinished(peer.getEstimator())) {
             peer.profile.stop();
         }
     }

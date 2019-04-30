@@ -27,22 +27,31 @@ if __name__ == '__main__':
     peers = parseFile(pathtoexp)
 
     fig, ax = plt.subplots(figsize=(8, 6), nrows=1, ncols=1)
+    fig2, ax2 = plt.subplots(figsize=(8, 6), nrows=1, ncols=1)
     xticks = []
     lasty = []
     for peer in peers:
         x = []
+        y2 = []
         y = []
         for row in peers[peer]:
             x.append(int(row[1]))
-            y.append(int(row[4]))
-        ax.scatter(x=x, y=y)
+            y2.append(int(row[5]))
+            y.append(int(row[6]))
+        ax.scatter(x=x, y=y, s=4)
+        ax2.scatter(x=x, y=y2, s=4)
         xticks = x
         lasty = y
-    plt.ylim(top=2000, bottom=0)
+    ax.set_ylim(top=1100, bottom=900)
+    #ax2.set_ylim(top=15, bottom=0)
     #ax.set_yscale('log')
     ax.set_xlabel("Cycles")
     ax.set_ylabel("Network estimation size")
+    ax2.set_xlabel("Cycles")
+    ax2.set_ylabel("Estimator instances")
     #ax.set_title("Convergence time for the network size estimator for a network of 1000 peers")
     ax.axhline(y=1000, ls=(0, (1, 1)), color="red", label="Real size")
     ax.legend()
-    fig.savefig(fname=args.path + '.png', quality=100, format='png', dpi=100)
+    #ax2.legend()
+    fig.savefig(fname=args.path + '-est.png', quality=100, format='png', dpi=100)
+    fig2.savefig(fname=args.path + '-instances.png', quality=100, format='png', dpi=100)

@@ -32,7 +32,7 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
         if (currentTick > warmup_tick) {
             boolean finish = true;
             for (int i = 0; i < observer.nodes.size(); ++i) {
-                if (!finished.contains(Network.get(i).getID())) {
+                // if (!finished.contains(Network.get(i).getID())) {
                     Spray spray = (Spray) observer.nodes.get(Network.get(i).getID()).pss;
 
 
@@ -62,32 +62,57 @@ public class SprayMontecarloEstimatorObserver implements ObserverProgram {
                         // System.err.println("count: " + count.get(Network.get(i).getID()) +  " - montecarlo: " + Network.get(i).getID());
                     }
                     boolean montecarlofinished = false;
-                    if (count.get(Network.get(i).getID()) > (Network.size() * Math.log(1 / (1 - p)))) {
+                    if (count.get(Network.get(i).getID()) > (observer.nodes.size() * Math.log(1 / (1 - p)))) {
                         montecarlofinished = true;
                         // System.err.println("count: " + count.get(Network.get(i).getID()) +  " - proba: " + Network.get(i).getID());
                     }
+
+//                    if(spray.estimator.size() > 10000) {
+//                        int birth = 0;
+//                        if(spray.estimator.instances.size()>0) {
+//                            birth = spray.estimator.instances.values().parallelStream().min(Comparator.comparing(a -> a.birth)).get().birth;
+//                        }
+//                        String[] toPrint = {
+//                                String.valueOf(spray.node.getID()),
+//                                String.valueOf(currentTick - starting_tick),
+//                                String.valueOf(observed.get(Network.get(i).getID()).size()),
+//                                String.valueOf(count.get(Network.get(i).getID())),
+//                                String.valueOf(spray.estimator.size()),
+//                                String.valueOf(spray.estimator.getNumberOfInstances()),
+//                                String.valueOf(spray.estimator.ttl),
+//                                String.valueOf(spray.estimator.global_clock),
+//                                String.valueOf(spray.estimator.current_pv_size),
+//                                String.valueOf(birth),
+//                        };
+//                        System.out.println(String.join(",", toPrint));
+//                    }
 
                     String[] toPrint = {
                             String.valueOf(spray.node.getID()),
                             String.valueOf(currentTick - starting_tick),
                             String.valueOf(observed.get(Network.get(i).getID()).size()),
                             String.valueOf(count.get(Network.get(i).getID())),
-                            String.valueOf(spray.estimator.size()),
-                            String.valueOf(spray.estimator.getNumberOfInstances())
+                            String.valueOf(Network.size()),
+                            String.valueOf(spray.getEstimator().getInstancesSize()),
+                            String.valueOf(spray.getEstimator().size()),
                     };
+//                    System.err.println();
+//                    spray.estimator.instances.forEach((id, inst) -> {
+//                        System.err.print("[" + inst.major(spray.estimator.global_clock) + "]");
+//                    });
+//                    System.err.println();
+                    System.out.println(String.join(",", toPrint));
                     if (montecarlofinished && probafinished) {
                         finished.add(Network.get(i).getID());
                     }
-                    System.out.println(String.join(",", toPrint));
-                }
 
-                if (finished.size() == Network.size()) {
-                    exit(0);
-                }
+                // }
+
+//                if (finished.size() == observer.nodes.size()) {
+//                    exit(0);
+//                }
             }
         }
-
-        if (currentTick == 60) exit(0);
     }
 
     private List<Long> computeRealNewPeers(long id, Long oldest, List<Long> previousPartialview, List<Long> previousSample, List<Long> currentPartialview) {

@@ -21,6 +21,7 @@ public class SprayMontecarloObserver implements ObserverProgram {
     private HashMap<Long, Estimator> estimators = new LinkedHashMap<>();
 
     public SprayMontecarloObserver(String prefix) {
+        Spray.enableEstimator = false;
     }
 
     @Override
@@ -29,16 +30,6 @@ public class SprayMontecarloObserver implements ObserverProgram {
         for (int i = 0; i < Network.size(); ++i) {
             if (!finished.contains(Network.get(i).getID())) {
                 Spray spray = (Spray) observer.nodes.get(Network.get(i).getID()).pss;
-
-                double local = estimateLocal(spray);
-                double neighbours = estimateLocalPlusNeighbours(spray, observer);
-                double localAverage = estimateLocalAverage(spray);
-                double neighboursAverage = estimateLocalPlusNeighboursAverage(spray, observer);
-
-                double kmax1 = local * Math.log(1 / (1 - p));
-                double kmax2 = neighbours * Math.log(1 / (1 - p));
-                double kmax3 = localAverage * Math.log(1 / (1 - p));
-                double kmax4 = neighboursAverage * Math.log(1 / (1 - p));
 
                 List<Long> currentPartialview = spray.getPeers(Integer.MAX_VALUE).parallelStream().map(node -> {
                     return observer.nodes.get(node.getID()).id;
@@ -77,6 +68,9 @@ public class SprayMontecarloObserver implements ObserverProgram {
                         String.valueOf(observed.get(Network.get(i).getID()).size()),
                         String.valueOf(count.get(Network.get(i).getID())),
                         String.valueOf(montecarlofinished),
+                        String.valueOf(p),
+                        String.valueOf(observed.get(Network.get(i).getID()).size()),
+                        String.valueOf(count.get(Network.get(i).getID())),
                         String.valueOf(probafinished)
                 };
                 if (montecarlofinished) {
@@ -113,43 +107,6 @@ public class SprayMontecarloObserver implements ObserverProgram {
 
     }
 
-    public double estimateLocal(Spray node) {
-        return Math.exp(node.partialView.size());
-    }
-
-    public double estimateLocalPlusNeighbours(Spray node, DictGraph observer) {
-        double sum = 0;
-        for (Node node1 : node.partialView.getPeers()) {
-            Spray spray = (Spray) observer.nodes.get(node1.getID()).pss;
-            sum += spray.partialView.size();
-        }
-        return Math.exp((node.partialView.size() + sum) / (node.partialView.size() + 1));
-    }
-
-    public double estimateLocalAverage(Spray node) {
-        if (!this.estimators.containsKey(node.node.getID())) this.estimators.put(node.node.getID(), new Estimator());
-
-        Estimator nodeest = this.estimators.get(node.node.getID());
-        nodeest.iterationLocal++;
-        nodeest.sumLocal += estimateLocal(node);
-
-        this.estimators.put(node.node.getID(), nodeest);
-
-        return nodeest.sumLocal / nodeest.iterationLocal;
-    }
-
-    public double estimateLocalPlusNeighboursAverage(Spray node, DictGraph observer) {
-        if (!this.estimators.containsKey(node.node.getID())) this.estimators.put(node.node.getID(), new Estimator());
-
-        Estimator nodeest = this.estimators.get(node.node.getID());
-        nodeest.iterationLocalPlusNeighbours++;
-        nodeest.sumLocalPlusNeighbours += estimateLocalPlusNeighbours(node, observer);
-
-        this.estimators.put(node.node.getID(), nodeest);
-
-        return nodeest.sumLocalPlusNeighbours / nodeest.iterationLocalPlusNeighbours;
-    }
-
     public boolean probabilisticIsFinished(double apriori, double distinct, int numberofpeersseen) {
         if (distinct == 0) return false;
         double infinity = 20;
@@ -157,7 +114,6 @@ public class SprayMontecarloObserver implements ObserverProgram {
         for (int i = 0; i < infinity; ++i) {
             double tmp = distinct / (distinct + i);
             double pow = Math.pow(tmp, numberofpeersseen);
-            // System.err.println(tmp + " : " + pow);
             sum += pow;
         }
         return (apriori * sum) < 1;

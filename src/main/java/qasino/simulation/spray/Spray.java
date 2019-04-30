@@ -6,6 +6,7 @@ import qasino.simulation.cyclon.Cyclon;
 import qasino.simulation.rps.ARandomPeerSamplingProtocol;
 import qasino.simulation.rps.IMessage;
 import qasino.simulation.rps.IRandomPeerSampling;
+import qasino.simulation.spray.estimator.SizeEstimator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,16 @@ import java.util.stream.Collectors;
 public class Spray extends ARandomPeerSamplingProtocol implements
         IRandomPeerSampling {
 
+    public static boolean enableEstimator = true;
     public static boolean start = false;
     // # size estimator, aggregation
-    public SizeEstimator estimator;
+    private SizeEstimator estimator;
+    public SizeEstimator getEstimator() {
+        if(estimator == null) {
+            this.estimator = new SizeEstimator((int) this.node.getID(), CommonState.r);
+        }
+        return this.estimator;
+    }
     // #A no configuration needed, everything is adaptive
     // #B no values from the configuration file of peersim
     // #C local variables
@@ -41,12 +49,10 @@ public class Spray extends ARandomPeerSamplingProtocol implements
     public Spray(String prefix) {
         super(prefix);
         this.partialView = new SprayPartialView();
-        this.estimator = new SizeEstimator(CommonState.r);
     }
 
     public Spray() {
         this.partialView = new SprayPartialView();
-        this.estimator = new SizeEstimator(CommonState.r);
     }
 
     @Override
@@ -84,8 +90,12 @@ public class Spray extends ARandomPeerSamplingProtocol implements
                 this.partialView.mergeSample(this.node, q, samplePrime, sample,
                         true);
 
-                // compute the aggregate estimator
-                estimator.compute(this, qSpray);
+//                // compute the aggregate estimator
+//                for (Node peer : this.getPeers(Integer.MAX_VALUE)) {
+//                    Spray s = (Spray) peer.getProtocol(ARandomPeerSamplingProtocol.pid);
+//                    this.getEstimator().compute(this.partialView.size(), s.getEstimator());
+//                }
+                if(enableEstimator) this.getEstimator().compute(this.partialView.size(), qSpray.getEstimator());
             } else {
                 // #B run the appropriate procedure
                 if (!qSpray.isUp()) {
@@ -97,30 +107,6 @@ public class Spray extends ARandomPeerSamplingProtocol implements
         }
     }
 
-//    private void processEstimatorWithPeer(Spray node) {
-//        if (this.estimator == 0) {
-//            this.estimator = Math.exp(this.partialView.size());
-//        }
-//        if (node.estimator == 0) {
-//            node.estimator = Math.exp(node.partialView.size());
-//        }
-//        double est = (this.estimator + node.estimator) / 2;
-//        this.estimator = est;
-//        node.estimator = est;
-//        this.m_estimator++;
-//    }
-
-//    private void processEstimatorWithPV() {
-//        // then for each peer of the pv, process 2 by 2 the average both values
-//        for (Node peer : this.getAliveNeighbors()) {
-//            processEstimatorWithPeer((Spray) node.getProtocol(ARandomPeerSamplingProtocol.pid));
-//        }
-//    }
-
-
-//    public double estimateSize() {
-//        return this.estimator;
-//    }
 
     public IMessage onPeriodicCall(Node origin, IMessage message) {
         List<Node> samplePrime = this.partialView.getSample(this.node, origin,
@@ -217,5 +203,4 @@ public class Spray extends ARandomPeerSamplingProtocol implements
             this.partialView.addNeighbor(toDouble);
         }
     }
-
 }

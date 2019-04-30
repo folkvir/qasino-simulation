@@ -6,9 +6,8 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.json.simple.JSONObject;
-import peersim.core.Network;
 import qasino.simulation.qasino.data.IBFStrata;
-import qasino.simulation.spray.SizeEstimator;
+import qasino.simulation.spray.estimator.SizeEstimator;
 
 import java.util.*;
 
